@@ -1,0 +1,11 @@
+{
+  "include": {
+    "oneway": ["yes", "1", "-1"],
+    "junction": ["roundabout"],
+    "highway": ["motorway"]
+  },
+  "exclude": {
+    "cycleway": ["opposite", "opposite_lane", "opposite_track"],
+    "oneway:bicycle": ["no"]
+  }
+}

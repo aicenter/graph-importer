@@ -1,0 +1,60 @@
+{
+  "include": {
+    "highway": [
+      "primary",
+      "primary_link",
+      "secondary",
+      "secondary_link",
+      "tertiary",
+      "tertiary_link",
+      "residential",
+      "unclassified",
+      "road",
+      "living_street",
+      "track",
+      "service",
+      "services",
+      "rest_area",
+      "path",
+      "cycleway",
+      "bridleway"
+    ],
+    "cycleway": [
+      "*"
+    ],
+    "bicycle": [
+      "designated",
+      "destination",
+      "official",
+      "permissive",
+      "yes",
+      "customers",
+      "delivery"
+    ]
+  },
+  "exclude": {
+    "access": [
+      "agricultural",
+      "forestry",
+      "private"
+    ]
+  },
+  "excludeUnless": {
+    "exclude": {
+      "access": [
+        "no"
+      ]
+    },
+    "unless": {
+      "bicycle": [
+        "designated",
+        "destination",
+        "official",
+        "permissive",
+        "yes",
+        "customers",
+        "delivery"
+      ]
+    }
+  }
+}

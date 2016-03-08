@@ -1,0 +1,14 @@
+{
+  "defaultSpeed": 50,
+  "mapping": {
+    "living_street": 20,
+    "motorway": 130,
+    "motorway_link": 130,
+    "trunk": 90,
+    "trunk_link": 50,
+    "primary": 90,
+    "secondary": 50,
+    "tertiary": 50,
+    "default": 50
+  }
+}
