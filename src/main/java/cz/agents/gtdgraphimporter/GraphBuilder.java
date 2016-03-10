@@ -15,7 +15,7 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 	/**
 	 * [fromId,toId] -> Edge
 	 */
-	private final Table<Integer, Integer, TEdge> graph = HashBasedTable.create();
+	private final Table<Integer, Integer, TEdge> edges = HashBasedTable.create();
 
 	public GraphBuilder() {
 	}
@@ -42,7 +42,7 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 	 * @param nodes
 	 * 		Nodes
 	 */
-	public void addNodes(Collection<TNode> nodes) {
+	public void addNodes(Collection<? extends TNode> nodes) {
 		nodes.forEach(this::addNode);
 	}
 
@@ -69,7 +69,7 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 	 * @param edges
 	 * 		Edges
 	 */
-	public void addEdges(Collection<TEdge> edges) {
+	public void addEdges(Collection<? extends TEdge> edges) {
 		edges.stream().filter(edge -> !containsEdge(edge.fromId, edge.toId)).forEach(this::addEdge);
 	}
 
@@ -83,9 +83,9 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 
 		assert nodesByNodeId.get(edge.fromId) != null && nodesByNodeId.get(edge.toId) != null : "Node has to be in " +
 				"graph builder before inserting edge";
-		assert !graph.contains(edge.fromId, edge.toId) : "Edge has not to exist yet";
+		assert !edges.contains(edge.fromId, edge.toId) : "Edge has not to exist yet";
 
-		graph.put(edge.fromId, edge.toId, edge);
+		edges.put(edge.fromId, edge.toId, edge);
 	}
 
 	/**
@@ -99,7 +99,7 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 
 		this.nodesByNodeId.clear();
 		this.longIdToIntId.clear();
-		this.graph.clear();
+		this.edges.clear();
 
 		return graph;
 	}
@@ -116,11 +116,11 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 
 		int[] outgoingPositions = new int[n + 1];
 		ArrayList<TEdge> outgoingEdges = new ArrayList<>(n);
-		fillEdgeStructures(graph.rowMap(), outgoingPositions, outgoingEdges);
+		fillEdgeStructures(edges.rowMap(), outgoingPositions, outgoingEdges);
 
 		int[] incomingPositions = new int[n + 1];
 		ArrayList<TEdge> incomingEdges = new ArrayList<>(n);
-		fillEdgeStructures(graph.columnMap(), incomingPositions, incomingEdges);
+		fillEdgeStructures(edges.columnMap(), incomingPositions, incomingEdges);
 
 		ArrayList<TNode> nodesByNodeIdList = createNodeList();
 		return new Graph<>(nodesByNodeIdList, outgoingPositions, outgoingEdges, incomingPositions, incomingEdges);
@@ -164,14 +164,14 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 		for (int i = 0; i < nodesByNodeId.size(); i++) {
 			TNode node = nodesByNodeId.get(i);
 			if (node == null) {
-				throw new NoSuchElementException(" Node with id " + i + " not present! The sequence of ndoe id must " +
+				throw new NoSuchElementException(" Node with id " + i + " not present! The sequence of node id must " +
 						"start with 0 and end with 'numOfNodes-1'");
 			}
 		}
 	}
 
 	public void replaceEdge(TEdge edge) {
-		graph.put(edge.fromId, edge.toId, edge);
+		edges.put(edge.fromId, edge.toId, edge);
 	}
 
 	public boolean containsNode(TNode node) {
@@ -199,7 +199,7 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 	}
 
 	public TEdge getEdge(int fromId, int toId) {
-		return graph.get(fromId, toId);
+		return edges.get(fromId, toId);
 	}
 
 	public Collection<TEdge> getInEdges(TNode node) {
@@ -207,7 +207,7 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 	}
 
 	public Collection<TEdge> getInEdges(int nodeId) {
-		return graph.column(nodeId).values();
+		return edges.column(nodeId).values();
 	}
 
 	public Collection<TEdge> getOutEdges(TNode node) {
@@ -215,11 +215,11 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 	}
 
 	public Collection<TEdge> getOutEdges(int nodeId) {
-		return graph.row(nodeId).values();
+		return edges.row(nodeId).values();
 	}
 
 	public Collection<TEdge> getAllEdges() {
-		return graph.values();
+		return edges.values();
 	}
 
 }

@@ -38,9 +38,9 @@
             <scope>test</scope>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>cz.agents</groupId>-->
-            <!--<artifactId>planner-data-importer</artifactId>-->
-            <!--<version>9.0.1</version>-->
+        <!--<groupId>cz.agents</groupId>-->
+        <!--<artifactId>planner-data-importer</artifactId>-->
+        <!--<version>9.0.1</version>-->
         <!--</dependency>-->
         <dependency>
             <groupId>xml-apis</groupId>
@@ -68,6 +68,12 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.10.19</version>
             <scope>test</scope>
         </dependency>
         <dependency>
