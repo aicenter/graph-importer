@@ -189,11 +189,12 @@ public final class GTFSDatabaseLoaderTest {
 			final ResultSet agenciesResult = Mockito.mock(ResultSet.class);
 			when(agenciesResult.next()).thenReturn(true, true, true, false);
 			// ID
-			when(agenciesResult.getString(1)).thenReturn(null, "id1", "id2").thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(agenciesResult.getString(1)).thenReturn(null, "id1", "id2").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// time zone
 			when(agenciesResult.getString(2)).thenReturn("Europe/Prague", "Europe/Helsinki", "Europe/Prague")
-					.thenThrow(new UnsupportedOperationException("unexpected stub call"));
+					.thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			builder.stubQuery(AGENCIES_SQL_QUERY, agenciesResult);
 
 			builder.stubQuery(STOPS_SQL_QUERY, Mockito.mock(ResultSet.class));
@@ -282,29 +283,29 @@ public final class GTFSDatabaseLoaderTest {
 			final ResultSet stopsResult = Mockito.mock(ResultSet.class);
 			when(stopsResult.next()).thenReturn(true, true, true, false);
 			// ID
-			when(stopsResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Latitude
-			when(stopsResult.getDouble(2)).thenReturn(11., 12., 13.).thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getDouble(2)).thenReturn(11., 12., 13.).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Longitude
-			when(stopsResult.getDouble(3)).thenReturn(21., 22., 23.).thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getDouble(3)).thenReturn(21., 22., 23.).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Description
-			when(stopsResult.getString(4)).thenReturn(null, "d2", "d3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getString(4)).thenReturn(null, "d2", "d3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Zone
-			when(stopsResult.getString(5)).thenReturn(null, "z2", "z3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getString(5)).thenReturn(null, "z2", "z3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Code
-			when(stopsResult.getString(6)).thenReturn(null, "c2", "c3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getString(6)).thenReturn(null, "c2", "c3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Name
-			when(stopsResult.getString(7)).thenReturn("n1", "n2", "n3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getString(7)).thenReturn("n1", "n2", "n3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Wheel chair boarding
-			when(stopsResult.getInt(8)).thenReturn(0, 1, 2).thenThrow(new UnsupportedOperationException("unexpected "
-					+ "stub call"));
+			when(stopsResult.getInt(8)).thenReturn(0, 1, 2).thenThrow(
+					new UnsupportedOperationException("unexpected " + "stub call"));
 			// Latitude, longitude
 			when(stopsResult.wasNull()).thenReturn(//
 					false, false, // 1st stop
@@ -337,13 +338,15 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addStop(eq("i1"), Matchers.<String>eq(null), eq("n1"), Matchers.<String>eq(null), projectedEq
-				(new GPSLocation(11., 21., 5636350, 484569)), Matchers.<String>eq(null), eq(WheelchairBoarding
-				.NO_ACCESSIBILITY_INFORMATION));
-		verify(handler).addStop(eq("i2"), eq("c2"), eq("n2"), eq("d2"), projectedEq(new GPSLocation(12., 22., 5513359,
-				354295)), eq("z2"), eq(WheelchairBoarding.AT_LEAST_SOME_VEHICLES));
-		verify(handler).addStop(eq("i3"), eq("c3"), eq("n3"), eq("d3"), projectedEq(new GPSLocation(13., 23., 5389910,
-				226736)), eq("z3"), eq(WheelchairBoarding.NOT_POSSIBLE));
+		verify(handler).addStop(eq("i1"), Matchers.<String>eq(null), eq("n1"), Matchers.<String>eq(null),
+				projectedEq(new GPSLocation(11., 21., 5636350, 484569)), Matchers.<String>eq(null),
+				eq(WheelchairBoarding.NO_ACCESSIBILITY_INFORMATION));
+		verify(handler).addStop(eq("i2"), eq("c2"), eq("n2"), eq("d2"),
+				projectedEq(new GPSLocation(12., 22., 5513359, 354295)), eq("z2"),
+				eq(WheelchairBoarding.AT_LEAST_SOME_VEHICLES));
+		verify(handler).addStop(eq("i3"), eq("c3"), eq("n3"), eq("d3"),
+				projectedEq(new GPSLocation(13., 23., 5389910, 226736)), eq("z3"), eq(WheelchairBoarding
+						.NOT_POSSIBLE));
 		verifyNoMoreInteractions(handler);
 	}
 
@@ -352,7 +355,7 @@ public final class GTFSDatabaseLoaderTest {
 	 * <p>
 	 * The testing scenario contains bad EPSG SRID. This tests appropriate handling of bad EPSG SRIDs.
 	 */
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public final void loadGtfsThreeStopsWithBadEpsg() {
 		final Connection connection = mock(Connection.class);
 		try {
@@ -362,29 +365,29 @@ public final class GTFSDatabaseLoaderTest {
 			final ResultSet stopsResult = Mockito.mock(ResultSet.class);
 			when(stopsResult.next()).thenReturn(true, true, true, false);
 			// ID
-			when(stopsResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Latitude
-			when(stopsResult.getDouble(2)).thenReturn(11., 12., 13.).thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getDouble(2)).thenReturn(11., 12., 13.).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Longitude
-			when(stopsResult.getDouble(3)).thenReturn(21., 22., 23.).thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getDouble(3)).thenReturn(21., 22., 23.).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Description
-			when(stopsResult.getString(4)).thenReturn(null, "d2", "d3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getString(4)).thenReturn(null, "d2", "d3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Zone
-			when(stopsResult.getString(5)).thenReturn(null, "z2", "z3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getString(5)).thenReturn(null, "z2", "z3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Code
-			when(stopsResult.getString(6)).thenReturn(null, "c2", "c3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getString(6)).thenReturn(null, "c2", "c3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Name
-			when(stopsResult.getString(7)).thenReturn("n1", "n2", "n3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(stopsResult.getString(7)).thenReturn("n1", "n2", "n3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Wheel chair boarding
-			when(stopsResult.getInt(8)).thenReturn(0, 1, 2).thenThrow(new UnsupportedOperationException("unexpected "
-					+ "stub call"));
+			when(stopsResult.getInt(8)).thenReturn(0, 1, 2).thenThrow(
+					new UnsupportedOperationException("unexpected " + "stub call"));
 			// Latitude, longitude
 			when(stopsResult.wasNull()).thenReturn(//
 					false, false, // 1st stop
@@ -417,9 +420,9 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addStop(eq("i1"), Matchers.<String>eq(null), eq("n1"), Matchers.<String>eq(null), projectedEq
-				(new GPSLocation(11., 21., 0, 0)), Matchers.<String>eq(null), eq(WheelchairBoarding
-				.NO_ACCESSIBILITY_INFORMATION));
+		verify(handler).addStop(eq("i1"), Matchers.<String>eq(null), eq("n1"), Matchers.<String>eq(null),
+				projectedEq(new GPSLocation(11., 21., 0, 0)), Matchers.<String>eq(null),
+				eq(WheelchairBoarding.NO_ACCESSIBILITY_INFORMATION));
 		verify(handler).addStop(eq("i2"), eq("c2"), eq("n2"), eq("d2"), projectedEq(new GPSLocation(12., 22., 0, 0)),
 				eq("z2"), eq(WheelchairBoarding.AT_LEAST_SOME_VEHICLES));
 		verify(handler).addStop(eq("i3"), eq("c3"), eq("n3"), eq("d3"), projectedEq(new GPSLocation(13., 23., 0, 0)),
@@ -485,14 +488,14 @@ public final class GTFSDatabaseLoaderTest {
 			final ResultSet routesResult = Mockito.mock(ResultSet.class);
 			when(routesResult.next()).thenReturn(true, true, true, false);
 			// ID
-			when(routesResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(routesResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Agency
-			when(routesResult.getString(2)).thenReturn(null, "a2", "a3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(routesResult.getString(2)).thenReturn(null, "a2", "a3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Type
-			when(routesResult.getInt(3)).thenReturn(1, 2, 3).thenThrow(new UnsupportedOperationException("unexpected "
-					+ "stub call"));
+			when(routesResult.getInt(3)).thenReturn(1, 2, 3).thenThrow(
+					new UnsupportedOperationException("unexpected " + "stub call"));
 			// Type
 			when(routesResult.wasNull()).thenReturn(//
 					false, // 1st route
@@ -585,8 +588,8 @@ public final class GTFSDatabaseLoaderTest {
 			final ResultSet dateIntervalsResult = Mockito.mock(ResultSet.class);
 			when(dateIntervalsResult.next()).thenReturn(true, true, true, false);
 			// ID
-			when(dateIntervalsResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Start
 			when(dateIntervalsResult.getDate(2)).thenReturn(Date.valueOf("2010-01-01"), Date.valueOf("2010-07-24"),
 					Date.valueOf("2010-12-31")).thenThrow(new UnsupportedOperationException("unexpected stub call"));
@@ -594,26 +597,26 @@ public final class GTFSDatabaseLoaderTest {
 			when(dateIntervalsResult.getDate(3)).thenReturn(Date.valueOf("2015-01-01"), Date.valueOf("2015-07-24"),
 					Date.valueOf("2015-12-31")).thenThrow(new UnsupportedOperationException("unexpected stub call"));
 			// Monday
-			when(dateIntervalsResult.getBoolean(4)).thenReturn(false, false, false).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(4)).thenReturn(false, false, false).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Tuesday
-			when(dateIntervalsResult.getBoolean(5)).thenReturn(false, false, true).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(5)).thenReturn(false, false, true).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Wednesday
-			when(dateIntervalsResult.getBoolean(6)).thenReturn(false, true, false).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(6)).thenReturn(false, true, false).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Thursday
-			when(dateIntervalsResult.getBoolean(7)).thenReturn(false, true, true).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(7)).thenReturn(false, true, true).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Friday
-			when(dateIntervalsResult.getBoolean(8)).thenReturn(true, false, false).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(8)).thenReturn(true, false, false).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Saturday
-			when(dateIntervalsResult.getBoolean(9)).thenReturn(true, false, true).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(9)).thenReturn(true, false, true).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Sunday
-			when(dateIntervalsResult.getBoolean(10)).thenReturn(true, true, false).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(10)).thenReturn(true, true, false).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
 			when(dateIntervalsResult.wasNull()).thenReturn(//
 					// 1st interval
@@ -646,12 +649,12 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addDateInterval("i1", new LocalDate(2010, 1, 1), new LocalDate(2015, 1, 2), Arrays.asList
-				(false, false, false, false, true, true, true));
-		verify(handler).addDateInterval("i2", new LocalDate(2010, 7, 24), new LocalDate(2015, 7, 25), Arrays.asList
-				(false, false, true, true, false, false, true));
-		verify(handler).addDateInterval("i3", new LocalDate(2010, 12, 31), new LocalDate(2016, 1, 1), Arrays.asList
-				(false, true, false, true, false, true, false));
+		verify(handler).addDateInterval("i1", new LocalDate(2010, 1, 1), new LocalDate(2015, 1, 2),
+				Arrays.asList(false, false, false, false, true, true, true));
+		verify(handler).addDateInterval("i2", new LocalDate(2010, 7, 24), new LocalDate(2015, 7, 25),
+				Arrays.asList(false, false, true, true, false, false, true));
+		verify(handler).addDateInterval("i3", new LocalDate(2010, 12, 31), new LocalDate(2016, 1, 1),
+				Arrays.asList(false, true, false, true, false, true, false));
 		verifyNoMoreInteractions(handler);
 	}
 
@@ -674,8 +677,8 @@ public final class GTFSDatabaseLoaderTest {
 			final ResultSet dateIntervalsResult = Mockito.mock(ResultSet.class);
 			when(dateIntervalsResult.next()).thenReturn(true, true, true, false);
 			// ID
-			when(dateIntervalsResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Start
 			when(dateIntervalsResult.getDate(2)).thenReturn(Date.valueOf("2010-01-01"), Date.valueOf("2010-07-24"),
 					Date.valueOf("2010-12-31")).thenThrow(new UnsupportedOperationException("unexpected stub call"));
@@ -683,26 +686,26 @@ public final class GTFSDatabaseLoaderTest {
 			when(dateIntervalsResult.getDate(3)).thenReturn(Date.valueOf("2015-01-01"), Date.valueOf("2015-07-24"),
 					Date.valueOf("2015-12-31")).thenThrow(new UnsupportedOperationException("unexpected stub call"));
 			// Monday
-			when(dateIntervalsResult.getBoolean(4)).thenReturn(false, false, false).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(4)).thenReturn(false, false, false).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Tuesday
-			when(dateIntervalsResult.getBoolean(5)).thenReturn(false, false, true).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(5)).thenReturn(false, false, true).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Wednesday
-			when(dateIntervalsResult.getBoolean(6)).thenReturn(false, true, false).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(6)).thenReturn(false, true, false).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Thursday
-			when(dateIntervalsResult.getBoolean(7)).thenReturn(false, true, true).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(7)).thenReturn(false, true, true).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Friday
-			when(dateIntervalsResult.getBoolean(8)).thenReturn(true, false, false).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(8)).thenReturn(true, false, false).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Saturday
-			when(dateIntervalsResult.getBoolean(9)).thenReturn(true, false, true).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(9)).thenReturn(true, false, true).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Sunday
-			when(dateIntervalsResult.getBoolean(10)).thenReturn(true, true, false).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(dateIntervalsResult.getBoolean(10)).thenReturn(true, true, false).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
 			when(dateIntervalsResult.wasNull()).thenReturn(//
 					// 1st interval
@@ -735,12 +738,12 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addDateInterval("i1", new LocalDate(2010, 7, 24), new LocalDate(2015, 1, 2), Arrays.asList
-				(false, false, false, false, true, true, true));
-		verify(handler).addDateInterval("i2", new LocalDate(2010, 7, 24), new LocalDate(2015, 7, 24), Arrays.asList
-				(false, false, true, true, false, false, true));
-		verify(handler).addDateInterval("i3", new LocalDate(2010, 12, 31), new LocalDate(2015, 7, 24), Arrays.asList
-				(false, true, false, true, false, true, false));
+		verify(handler).addDateInterval("i1", new LocalDate(2010, 7, 24), new LocalDate(2015, 1, 2),
+				Arrays.asList(false, false, false, false, true, true, true));
+		verify(handler).addDateInterval("i2", new LocalDate(2010, 7, 24), new LocalDate(2015, 7, 24),
+				Arrays.asList(false, false, true, true, false, false, true));
+		verify(handler).addDateInterval("i3", new LocalDate(2010, 12, 31), new LocalDate(2015, 7, 24),
+				Arrays.asList(false, true, false, true, false, true, false));
 		verifyNoMoreInteractions(handler);
 	}
 
@@ -802,14 +805,14 @@ public final class GTFSDatabaseLoaderTest {
 			final ResultSet datesResult = Mockito.mock(ResultSet.class);
 			when(datesResult.next()).thenReturn(true, true, true, false);
 			// ID
-			when(datesResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(datesResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Date
-			when(datesResult.getDate(2)).thenReturn(Date.valueOf("2010-01-01"), Date.valueOf("2013-07-24"), Date
-					.valueOf("2015-12-31")).thenThrow(new UnsupportedOperationException("unexpected stub call"));
+			when(datesResult.getDate(2)).thenReturn(Date.valueOf("2010-01-01"), Date.valueOf("2013-07-24"),
+					Date.valueOf("2015-12-31")).thenThrow(new UnsupportedOperationException("unexpected stub call"));
 			// Type
-			when(datesResult.getInt(3)).thenReturn(1, 1, 2).thenThrow(new UnsupportedOperationException("unexpected "
-					+ "stub call"));
+			when(datesResult.getInt(3)).thenReturn(1, 1, 2).thenThrow(
+					new UnsupportedOperationException("unexpected " + "stub call"));
 			// Type
 			when(datesResult.wasNull()).thenReturn(//
 					false, // 1st date
@@ -905,44 +908,43 @@ public final class GTFSDatabaseLoaderTest {
 			final ResultSet departuresResult = Mockito.mock(ResultSet.class);
 			when(departuresResult.next()).thenReturn(true, true, true, true, true, true, true, true, true, false);
 			// ID
-			when(departuresResult.getString(1)).thenReturn("i1", "i1", "i2", "i2", "i3", "i3", "i3", "i3", "i3")
-					.thenThrow(new UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getString(1)).thenReturn("i1", "i1", "i2", "i2", "i3", "i3", "i3", "i3",
+					"i3").thenThrow(new UnsupportedOperationException("unexpected stub call"));
 			// Order
-			when(departuresResult.getInt(2)).thenReturn(0, 1, 0, 4, 3, 6, 6, 7, 8).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getInt(2)).thenReturn(0, 1, 0, 4, 3, 6, 6, 7, 8).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Stop
 			when(departuresResult.getString(3)).thenReturn("s11", "s12", "s21", "s22", "s31", "s32", "s41", "s42",
 					"s43").thenThrow(new UnsupportedOperationException("unexpected stub call"));
 			// Route
-			when(departuresResult.getString(4)).thenReturn("r1", "r1", "r2", "r2", "r3", "r3", "r3", "r3", "r3")
-					.thenThrow(new UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getString(4)).thenReturn("r1", "r1", "r2", "r2", "r3", "r3", "r3", "r3",
+					"r3").thenThrow(new UnsupportedOperationException("unexpected stub call"));
 			// Service
-			when(departuresResult.getString(5)).thenReturn("d1", "d1", "d2", "d2", "d3", "d3", "d3", "d3", "d3")
-					.thenThrow(new UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getString(5)).thenReturn("d1", "d1", "d2", "d2", "d3", "d3", "d3", "d3",
+					"d3").thenThrow(new UnsupportedOperationException("unexpected stub call"));
 			// Distance (1st, 2nd, 5th and 6th value is NULL)
-			when(departuresResult.getDouble(6)).thenReturn(0., 0., 4., 4., 0., 0., 0., 1., 8.).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getDouble(6)).thenReturn(0., 0., 4., 4., 0., 0., 0., 1., 8.).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Arrival time
 			when(departuresResult.getString(7)).thenReturn("01:01:00", "02:01:00", "23:02:00", "54:02:00", "05:03:00",
-					"06:03:00", "07:04:00", "38:04:00", "39:04:00").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+					"06:03:00", "07:04:00", "38:04:00", "39:04:00").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Departure time
 			when(departuresResult.getString(8)).thenReturn("01:01:01", "02:01:01", "23:02:01", "54:02:01", "05:03:01",
-					"06:03:01", "07:04:02", "38:04:52", "39:04:01").thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+					"06:03:01", "07:04:02", "38:04:52", "39:04:01").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Frequency start
 			when(departuresResult.getString(9)).thenReturn(null, null, null, null, "00:00:00", "00:00:00", "00:00:01",
 					"00:00:01", "00:00:01").thenThrow(new UnsupportedOperationException("unexpected stub call"));
 			// Frequency end
-			when(departuresResult.getString(10)).thenReturn(null, null, null, null, "25:00:00", "25:00:00",
-					"05:00:00", "05:00:00", "05:00:00").thenThrow(new UnsupportedOperationException("unexpected stub "
-					+ "call"));
+			when(departuresResult.getString(10)).thenReturn(null, null, null, null, "25:00:00", "25:00:00", "05:00:00",
+					"05:00:00", "05:00:00").thenThrow(new UnsupportedOperationException("unexpected stub " + "call"));
 			// Headway in seconds (1st, 2nd, 3rd and 4th value is NULL)
-			when(departuresResult.getInt(11)).thenReturn(0, 0, 0, 0, 7200, 7200, 3600, 3600, 3600).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getInt(11)).thenReturn(0, 0, 0, 0, 7200, 7200, 3600, 3600, 3600).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Exact times (1st, 2nd, 3rd and 4th value is NULL)
-			when(departuresResult.getBoolean(12)).thenReturn(false, false, false, false, true, true, true, true, true)
-					.thenThrow(new UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getBoolean(12)).thenReturn(false, false, false, false, true, true, true, true,
+					true).thenThrow(new UnsupportedOperationException("unexpected stub call"));
 			// Order, distance, headway, exact times
 			when(departuresResult.wasNull()).thenReturn(//
 					false, true, true, true, // 1st stop time
@@ -976,18 +978,20 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addDepartures("s11", "s12", "r1", "d1", "i1", "h1", Period.hours(1).withMinutes(1).withSeconds
-				(1), Period.millis(1), Period.hours(1).withMinutes(1).withSeconds(1).withMillis(1), null, null, Period
-				.hours(1).withSeconds(-1));
-		verify(handler).addDepartures("s21", "s22", "r2", "d2", "i2", "h2", Period.hours(23).withMinutes(2)
-				.withSeconds(1), Period.millis(1), Period.hours(23).withMinutes(2).withSeconds(1).withMillis(1), null,
-				0., Period.hours(31).withSeconds(-1));
+		verify(handler).addDepartures("s11", "s12", "r1", "d1", "i1", "h1",
+				Period.hours(1).withMinutes(1).withSeconds(1), Period.millis(1),
+				Period.hours(1).withMinutes(1).withSeconds(1).withMillis(1), null, null,
+				Period.hours(1).withSeconds(-1));
+		verify(handler).addDepartures("s21", "s22", "r2", "d2", "i2", "h2",
+				Period.hours(23).withMinutes(2).withSeconds(1), Period.millis(1),
+				Period.hours(23).withMinutes(2).withSeconds(1).withMillis(1), null, 0.,
+				Period.hours(31).withSeconds(-1));
 		verify(handler).addDepartures("s31", "s32", "r3", "d3", "i3", "h3", Period.hours(0), Period.seconds(7200),
 				Period.hours(25), true, null, Period.hours(1).withSeconds(-1));
 		verify(handler).addDepartures("s41", "s42", "r3", "d3", "i3", "h3", Period.seconds(1), Period.seconds(3600),
 				Period.hours(5), true, 1., Period.hours(31).withSeconds(-2));
-		verify(handler).addDepartures("s42", "s43", "r3", "d3", "i3", "h3", Period.hours(31).withSeconds(51), Period
-				.seconds(3600), Period.hours(36).withSeconds(50), true, 7., Period.hours(1).withSeconds(-52));
+		verify(handler).addDepartures("s42", "s43", "r3", "d3", "i3", "h3", Period.hours(31).withSeconds(51),
+				Period.seconds(3600), Period.hours(36).withSeconds(50), true, 7., Period.hours(1).withSeconds(-52));
 		verifyNoMoreInteractions(handler);
 	}
 
@@ -1012,41 +1016,41 @@ public final class GTFSDatabaseLoaderTest {
 			final ResultSet departuresResult = Mockito.mock(ResultSet.class);
 			when(departuresResult.next()).thenReturn(true, true, true, false);
 			// ID
-			when(departuresResult.getString(1)).thenReturn("i1", "i1", "i1").thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getString(1)).thenReturn("i1", "i1", "i1").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Order
-			when(departuresResult.getInt(2)).thenReturn(0, 1, 8).thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(departuresResult.getInt(2)).thenReturn(0, 1, 8).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Stop
-			when(departuresResult.getString(3)).thenReturn("s11", "s12", "s13").thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getString(3)).thenReturn("s11", "s12", "s13").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Route
-			when(departuresResult.getString(4)).thenReturn("r1", "r1", "r1").thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getString(4)).thenReturn("r1", "r1", "r1").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Service
-			when(departuresResult.getString(5)).thenReturn("d1", "d1", "d1").thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getString(5)).thenReturn("d1", "d1", "d1").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Distance
-			when(departuresResult.getDouble(6)).thenReturn(0., 1., 4.).thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(departuresResult.getDouble(6)).thenReturn(0., 1., 4.).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Arrival time
-			when(departuresResult.getString(7)).thenReturn("01:01:00", "02:01:00", "03:01:00").thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getString(7)).thenReturn("01:01:00", "02:01:00", "03:01:00").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Departure time
-			when(departuresResult.getString(8)).thenReturn("01:01:01", "02:01:01", "03:01:01").thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getString(8)).thenReturn("01:01:01", "02:01:01", "03:01:01").thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Frequency start
-			when(departuresResult.getString(9)).thenReturn(null, null, null).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getString(9)).thenReturn(null, null, null).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Frequency end
-			when(departuresResult.getString(10)).thenReturn(null, null, null).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getString(10)).thenReturn(null, null, null).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Headway in seconds (1st, 2nd and 3rd value is NULL)
-			when(departuresResult.getInt(11)).thenReturn(0, 0, 0).thenThrow(new UnsupportedOperationException
-					("unexpected stub call"));
+			when(departuresResult.getInt(11)).thenReturn(0, 0, 0).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Exact times (1st, 2nd and 3rd value is NULL)
-			when(departuresResult.getBoolean(12)).thenReturn(false, false, false).thenThrow(new
-					UnsupportedOperationException("unexpected stub call"));
+			when(departuresResult.getBoolean(12)).thenReturn(false, false, false).thenThrow(
+					new UnsupportedOperationException("unexpected stub call"));
 			// Order, distance, headway, exact times
 			when(departuresResult.wasNull()).thenReturn(//
 					false, false, true, true, // 1st stop time
@@ -1074,12 +1078,14 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addDepartures("s11", "s12", "r1", "d1", "i1", "h1", Period.hours(1).withMinutes(1).withSeconds
-				(1), Period.millis(1), Period.hours(1).withMinutes(1).withSeconds(1).withMillis(1), null, 3., Period
-				.hours(1).withSeconds(-1));
-		verify(handler).addDepartures("s12", "s13", "r1", "d1", "i1", "h1", Period.hours(2).withMinutes(1).withSeconds
-				(1), Period.millis(1), Period.hours(2).withMinutes(1).withSeconds(1).withMillis(1), null, 9., Period
-				.hours(1).withSeconds(-1));
+		verify(handler).addDepartures("s11", "s12", "r1", "d1", "i1", "h1",
+				Period.hours(1).withMinutes(1).withSeconds(1), Period.millis(1),
+				Period.hours(1).withMinutes(1).withSeconds(1).withMillis(1), null, 3., Period.hours(1).withSeconds
+						(-1));
+		verify(handler).addDepartures("s12", "s13", "r1", "d1", "i1", "h1",
+				Period.hours(2).withMinutes(1).withSeconds(1), Period.millis(1),
+				Period.hours(2).withMinutes(1).withSeconds(1).withMillis(1), null, 9., Period.hours(1).withSeconds
+						(-1));
 		verifyNoMoreInteractions(handler);
 	}
 
@@ -1141,8 +1147,8 @@ public final class GTFSDatabaseLoaderTest {
 		if (connection == null) {
 			throw new NullPointerException("bad connection");
 		}
-		return new GTFSDatabaseLoaderDefaultImpl(connection, DEFAULT_EPSG_SRID,
-				DEFAULT_GTFS_UNIT_TO_METERS_MULTIPLIER, ANOTHER_PRUNE_BEFORE_DATE, ANOTHER_PRUNE_AFTER_DATE);
+		return new GTFSDatabaseLoaderDefaultImpl(connection, DEFAULT_EPSG_SRID, DEFAULT_GTFS_UNIT_TO_METERS_MULTIPLIER,
+				ANOTHER_PRUNE_BEFORE_DATE, ANOTHER_PRUNE_AFTER_DATE);
 	}
 
 	/**
@@ -1157,8 +1163,8 @@ public final class GTFSDatabaseLoaderTest {
 		if (connection == null) {
 			throw new NullPointerException("bad connection");
 		}
-		return new GTFSDatabaseLoaderDefaultImpl(connection, DEFAULT_EPSG_SRID, DEFAULT_GTFS_UNIT_TO_METERS_MULTIPLIER
-				+ 2);
+		return new GTFSDatabaseLoaderDefaultImpl(connection, DEFAULT_EPSG_SRID,
+				DEFAULT_GTFS_UNIT_TO_METERS_MULTIPLIER + 2);
 	}
 
 	/**
@@ -1209,8 +1215,8 @@ public final class GTFSDatabaseLoaderTest {
 			final Statement returnValue = statement;
 
 			final String notAnyStubbedQuery = argThat(new NotAnyOfMatcher<>(stubbedQueries));
-			final Throwable exception = new UnsupportedOperationException("Unexpected SQL query. Check whether the " +
-					"loader's queries have not changed.");
+			final Throwable exception = new UnsupportedOperationException(
+					"Unexpected SQL query. Check whether the " + "loader's queries have not changed.");
 
 			try {
 				when(returnValue.executeQuery(notAnyStubbedQuery)).thenThrow(exception);
@@ -1298,8 +1304,8 @@ public final class GTFSDatabaseLoaderTest {
 			if (argument.getClass() != location.getClass()) return false;
 
 			final GPSLocation rhs = (GPSLocation) argument;
-			return Objects.equals(rhs, location) && Objects.equals(rhs.latProjected, location.latProjected) && Objects
-					.equals(rhs.lonProjected, location.lonProjected);
+			return Objects.equals(rhs, location) && Objects.equals(rhs.latProjected,
+					location.latProjected) && Objects.equals(rhs.lonProjected, location.lonProjected);
 		}
 
 		/**
@@ -1331,9 +1337,10 @@ public final class GTFSDatabaseLoaderTest {
 		 * @param gtfsUnitToMetersMultiplier
 		 * 		A number used to multiply traveled distance specified in GTFS data to convert it to meters.
 		 */
-		public GTFSDatabaseLoaderDefaultImpl(final Connection connection, final int epsgSrid, final double
-				gtfsUnitToMetersMultiplier) {
-			super(connection, epsgSrid, gtfsUnitToMetersMultiplier, 0);
+		public GTFSDatabaseLoaderDefaultImpl(final Connection connection, final int epsgSrid,
+											 final double gtfsUnitToMetersMultiplier) {
+			super(connection, epsgSrid, gtfsUnitToMetersMultiplier, 0, Date.valueOf("1000-01-01"),
+					Date.valueOf("9999-12-31"));
 		}
 
 		/**
@@ -1354,8 +1361,9 @@ public final class GTFSDatabaseLoaderTest {
 		 * 		time.
 		 * 		In other cases, a GTFS graph filtering mechanism should be used.
 		 */
-		public GTFSDatabaseLoaderDefaultImpl(final Connection connection, final int epsgSrid, final double
-				gtfsUnitToMetersMultiplier, final Date pruneBeforeDate, final Date pruneAfterDate) {
+		public GTFSDatabaseLoaderDefaultImpl(final Connection connection, final int epsgSrid,
+											 final double gtfsUnitToMetersMultiplier, final Date pruneBeforeDate,
+											 final Date pruneAfterDate) {
 			super(connection, epsgSrid, gtfsUnitToMetersMultiplier, 0, pruneBeforeDate, pruneAfterDate);
 		}
 

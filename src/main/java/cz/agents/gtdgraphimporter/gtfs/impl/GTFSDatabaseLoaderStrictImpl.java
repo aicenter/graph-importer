@@ -1,5 +1,6 @@
 package cz.agents.gtdgraphimporter.gtfs.impl;
 
+import cz.agents.geotools.EPSGProjection;
 import cz.agents.gtdgraphimporter.gtfs.GTFSDatabaseLoader;
 import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsParseException;
 
@@ -27,19 +28,29 @@ public final class GTFSDatabaseLoaderStrictImpl extends GTFSDatabaseLoader {
 	 * @param sqlResultDownloadSize
 	 *            Max. size (number of rows) of one batch locally stored
 	 *            (cached) while downloading SQL results.
+	 * @param pruneBeforeDate
+	 *            Min. allowed loaded date (inclusive). This setting should be
+	 *            used rarely to accelerate GTFS loading time. In other cases, a
+	 *            GTFS graph filtering mechanism should be used.
+	 * @param pruneAfterDate
+	 *            Max. allowed loaded date (exclusive). This setting should be
+	 *            used rarely to accelerate GTFS loading time. In other cases, a
+	 *            GTFS graph filtering mechanism should be used.
 	 */
 	public GTFSDatabaseLoaderStrictImpl(final Connection connection, final int epsgSrid,
-			final double gtfsUnitToMetersMultiplier, final int sqlResultDownloadSize) {
-		super(connection, epsgSrid, gtfsUnitToMetersMultiplier, sqlResultDownloadSize);
+			final double gtfsUnitToMetersMultiplier, final int sqlResultDownloadSize, final Date pruneBeforeDate,
+			final Date pruneAfterDate) {
+		super(connection, epsgSrid, gtfsUnitToMetersMultiplier, sqlResultDownloadSize, pruneBeforeDate, pruneAfterDate);
 	}
+
 
 	/**
 	 * Construct a new instance.
 	 *
 	 * @param connection
 	 *            Connection to a database.
-	 * @param epsgSrid
-	 *            EPSG SRID of coordinates projection.
+	 * @param epsgProjection
+	 *            Coordinate projection.
 	 * @param gtfsUnitToMetersMultiplier
 	 *            A number used to multiply traveled distance specified in GTFS
 	 *            data to convert it to meters.
@@ -55,10 +66,10 @@ public final class GTFSDatabaseLoaderStrictImpl extends GTFSDatabaseLoader {
 	 *            used rarely to accelerate GTFS loading time. In other cases, a
 	 *            GTFS graph filtering mechanism should be used.
 	 */
-	public GTFSDatabaseLoaderStrictImpl(final Connection connection, final int epsgSrid,
+	public GTFSDatabaseLoaderStrictImpl(final Connection connection, final EPSGProjection epsgProjection,
 			final double gtfsUnitToMetersMultiplier, final int sqlResultDownloadSize, final Date pruneBeforeDate,
 			final Date pruneAfterDate) {
-		super(connection, epsgSrid, gtfsUnitToMetersMultiplier, sqlResultDownloadSize, pruneBeforeDate, pruneAfterDate);
+		super(connection, epsgProjection, gtfsUnitToMetersMultiplier, sqlResultDownloadSize, pruneBeforeDate, pruneAfterDate);
 	}
 
 	/**

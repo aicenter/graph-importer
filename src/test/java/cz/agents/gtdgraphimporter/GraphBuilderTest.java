@@ -3,6 +3,7 @@ package cz.agents.gtdgraphimporter;
 import cz.agents.basestructures.Edge;
 import cz.agents.basestructures.Graph;
 import cz.agents.basestructures.Node;
+import cz.agents.gtdgraphimporter.structurebuilders.GraphBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

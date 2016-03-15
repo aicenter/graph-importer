@@ -62,7 +62,7 @@
             <groupId>cz.agents</groupId>
             <artifactId>test-cases</artifactId>
             <version>9.0.1</version>
-            <scope>test</scope>
+            <!--<scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>junit</groupId>

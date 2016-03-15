@@ -1,5 +1,6 @@
 package cz.agents.gtdgraphimporter.gtfs.impl;
 
+import cz.agents.geotools.EPSGProjection;
 import cz.agents.gtdgraphimporter.gtfs.GTFSDataHandler;
 import cz.agents.gtdgraphimporter.gtfs.GTFSDatabaseLoader;
 import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsParseException;
@@ -19,25 +20,7 @@ public final class GTFSDatabaseLoaderPermissiveImpl extends GTFSDatabaseLoader {
 	/**
 	 * Logging mechanism.
 	 */
-	private static final Logger logger = Logger.getLogger(GTFSDatabaseLoaderPermissiveImpl.class);
-
-	/**
-	 * Construct a new instance.
-	 * 
-	 * @param connection
-	 *            Connection to a database.
-	 * @param epsgSrid
-	 *            EPSG SRID of coordinates projection.
-	 * @param gtfsUnitToMetersMultiplier
-	 *            A number used to multiply traveled distance specified in GTFS data to convert it to meters.
-	 * @param sqlResultDownloadSize
-	 *            Max. size (number of rows) of one batch locally stored (cached) while downloading SQL results.
-	 */
-	public GTFSDatabaseLoaderPermissiveImpl(final Connection connection, final int epsgSrid,
-			final double gtfsUnitToMetersMultiplier, final int sqlResultDownloadSize) {
-		super(connection, epsgSrid, gtfsUnitToMetersMultiplier, sqlResultDownloadSize);
-	}
-
+	private static final Logger LOGGER = Logger.getLogger(GTFSDatabaseLoaderPermissiveImpl.class);
 
 	/**
 	 * Construct a new instance.
@@ -61,6 +44,31 @@ public final class GTFSDatabaseLoaderPermissiveImpl extends GTFSDatabaseLoader {
 			final double gtfsUnitToMetersMultiplier, final int sqlResultDownloadSize, final Date pruneBeforeDate,
 			final Date pruneAfterDate) {
 		super(connection, epsgSrid, gtfsUnitToMetersMultiplier, sqlResultDownloadSize, pruneBeforeDate, pruneAfterDate);
+	}
+
+
+	/**
+	 * Construct a new instance.
+	 *
+	 * @param connection
+	 *            Connection to a database.
+	 * @param epsgProjection
+	 *            Coordinate projection.
+	 * @param gtfsUnitToMetersMultiplier
+	 *            A number used to multiply traveled distance specified in GTFS data to convert it to meters.
+	 * @param sqlResultDownloadSize
+	 *            Max. size (number of rows) of one batch locally stored (cached) while downloading SQL results.
+	 * @param pruneBeforeDate
+	 *            Min. allowed loaded date (inclusive). This setting should be used rarely to accelerate GTFS loading
+	 *            time. In other cases, a GTFS graph filtering mechanism should be used.
+	 * @param pruneAfterDate
+	 *            Max. allowed loaded date (exclusive). This setting should be used rarely to accelerate GTFS loading
+	 *            time. In other cases, a GTFS graph filtering mechanism should be used.
+	 */
+	public GTFSDatabaseLoaderPermissiveImpl(final Connection connection, final EPSGProjection epsgProjection,
+			final double gtfsUnitToMetersMultiplier, final int sqlResultDownloadSize, final Date pruneBeforeDate,
+			final Date pruneAfterDate) {
+		super(connection, epsgProjection, gtfsUnitToMetersMultiplier, sqlResultDownloadSize, pruneBeforeDate, pruneAfterDate);
 	}
 
 	/**
@@ -144,7 +152,7 @@ public final class GTFSDatabaseLoaderPermissiveImpl extends GTFSDatabaseLoader {
 
 		// TODO count these exceptions instead writing them in the console
 		if (!exception.getMessage().equals("no dates set for given service")) {
-			logger.warn("Skipped data mistake:", exception);
+			LOGGER.warn("Skipped data mistake:", exception);
 		}
 	}
 }

@@ -4,13 +4,12 @@ import cz.agents.basestructures.GPSLocation;
 import cz.agents.basestructures.Graph;
 import cz.agents.basestructures.Node;
 import cz.agents.geotools.EdgeUtil;
-import cz.agents.gtdgraphimporter.GraphBuilder;
-import cz.agents.multimodalstructures.additional.ModeOfTransport;
+import cz.agents.gtdgraphimporter.structurebuilders.*;
 import cz.agents.multimodalstructures.edges.*;
-import cz.agents.multimodalstructures.nodes.RouteNode;
-import cz.agents.multimodalstructures.nodes.StopNode;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
 import org.joda.time.ReadablePeriod;
 
 import java.util.*;
@@ -25,7 +24,7 @@ import java.util.Map.Entry;
  */
 public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 
-	private static final Logger log = Logger.getLogger(GTFSGraphBuilder.class);
+	private static final Logger LOGGER = Logger.getLogger(GTFSGraphBuilder.class);
 
 	/**
 	 * Duration of getting on in seconds.
@@ -55,25 +54,28 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 	/**
 	 * The time which is taken as a point zero for the departures stored in the route edges.
 	 */
-	private final DateTime epochStart;
+	private final LocalDate epochStart;
+
+	private DateTime epochStartWithTimeZone = null;
 
 	/**
 	 * Construct a new instance.
 	 *
-	 * @param initialNodeId
+	 * @param initialSourceNodeId
 	 * 		ID for a newly created {@link Node}.
 	 * @param getOnDurationInS
 	 * 		Duration of getting on in seconds.
 	 * @param getOffDurationInS
 	 * @param epochStart
 	 */
-	public GTFSGraphBuilder(final long initialNodeId, final short getOnDurationInS, final short getOffDurationInS,
-							DateTime epochStart) {
-		log.warn("The lengths of routes (without appropriate distance information) are just estimated.");
-		log.warn(
-				"All departures are handled as if they are defined by exact times (even those defined by non-exact " +
-						"frequencies).");
-		this.newNodeSourceID = initialNodeId;
+	public GTFSGraphBuilder(final long initialSourceNodeId, final short getOnDurationInS, final short
+			getOffDurationInS,
+							LocalDate epochStart) {
+		LOGGER.warn("The lengths of routes (without appropriate distance information) are just estimated.");
+		LOGGER.warn("All departures are handled as if they are defined by exact times (even those defined by " +
+				"non-exact" +
+				" " + "frequencies).");
+		this.newNodeSourceID = initialSourceNodeId;
 		this.getOnDurationInS = getOnDurationInS;
 		this.getOffDurationInS = getOffDurationInS;
 		this.epochStart = epochStart;
@@ -91,12 +93,38 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 		checkStop(origin);
 		checkStop(destination);
 		checkRoute(route);
+		DateTime epochStart = getEpochStart();
+
 		final Collection<Departure> departures = createDepartures(route, service, tripId, tripHeadsign, startTime,
 				timePeriod, endTime, travelTime);
 		if (!departures.isEmpty()) {
 			RouteEdgeBuilder edgeBuilder = fetchRouteEdgeBuilder(origin, destination, route, distanceInM);
-			edgeBuilder.addDepartures(departures);
+			departures.forEach(departure -> edgeBuilder.addDeparture(getDeparture(epochStart, departure.departureTime)
+					, getDuration(departure.travelTime)));
 		}
+	}
+
+	private int getDuration(ReadablePeriod travelTime) {
+		return travelTime.toPeriod().toStandardSeconds().getSeconds();
+	}
+
+	private int getDeparture(DateTime epochStart, DateTime departureTime) {
+		return (int) (departureTime.minus(epochStart.getMillis()).getMillis() / 1000L);
+	}
+
+	private DateTime getEpochStart() {
+		if (epochStartWithTimeZone == null) {
+			//check if there is only one time zone
+			Set<DateTimeZone> timeZones = new HashSet<>(agenciesTimeZones.values());
+			if (timeZones.size() > 1) {
+				throw new IllegalStateException("The GTFS contains data from more time zones.");
+			}
+
+			//convert epoch start to format with time zone of the GTFS
+			DateTimeZone timeZone = timeZones.iterator().next();
+			this.epochStartWithTimeZone = this.epochStart.toDateTimeAtStartOfDay(timeZone);
+		}
+		return this.epochStartWithTimeZone;
 	}
 
 	/**
@@ -118,12 +146,11 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 		EdgeKey key = new EdgeKey(origin, destination, route);
 		RouteEdgeBuilder edgeBuilder = this.edgeBuilders.get(key);
 		if (edgeBuilder == null) {
-			edgeBuilder = new RouteEdgeBuilder(origin, destination, route,
-					getOrEstimateDistance(distanceInM, origin, destination));
+			edgeBuilder = new RouteEdgeBuilder(getOrEstimateDistance(distanceInM, origin, destination));
 			this.edgeBuilders.put(key, edgeBuilder);
 		}
-		assert distanceInM == null || Math.abs(
-				distanceInM - edgeBuilder.distanceInM) <= 1 : "Restored edge has " + "different length than the " +
+		assert distanceInM == null || Math.abs(distanceInM - edgeBuilder.getLength()) <= 1 : "Restored edge has " +
+				"different length than the " +
 				"requested one.";
 		return edgeBuilder;
 	}
@@ -147,51 +174,50 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 		}
 	}
 
-	/**
-	 * Construct the graph and clear the builder.
-	 *
-	 * @return The graph.
-	 */
-	public final Graph<Node, TimeDependentEdge> flushToGraph() {
-		//check if there is only one time zone
-		if (new HashSet<>(agenciesTimeZones.values()).size() > 1) {
-			throw new IllegalStateException("The GTFS contains data from more time zones.");
-		}
+	public TmpGraphBuilder<Node, TimeDependentEdge> getGraphBuilder(int initialTmpNodeId) {
+		newNodeId = initialTmpNodeId;
 
 		// Create the graph.
-		final GraphBuilder<Node, TimeDependentEdge> graphBuilder = new GraphBuilder<>();
-		final Map<String, StopNode> stopNodes = new HashMap<>();
-		final Map<RouteNodeKey, RouteNode> routeNodes = new HashMap<>();
+		final TmpGraphBuilder<Node, TimeDependentEdge> graphBuilder = new TmpGraphBuilder<>();
+		final Map<String, StopNodeBuilder> stopNodes = new HashMap<>();
+		final Map<RouteNodeKey, RouteNodeBuilder> routeNodes = new HashMap<>();
 
 		for (Entry<EdgeKey, RouteEdgeBuilder> e : edgeBuilders.entrySet()) {
 			EdgeKey key = e.getKey();
 			RouteEdgeBuilder routeEdgeBuilder = e.getValue();
 			//add only edges with some departures
 			if (!routeEdgeBuilder.isEmpty()) {
-				StopNode fromStopNode = fetchStopNode(key.fromStop, stopNodes, graphBuilder);
-				StopNode toStopNode = fetchStopNode(key.toStop, stopNodes, graphBuilder);
+				StopNodeBuilder fromStopNode = fetchStopNode(key.fromStop, stopNodes, graphBuilder);
+				StopNodeBuilder toStopNode = fetchStopNode(key.toStop, stopNodes, graphBuilder);
 
-				RouteNode fromRouteNode = fetchRouteNode(fromStopNode, key.routeId, routeNodes, graphBuilder);
-				RouteNode toRouteNode = fetchRouteNode(toStopNode, key.routeId, routeNodes, graphBuilder);
+				RouteNodeBuilder fromRouteNode = fetchRouteNode(fromStopNode, key.routeId, routeNodes, graphBuilder);
+				RouteNodeBuilder toRouteNode = fetchRouteNode(toStopNode, key.routeId, routeNodes, graphBuilder);
 
 				routeEdgeBuilder.setMode(routes.get(key.routeId).ptMode);
-				routeEdgeBuilder.setFromNodeId(fromRouteNode.id);
-				routeEdgeBuilder.setToNodeId(toRouteNode.id);
+				routeEdgeBuilder.setTmpFromId(fromRouteNode.tmpId);
+				routeEdgeBuilder.setTmpToId(toRouteNode.tmpId);
 
-				RouteEdge routeEdge = routeEdgeBuilder.buildEdge(epochStart);
-				graphBuilder.addEdge(routeEdge);
+				graphBuilder.addEdge(routeEdgeBuilder);
 			}
 		}
 
-		//		agenciesTimeZones.clear();
-		//		agenciesToDetails.clear();
-		//		servicesToDates.clear();
-		//		servicesToDatesIncluded.clear();
-		//		servicesToDatesExcluded.clear();
-		//		stops.clear();
-		//		routes.clear();
+		agenciesTimeZones.clear();
+		agenciesToDetails.clear();
+		servicesToDates.clear();
+		servicesToDatesIncluded.clear();
+		servicesToDatesExcluded.clear();
+		stops.clear();
+		routes.clear();
+		return graphBuilder;
+	}
 
-		return graphBuilder.createGraph();
+	/**
+	 * Construct the graph and clear the builder.
+	 *
+	 * @return The graph.
+	 */
+	public final Graph<Node, TimeDependentEdge> flushToGraph() {
+		return getGraphBuilder(0).createGraph();
 	}
 
 	/**
@@ -206,20 +232,21 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 	 *
 	 * @return
 	 */
-	private RouteNode fetchRouteNode(StopNode stopNode, String routeId, Map<RouteNodeKey, RouteNode> routeNodes,
-									 GraphBuilder<Node, TimeDependentEdge> graphBuilder) {
-		RouteNodeKey key = new RouteNodeKey(stopNode.stopID, routeId);
+	private RouteNodeBuilder fetchRouteNode(StopNodeBuilder stopNode, String routeId,
+											Map<RouteNodeKey, RouteNodeBuilder> routeNodes,
+											TmpGraphBuilder<Node, TimeDependentEdge> graphBuilder) {
+		RouteNodeKey key = new RouteNodeKey(stopNode.getStopId(), routeId);
 		if (routeNodes.containsKey(key)) {
 			return routeNodes.get(key);
 		} else {
-			RouteNode routeNode = new RouteNode(newNodeId++, newNodeSourceID++, stopNode.latE6, stopNode.lonE6,
-					stopNode.latProjected, stopNode.lonProjected, stopNode.elevation, stopNode, routeId);
+			RouteNodeBuilder routeNode = new RouteNodeBuilder(newNodeId++, newNodeSourceID++, stopNode.location,
+					routeId, stopNode.tmpId);
 			routeNodes.put(key, routeNode);
 			graphBuilder.addNode(routeNode);
 
 			//create edges between stop node and route node.
-			InnerEdge onEdge = new InnerEdge(stopNode.id, routeNode.id, getOnDurationInS);
-			InnerEdge offEdge = new InnerEdge(routeNode.id, stopNode.id, getOffDurationInS);
+			InnerEdgeBuilder onEdge = new InnerEdgeBuilder(stopNode.tmpId, routeNode.tmpId, getOnDurationInS);
+			InnerEdgeBuilder offEdge = new InnerEdgeBuilder(routeNode.tmpId, stopNode.tmpId, getOffDurationInS);
 
 			graphBuilder.addEdge(onEdge);
 			graphBuilder.addEdge(offEdge);
@@ -238,15 +265,15 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 	 *
 	 * @return
 	 */
-	private StopNode fetchStopNode(String fromStop, Map<String, StopNode> stopNodes,
-								   GraphBuilder<Node, TimeDependentEdge> graphBuilder) {
+	private StopNodeBuilder fetchStopNode(String fromStop, Map<String, StopNodeBuilder> stopNodes,
+										  TmpGraphBuilder<Node, TimeDependentEdge> graphBuilder) {
 		if (stopNodes.containsKey(fromStop)) {
 			return stopNodes.get(fromStop);
 		} else {
 			Stop stop = stops.get(fromStop);
 			GPSLocation loc = stop.location;
-			StopNode stopNode = new StopNode(newNodeId++, newNodeSourceID++, loc.latE6, loc.lonE6, loc.latProjected,
-					loc.lonProjected, loc.elevation, stop.id, stop.name, stop.zoneId, stop.wheelchairBoarding);
+			StopNodeBuilder stopNode = new StopNodeBuilder(newNodeId++, newNodeSourceID++, loc, stop.id, stop.name,
+					stop.zoneId, stop.wheelchairBoarding);
 			stopNodes.put(stop.id, stopNode);
 			graphBuilder.addNode(stopNode);
 			return stopNode;
@@ -258,112 +285,11 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 	}
 
 	private void checkRoute(String routeId) {
-		if (!routes.containsKey(routeId)) throw new IllegalStateException("Route " + routeId + " must be added first.");
+		if (!routes.containsKey(routeId)) throw new IllegalStateException("Route " + routeId + " must be added first" +
+				".");
 	}
 
-	private static class RouteEdgeBuilder {
 
-		public final String fromStop;
-		public final String toStop;
-		public final String routeId;
-		public final int distanceInM;
-
-		/**
-		 * From route node id
-		 */
-		private int fromNodeId;
-
-		/**
-		 * To route node id
-		 */
-		private int toNodeId;
-		private ModeOfTransport mode;
-
-		private List<Departure> departures = new ArrayList<>();
-
-		public RouteEdgeBuilder(String fromStop, String toStop, String routeId, int distanceInM) {
-			this.fromStop = fromStop;
-			this.toStop = toStop;
-			this.routeId = routeId;
-			this.distanceInM = distanceInM;
-		}
-
-		/**
-		 * Builds the route edge. From all departures the {@code epochStart} is
-		 *
-		 * @param epochStart
-		 *
-		 * @return
-		 */
-		public RouteEdge buildEdge(DateTime epochStart) {
-			Collections.sort(departures, (d1, d2) -> d1.departureTime.compareTo(d2.departureTime));
-
-			int[] departuresArray = new int[departures.size()];
-			int[] durations = new int[departures.size()];
-
-			for (int i = 0; i < departures.size(); i++) {
-				Departure departure = departures.get(i);
-				departuresArray[i] = (int) (departure.departureTime.minus(epochStart.getMillis()).getMillis() / 1000L);
-				durations[i] = departure.travelTime.toPeriod().toStandardSeconds().getSeconds();
-			}
-
-			if (isAllSame(durations)) {
-				return new RouteConstantEdge(fromNodeId, toNodeId, mode, departuresArray, durations[0], distanceInM);
-			} else {
-				return new RouteVaryingEdge(fromNodeId, toNodeId, mode, departuresArray, durations, distanceInM);
-			}
-		}
-
-		private boolean isAllSame(int[] array) {
-			for (int i = 0; i < array.length; i++) {
-				if (array[0] != array[i]) return false;
-			}
-			return true;
-		}
-
-		/**
-		 * Returns true iff there is no departure on this edge.
-		 *
-		 * @return
-		 */
-		public boolean isEmpty() {
-			return departures.isEmpty();
-		}
-
-		public RouteEdgeBuilder setFromNodeId(int fromNodeId) {
-			this.fromNodeId = fromNodeId;
-			return this;
-		}
-
-		public RouteEdgeBuilder setToNodeId(int toNodeId) {
-			this.toNodeId = toNodeId;
-			return this;
-		}
-
-		public RouteEdgeBuilder setMode(ModeOfTransport mode) {
-			this.mode = mode;
-			return this;
-		}
-
-		public RouteEdgeBuilder addDepartures(Collection<Departure> departures) {
-			this.departures.addAll(departures);
-			return this;
-		}
-
-		@Override
-		public String toString() {
-			return "RouteEdgeBuilder [" +
-					"fromStop='" + fromStop + '\'' +
-					", toStop='" + toStop + '\'' +
-					", routeId='" + routeId + '\'' +
-					", distanceInM=" + distanceInM +
-					", fromNode=" + fromNodeId +
-					", toNode=" + toNodeId +
-					", mode=" + mode +
-					", departures#=" + departures.size() +
-					']';
-		}
-	}
 
 	private static class EdgeKey {
 

@@ -1,0 +1,7 @@
+{
+   "include" : {
+      "oneway" : [ "yes", "1", "-1" ],
+      "junction" : [ "roundabout" ],
+      "highway" : [ "motorway" ]
+   }
+}

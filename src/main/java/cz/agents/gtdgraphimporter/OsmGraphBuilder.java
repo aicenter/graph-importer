@@ -3,15 +3,21 @@ package cz.agents.gtdgraphimporter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import cz.agents.basestructures.Node;
+import cz.agents.basestructures.GPSLocation;
+import cz.agents.basestructures.Graph;
+import cz.agents.geotools.EPSGProjection;
+import cz.agents.geotools.EdgeUtil;
 import cz.agents.gtdgraphimporter.osm.*;
 import cz.agents.gtdgraphimporter.osm.element.OsmNode;
 import cz.agents.gtdgraphimporter.osm.element.OsmRelation;
 import cz.agents.gtdgraphimporter.osm.element.OsmWay;
 import cz.agents.gtdgraphimporter.osm.handler.OsmHandler;
+import cz.agents.gtdgraphimporter.structurebuilders.NodeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.RoadEdgeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.RoadNodeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.TmpGraphBuilder;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.edges.RoadEdge;
-import cz.agents.multimodalstructures.edges.TimeDependentEdge;
 import cz.agents.multimodalstructures.nodes.RoadNode;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
@@ -32,13 +38,14 @@ import java.util.Map.Entry;
 import static java.util.stream.Collectors.toSet;
 
 /**
- * Class parsing OSM XML file using SAX parser. The output of this parser is a {@link GraphBuilder}.
+ * Class parsing OSM XML file using SAX parser. The output of this parser is a non-simplified graph defined by the OSM.
+ * There are not done any other operations like simplification and finding of strongly connected components.
  *
  * @author Marek Cuchý
  */
-public class OsmGraphParser implements OsmElementConsumer {
+public class OsmGraphBuilder implements OsmElementConsumer {
 
-	private static final Logger LOGGER = Logger.getLogger(OsmGraphParser.class);
+	private static final Logger LOGGER = Logger.getLogger(OsmGraphBuilder.class);
 
 	/**
 	 * URL of the OSM to be parsed
@@ -48,7 +55,7 @@ public class OsmGraphParser implements OsmElementConsumer {
 	/**
 	 * Factory for building graph nodes
 	 */
-	private final NodeFactory nodeFactory;
+	private final EPSGProjection projection;
 
 	/**
 	 * Function extracting elevation from node tags
@@ -84,17 +91,18 @@ public class OsmGraphParser implements OsmElementConsumer {
 	private final TagEvaluator oppositeDirectionEvaluator;
 
 	private final Map<Long, OsmNode> osmNodes = new HashMap<>();
-	private final GraphBuilder<Node, TimeDependentEdge> builder = new GraphBuilder<>();
+	private final TmpGraphBuilder<RoadNode, RoadEdge> builder = new TmpGraphBuilder<>();
 
 	private int mergedEdges = 0;
 
-	protected OsmGraphParser(URL osmUrl, NodeFactory nodeFactory, TagExtractor<Double> elevationExtractor,
-							 TagExtractor<Double> speedExtractor, TagEvaluator parkAndRideEvaluator,
-							 Map<ModeOfTransport, TagEvaluator> modeEvaluators, Map<ModeOfTransport, TagEvaluator>
-									 oneWayEvaluators, TagEvaluator oppositeDirectionEvaluator) {
+	protected OsmGraphBuilder(URL osmUrl, EPSGProjection nodeFactory, TagExtractor<Double> elevationExtractor,
+							  TagExtractor<Double> speedExtractor, TagEvaluator parkAndRideEvaluator,
+							  Map<ModeOfTransport, TagEvaluator> modeEvaluators,
+							  Map<ModeOfTransport, TagEvaluator> oneWayEvaluators,
+							  TagEvaluator oppositeDirectionEvaluator) {
 
 		this.osmUrl = osmUrl;
-		this.nodeFactory = nodeFactory;
+		this.projection = nodeFactory;
 		this.elevationExtractor = elevationExtractor;
 		this.speedExtractor = speedExtractor;
 		this.parkAndRideEvaluator = parkAndRideEvaluator;
@@ -103,7 +111,17 @@ public class OsmGraphParser implements OsmElementConsumer {
 		this.oppositeDirectionEvaluator = oppositeDirectionEvaluator;
 	}
 
-	public GraphBuilder<Node, TimeDependentEdge> readOsmAndCreateGraphBuilder() {
+	public TmpGraphBuilder<RoadNode, RoadEdge> readOsmAndGetGraphBuilder(){
+		parseOSM();
+		return builder;
+	}
+
+	public Graph<RoadNode, RoadEdge> readOsmAndCreateGraph() {
+		parseOSM();
+		return builder.createGraph();
+	}
+
+	private void parseOSM() {
 		LOGGER.info("Parsing of OSM started...");
 
 		long t1 = System.currentTimeMillis();
@@ -121,7 +139,7 @@ public class OsmGraphParser implements OsmElementConsumer {
 		LOGGER.info(getStatistic());
 		long t2 = System.currentTimeMillis();
 		LOGGER.info("Parsing of OSM finished in " + (t2 - t1) + "ms");
-		return builder;
+		osmNodes.clear();
 	}
 
 	@Override
@@ -194,52 +212,48 @@ public class OsmGraphParser implements OsmElementConsumer {
 
 	private void createAndAddOrMergeEdge(long fromSourceId, long toSourceId, Set<ModeOfTransport> permittedModes,
 										 OsmWay way) {
-		int fromId = builder.getIntIdForSourceId(fromSourceId);
-		int toId = builder.getIntIdForSourceId(toSourceId);
+		int tmpFromId = builder.getIntIdForSourceId(fromSourceId);
+		int tmpToId = builder.getIntIdForSourceId(toSourceId);
 
-		if (builder.containsEdge(fromId, toId)) {
+		if (builder.containsEdge(tmpFromId, tmpToId)) {
 			mergedEdges++;
-			mergeEdge(fromId, toId, permittedModes, way);
+			RoadEdgeBuilder edgeBuilder = (RoadEdgeBuilder) builder.getEdge(tmpFromId, tmpToId);
+			edgeBuilder.addPermittedModes(permittedModes);
 		} else {
-			RoadEdge roadEdge = createRoadEdge(fromId, toId, permittedModes, way);
+			RoadEdgeBuilder roadEdge = createRoadEdgeBuilder(tmpFromId, tmpToId, permittedModes, way);
 			builder.addEdge(roadEdge);
 		}
 	}
 
-	private void mergeEdge(int fromId, int toId, Set<ModeOfTransport> permittedModes, OsmWay way) {
-		RoadEdge edge = (RoadEdge) builder.getEdge(fromId, toId);
-
-		//if all permittedModes are not included in the edge, union both modes sets
-		if (!edge.checkFeasibility(permittedModes)) {
-			for (ModeOfTransport mode : ModeOfTransport.values()) {
-				if (edge.checkFeasibility(mode)) permittedModes.add(mode);
-			}
-			RoadEdge newEdge = createRoadEdge(fromId, toId, permittedModes, way);
-			builder.replaceEdge(newEdge);
-		}
+	private GPSLocation getProjectedGPS(double lat, double lon, double elevation) {
+		int latE6 = (int) (lat * 1E6);
+		int lonE6 = (int) (lon * 1E6);
+		return projection.getProjectedGPSLocation(latE6, lonE6, (int) Math.round(elevation));
 	}
 
-	private RoadEdge createRoadEdge(int fromId, int toId, Set<ModeOfTransport> permittedModes, OsmWay way) {
-		return new RoadEdge(fromId, toId, way.getId(), permittedModes, speedExtractor.apply(way.getTags()).floatValue
-				(), (int) calculateLength(fromId, toId));
+	private RoadEdgeBuilder createRoadEdgeBuilder(int fromId, int toId, Set<ModeOfTransport> permittedModes,
+												  OsmWay way) {
+		return new RoadEdgeBuilder(fromId, toId, (int) calculateLength(fromId, toId), speedExtractor.apply(way.getTags
+				()).floatValue(), way.getId(), permittedModes);
 	}
 
 	private double calculateLength(int fromId, int toId) {
-		Node n1 = builder.getNode(fromId);
-		Node n2 = builder.getNode(toId);
-
-		int lat = n1.latProjected - n2.latProjected;
-		int lon = n1.lonProjected - n2.lonProjected;
-		return Math.sqrt(lat * lat + lon * lon);
+		NodeBuilder<? extends RoadNode> n1 = builder.getNode(fromId);
+		NodeBuilder<? extends RoadNode> n2 = builder.getNode(toId);
+		return EdgeUtil.computeEuclideanDistance(n1.location, n2.location);
 	}
 
-	private void createAndAddNode(Long nodeId) {
+	private void createAndAddNode(long nodeId) {
 		if (!builder.containsNode(nodeId)) {
 			OsmNode osmNode = osmNodes.get(nodeId);
-			RoadNode roadNode = nodeFactory.createRoadNode(osmNode.lat, osmNode.lon, elevationExtractor.apply(osmNode
-					.getTags()), nodeId, isParkAndRide(osmNode), false);
-			builder.addNode(roadNode);
+			RoadNodeBuilder roadNodeBuilder = new RoadNodeBuilder(builder.getNodeCount(), nodeId, getProjectedGPS
+					(osmNode));
+			builder.addNode(roadNodeBuilder);
 		}
+	}
+
+	private GPSLocation getProjectedGPS(OsmNode osmNode) {
+		return getProjectedGPS(osmNode.lat, osmNode.lon, elevationExtractor.apply(osmNode.getTags()));
 	}
 
 	private boolean isParkAndRide(OsmNode osmNode) {
@@ -252,7 +266,7 @@ public class OsmGraphParser implements OsmElementConsumer {
 
 	@Override
 	public String toString() {
-		return "OsmGraphParser{" +
+		return "OsmGraphBuilder{" +
 				"nodes=" + osmNodes.size() + '}';
 	}
 
@@ -260,7 +274,7 @@ public class OsmGraphParser implements OsmElementConsumer {
 
 		private static final ObjectMapper MAPPER = new ObjectMapper();
 
-		private final NodeFactory nodeFactory;
+		private final EPSGProjection nodeFactory;
 		private final Set<ModeOfTransport> allowedModes;
 
 		private final URL osmUrl;
@@ -275,25 +289,25 @@ public class OsmGraphParser implements OsmElementConsumer {
 
 		/**
 		 * @param osmUrl
-		 * @param nodeFactory
+		 * @param projection
 		 * @param allowedModes
 		 * 		modes that are required to be in the output graph. For each modes there have to be set appropriate mode
 		 * 		evaluator. If it isn't set the builder tries to use a default one, but it's possible that it is not
 		 * 		defined.
 		 */
-		public Builder(URL osmUrl, NodeFactory nodeFactory, Set<ModeOfTransport> allowedModes) {
+		public Builder(URL osmUrl, EPSGProjection projection, Set<ModeOfTransport> allowedModes) {
 			if (allowedModes.isEmpty()) throw new IllegalArgumentException("Allowed modes can't be empty.");
-			this.nodeFactory = nodeFactory;
+			this.nodeFactory = projection;
 			this.allowedModes = allowedModes;
 			this.osmUrl = osmUrl;
 		}
 
-		public Builder(File osmFile, NodeFactory nodeFactory, Set<ModeOfTransport> allowedModes) {
-			this(getUrl(osmFile), nodeFactory, allowedModes);
+		public Builder(File osmFile, EPSGProjection projection, Set<ModeOfTransport> allowedModes) {
+			this(getUrl(osmFile), projection, allowedModes);
 		}
 
-		public Builder(String osmPath, NodeFactory nodeFactory, Set<ModeOfTransport> allowedModes) {
-			this(getUrl(osmPath), nodeFactory, allowedModes);
+		public Builder(String osmPath, EPSGProjection projection, Set<ModeOfTransport> allowedModes) {
+			this(getUrl(osmPath), projection, allowedModes);
 		}
 
 		public Builder setElevationExtractor(TagExtractor<Double> elevationExtractor) {
@@ -336,12 +350,12 @@ public class OsmGraphParser implements OsmElementConsumer {
 			return this;
 		}
 
-		public OsmGraphParser build() {
+		public OsmGraphBuilder build() {
 			loadSpeedExtractorIfNeeded();
 			loadModeEvaluatorsIfNeeded();
 			loadOneWayEvaluatorsIfNeeded();
 
-			return new OsmGraphParser(osmUrl, nodeFactory, elevationExtractor, speedExtractor, parkAndRideEvaluator,
+			return new OsmGraphBuilder(osmUrl, nodeFactory, elevationExtractor, speedExtractor, parkAndRideEvaluator,
 					modeEvaluators, oneWayEvaluators, oppositeDirectionEvaluator);
 		}
 
@@ -384,7 +398,7 @@ public class OsmGraphParser implements OsmElementConsumer {
 				InputStream stream = this.getClass().getResourceAsStream("oneway/" + mode.name().toLowerCase() +
 						".json");
 				if (stream == null) {
-					modeEvaluators.put(mode, defaultEval);
+					oneWayEvaluators.put(mode, defaultEval);
 				} else {
 					try {
 						oneWayEvaluators.put(mode, MAPPER.readValue(stream, InclExclTagEvaluator.class));
@@ -398,11 +412,7 @@ public class OsmGraphParser implements OsmElementConsumer {
 		}
 
 		private static URL getUrl(String osmPath) {
-			try {
-				return new URL(osmPath);
-			} catch (MalformedURLException e) {
-				throw new IllegalArgumentException("Incorrect path: " + osmPath, e);
-			}
+			return getUrl(new File(osmPath));
 		}
 
 		private static URL getUrl(File osmFile) {

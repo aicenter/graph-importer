@@ -1,17 +1,18 @@
 package cz.agents.gtdgraphimporter.gtfs;
 
 import com.google.common.collect.ImmutableList;
-import cz.agents.basestructures.Edge;
 import cz.agents.basestructures.GPSLocation;
 import cz.agents.basestructures.Graph;
 import cz.agents.basestructures.Node;
-import cz.agents.gtdgraphimporter.GraphBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.GraphBuilder;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.additional.WheelchairBoarding;
-import cz.agents.multimodalstructures.edges.*;
+import cz.agents.multimodalstructures.edges.InnerEdge;
+import cz.agents.multimodalstructures.edges.RouteConstantEdge;
+import cz.agents.multimodalstructures.edges.RouteEdge;
+import cz.agents.multimodalstructures.edges.TimeDependentEdge;
 import cz.agents.multimodalstructures.nodes.RouteNode;
 import cz.agents.multimodalstructures.nodes.StopNode;
-import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
@@ -71,15 +72,7 @@ public final class GTFSGraphBuilderTest {
 	 */
 	private static final short GET_OFF_DURATION_IN_SECONDS = 10;
 
-	private static final DateTime EPOCH_START = new DateTime(2002, 1, 1, 0, 0, 0, 0, DateTimeZone.forID
-			(TEST_TIMEZONE));
-
-	private static final Comparator<? super Node> NODE_COMPARATOR = (n0, n1) -> n0.id - n1.id;
-	private static final Comparator<? super Edge> EDGE_COMPARATOR = (e0, e1) -> {
-		int i = e0.fromId - e1.fromId;
-		if (i != 0) return i;
-		else return e0.toId - e1.toId;
-	};
+	private static final LocalDate EPOCH_START = new LocalDate(2002, 1, 1);
 
 	/**
 	 * Backup of the default time zone.
@@ -619,7 +612,7 @@ public final class GTFSGraphBuilderTest {
 		final Graph<Node, TimeDependentEdge> expected = expectedBuilder.createGraph();
 
 		final GTFSGraphBuilder actualBuilder = new GTFSGraphBuilder(INITIAL_SOURCE_NODE_ID, GET_ON_DURATION_IN_SECONDS,
-				GET_OFF_DURATION_IN_SECONDS, new DateTime(2013, 3, 31, 0, 0, 0, 0, DateTimeZone.forID(TEST_TIMEZONE)));
+				GET_OFF_DURATION_IN_SECONDS, new LocalDate(2013, 3, 31));
 		actualBuilder.addAgency(null, null, DateTimeZone.forID(TEST_TIMEZONE), null, null);
 		actualBuilder.addStop("i0", "c0", "n0", "d0", new GPSLocation(10, 10, 0, 0), "z0",
 				WheelchairBoarding.AT_LEAST_SOME_VEHICLES);

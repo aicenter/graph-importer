@@ -1,0 +1,117 @@
+{
+  "include": {
+    "highway": [
+      "*"
+    ],
+    "cycleway": [
+      "shared_lane"
+    ],
+    "psv": [
+      "yes",
+      "taxi",
+      "designated",
+      "destination",
+      "official",
+      "permissive",
+      "yes",
+      "customers",
+      "delivery"
+    ],
+    "vehicle": [
+      "designated",
+      "destination",
+      "official",
+      "permissive",
+      "yes",
+      "customers",
+      "delivery"
+    ],
+    "motorcar": [
+      "designated",
+      "destination",
+      "official",
+      "permissive",
+      "yes",
+      "customers",
+      "delivery"
+    ],
+    "motor_vehicle": [
+      "designated",
+      "destination",
+      "official",
+      "permissive",
+      "yes",
+      "customers",
+      "delivery"
+    ]
+  },
+  "exclude": {
+    "access": [
+      "agricultural",
+      "forestry",
+      "private"
+    ],
+    "highway": [
+      "pedestrian",
+      "path",
+      "cycleway",
+      "footway",
+      "bridleway",
+      "steps",
+      "platform",
+      "escape",
+      "track",
+      "bus_guideway",
+      "raceway",
+      "construction",
+      "proposed"
+    ]
+  },
+  "excludeUnless": {
+    "exclude": {
+      "access": [
+        "no"
+      ]
+    },
+    "unless": {
+      "psv": [
+        "yes",
+        "taxi",
+        "designated",
+        "destination",
+        "official",
+        "permissive",
+        "yes",
+        "customers",
+        "delivery"
+      ],
+      "vehicle": [
+        "designated",
+        "destination",
+        "official",
+        "permissive",
+        "yes",
+        "customers",
+        "delivery"
+      ],
+      "motorcar": [
+        "designated",
+        "destination",
+        "official",
+        "permissive",
+        "yes",
+        "customers",
+        "delivery"
+      ],
+      "motor_vehicle": [
+        "designated",
+        "destination",
+        "official",
+        "permissive",
+        "yes",
+        "customers",
+        "delivery"
+      ]
+    }
+  }
+}
