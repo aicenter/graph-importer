@@ -32,7 +32,7 @@ public final class GTFSDatabaseLoaderPermissiveImpl extends GTFSDatabaseLoader {
 	 * @param gtfsUnitToMetersMultiplier
 	 *            A number used to multiply traveled distance specified in GTFS data to convert it to meters.
 	 * @param sqlResultDownloadSize
-	 *            Max. size (number of rows) of one batch locally stored (cached) while downloading SQL results.
+	 *            Max. numberOfNodes (number of rows) of one batch locally stored (cached) while downloading SQL results.
 	 * @param pruneBeforeDate
 	 *            Min. allowed loaded date (inclusive). This setting should be used rarely to accelerate GTFS loading
 	 *            time. In other cases, a GTFS graph filtering mechanism should be used.
@@ -57,7 +57,7 @@ public final class GTFSDatabaseLoaderPermissiveImpl extends GTFSDatabaseLoader {
 	 * @param gtfsUnitToMetersMultiplier
 	 *            A number used to multiply traveled distance specified in GTFS data to convert it to meters.
 	 * @param sqlResultDownloadSize
-	 *            Max. size (number of rows) of one batch locally stored (cached) while downloading SQL results.
+	 *            Max. numberOfNodes (number of rows) of one batch locally stored (cached) while downloading SQL results.
 	 * @param pruneBeforeDate
 	 *            Min. allowed loaded date (inclusive). This setting should be used rarely to accelerate GTFS loading
 	 *            time. In other cases, a GTFS graph filtering mechanism should be used.

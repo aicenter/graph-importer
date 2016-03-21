@@ -1,4 +1,4 @@
-package cz.agents.gtdgraphimporter;
+package cz.agents.gtdgraphimporter.utils;
 
 
 import cz.agents.basestructures.Edge;
@@ -18,7 +18,7 @@ public class StronglyConnectedComponentsFinder {
 	 *
 	 * @param nodeIds Ids of nodes
 	 * @param edges   Directed edges in the graph represented as adjacency lists. Stored in Map sourceNode > set of successors
-	 * @return List of sets of ids, each set corresponds to one strongly connected component. The sets are sorted according to their size
+	 * @return List of sets of ids, each set corresponds to one strongly connected component. The sets are sorted according to their numberOfNodes
 	 */
 	public static List<HashSet<Integer>> getStronglyConnectedComponnentsSortedBySize(Set<Integer> nodeIds,
 			Map<Integer, Set<Integer>> edges) {
@@ -28,7 +28,7 @@ public class StronglyConnectedComponentsFinder {
 	/**
 	 * Computes strongly connected components for given graph.
 	 *
-	 * @return List of sets of ids, each set corresponds to one strongly connected component. The sets are sorted according to their size
+	 * @return List of sets of ids, each set corresponds to one strongly connected component. The sets are sorted according to their numberOfNodes
 	 */
 	public static List<HashSet<Integer>> getStronglyConnectedComponnentsSortedBySize(
 			Graph<? extends Node, ? extends Edge> graph) {
@@ -49,7 +49,7 @@ public class StronglyConnectedComponentsFinder {
 	 *
 	 * @param nodes Nodes
 	 * @param edges Edges
-	 * @return List of sets of ids, each set corresponds to one strongly connected component. The sets are sorted according to their size
+	 * @return List of sets of ids, each set corresponds to one strongly connected component. The sets are sorted according to their numberOfNodes
 	 */
 	public static List<HashSet<Integer>> getStronglyConnectedComponnentsSortedBySize(Collection<? extends Node> nodes,
 			Collection<? extends Edge> edges) {
@@ -69,7 +69,7 @@ public class StronglyConnectedComponentsFinder {
 	 * Computes strongly connected components. Nodes: ((in-degree = 0) && (out-degree = 0)), are not present in any component, because we have no evidence about them from the set of edges
 	 *
 	 * @param edges Edges
-	 * @return List of sets of ids, each set corresponds to one strongly connected component. The sets are sorted according to their size
+	 * @return List of sets of ids, each set corresponds to one strongly connected component. The sets are sorted according to their numberOfNodes
 	 */
 	public static List<HashSet<Integer>> getStronglyConnectedComponnentsSortedBySize(Collection<? extends Edge> edges) {
 

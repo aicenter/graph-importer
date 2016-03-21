@@ -26,7 +26,7 @@ public final class GTFSDatabaseLoaderStrictImpl extends GTFSDatabaseLoader {
 	 *            A number used to multiply traveled distance specified in GTFS
 	 *            data to convert it to meters.
 	 * @param sqlResultDownloadSize
-	 *            Max. size (number of rows) of one batch locally stored
+	 *            Max. numberOfNodes (number of rows) of one batch locally stored
 	 *            (cached) while downloading SQL results.
 	 * @param pruneBeforeDate
 	 *            Min. allowed loaded date (inclusive). This setting should be
@@ -55,7 +55,7 @@ public final class GTFSDatabaseLoaderStrictImpl extends GTFSDatabaseLoader {
 	 *            A number used to multiply traveled distance specified in GTFS
 	 *            data to convert it to meters.
 	 * @param sqlResultDownloadSize
-	 *            Max. size (number of rows) of one batch locally stored
+	 *            Max. numberOfNodes (number of rows) of one batch locally stored
 	 *            (cached) while downloading SQL results.
 	 * @param pruneBeforeDate
 	 *            Min. allowed loaded date (inclusive). This setting should be

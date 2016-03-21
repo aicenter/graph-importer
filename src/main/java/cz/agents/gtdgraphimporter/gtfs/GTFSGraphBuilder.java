@@ -58,6 +58,9 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 
 	private DateTime epochStartWithTimeZone = null;
 
+	private int numberOfStops = 0;
+	private int numberOfRoutes = 0;
+
 	/**
 	 * Construct a new instance.
 	 *

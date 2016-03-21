@@ -1,4 +1,4 @@
-package cz.agents.gtdgraphimporter;
+package cz.agents.gtdgraphimporter.osm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -7,7 +7,6 @@ import cz.agents.basestructures.GPSLocation;
 import cz.agents.basestructures.Graph;
 import cz.agents.geotools.EPSGProjection;
 import cz.agents.geotools.EdgeUtil;
-import cz.agents.gtdgraphimporter.osm.*;
 import cz.agents.gtdgraphimporter.osm.element.OsmNode;
 import cz.agents.gtdgraphimporter.osm.element.OsmRelation;
 import cz.agents.gtdgraphimporter.osm.element.OsmWay;

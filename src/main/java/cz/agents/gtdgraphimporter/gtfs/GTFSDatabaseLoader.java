@@ -76,7 +76,7 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 	private final double gtfsUnitToMetersMultiplier;
 
 	/**
-	 * Max. size (number of rows) of one batch locally stored (cached) while downloading SQL results.
+	 * Max. numberOfNodes (number of rows) of one batch locally stored (cached) while downloading SQL results.
 	 */
 	private final int sqlResultDownloadSize;
 
@@ -100,7 +100,7 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 	 * @param gtfsUnitToMetersMultiplier
 	 * 		A number used to multiply traveled distance specified in GTFS data to convert it to meters.
 	 * @param sqlResultDownloadSize
-	 * 		Max. size (number of rows) of one batch locally stored (cached) while downloading SQL results.
+	 * 		Max. numberOfNodes (number of rows) of one batch locally stored (cached) while downloading SQL results.
 	 * @param pruneBeforeDate
 	 * 		Min. allowed loaded date (inclusive). This setting should be used rarely to accelerate GTFS loading time
 	 * 		. In
@@ -119,7 +119,7 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 			throw new NullPointerException("bad database connection");
 		}
 		if (sqlResultDownloadSize < 0) {
-			throw new IllegalArgumentException("bad download size");
+			throw new IllegalArgumentException("bad download numberOfNodes");
 		}
 		if (pruneBeforeDate == null) {
 			throw new NullPointerException("bad min. date");
@@ -149,7 +149,7 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 	 * @param gtfsUnitToMetersMultiplier
 	 * 		A number used to multiply traveled distance specified in GTFS data to convert it to meters.
 	 * @param sqlResultDownloadSize
-	 * 		Max. size (number of rows) of one batch locally stored (cached) while downloading SQL results.
+	 * 		Max. numberOfNodes (number of rows) of one batch locally stored (cached) while downloading SQL results.
 	 * @param pruneBeforeDate
 	 * 		Min. allowed loaded date (inclusive). This setting should be used rarely to accelerate GTFS loading time
 	 * 		. In

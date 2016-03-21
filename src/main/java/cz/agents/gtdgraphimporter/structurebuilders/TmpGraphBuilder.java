@@ -1,18 +1,21 @@
 package cz.agents.gtdgraphimporter.structurebuilders;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import cz.agents.basestructures.Edge;
 import cz.agents.basestructures.Graph;
 import cz.agents.basestructures.Node;
+import cz.agents.gtdgraphimporter.structurebuilders.EdgeBuilder.EdgeId;
+import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.nodes.RoadNode;
 import cz.agents.multimodalstructures.nodes.StopNode;
+import org.apache.log4j.Logger;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.*;
 
 /**
  * This builder stores node builders and edge builders with temporary ids and assigns the final id when {@link
@@ -22,8 +25,13 @@ import static java.util.stream.Collectors.toSet;
  */
 public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 
+	private static final Logger LOGGER = Logger.getLogger(TmpGraphBuilder.class);
+
 	private final Map<Integer, NodeBuilder<? extends TNode>> nodes = new LinkedHashMap<>();
-	private final Table<Integer, Integer, EdgeBuilder<? extends TEdge>> edges = HashBasedTable.create();
+
+	private final Map<EdgeId, EdgeBuilder<? extends TEdge>> edges = new HashMap<>();
+	private final ListMultimap<Integer, EdgeBuilder<? extends TEdge>> nodeOutgoingEdges = ArrayListMultimap.create();
+	private final ListMultimap<Integer, EdgeBuilder<? extends TEdge>> nodeIncomingEdges = ArrayListMultimap.create();
 
 	private final Map<Long, Integer> longIdToIntId = new HashMap<>();
 
@@ -33,6 +41,16 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 	public TmpGraphBuilder(TmpGraphBuilder<? extends TNode, ? extends TEdge> builder) {
 		nodes.putAll(builder.nodes);
 		edges.putAll(builder.edges);
+		nodeIncomingEdges.putAll(builder.nodeIncomingEdges);
+		nodeOutgoingEdges.putAll(builder.nodeOutgoingEdges);
+		longIdToIntId.putAll(builder.longIdToIntId);
+	}
+
+	public void addAll(TmpGraphBuilder<? extends TNode, ? extends TEdge> builder) {
+		nodes.putAll(builder.nodes);
+		edges.putAll(builder.edges);
+		nodeIncomingEdges.putAll(builder.nodeIncomingEdges);
+		nodeOutgoingEdges.putAll(builder.nodeOutgoingEdges);
 		longIdToIntId.putAll(builder.longIdToIntId);
 	}
 
@@ -45,10 +63,17 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 	}
 
 	public void addEdge(EdgeBuilder<? extends TEdge> builder) {
-		if (edges.contains(builder.getTmpFromId(), builder.getTmpToId()))
+		EdgeId id = getId(builder);
+		if (edges.containsKey(id))
 			throw new IllegalArgumentException("Graph builder already contains edge builder: [" + builder.getTmpFromId
 					() + ", " + builder.getTmpToId() + "]");
-		edges.put(builder.getTmpFromId(), builder.getTmpToId(), builder);
+		nodeOutgoingEdges.put(builder.getTmpFromId(), builder);
+		nodeIncomingEdges.put(builder.getTmpToId(), builder);
+		edges.put(id, builder);
+	}
+
+	private EdgeId getId(EdgeBuilder<? extends TEdge> builder) {
+		return builder.getEdgeId();
 	}
 
 	public Graph<TNode, TEdge> createGraph() {
@@ -77,7 +102,26 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 			int toId = tmpToFinalId.get(edgeBuilder.getTmpToId());
 			builder.addEdge(edgeBuilder.build(fromId, toId));
 		}
-		return builder.createGraph();
+		Graph<TNode, TEdge> g = builder.createGraph();
+
+		Map<Class<?>, Long> edgeCounts = g.getAllEdges().stream().collect(groupingBy(Object::getClass, counting()));
+		Map<Class<?>, Long> nodeCounts = g.getAllNodes().stream().collect(groupingBy(Object::getClass, counting()));
+
+		LOGGER.debug("Created graph contains following nodes:");
+		nodeCounts.forEach((k, v) -> LOGGER.debug(k.getName() + ": " + v));
+		LOGGER.debug("Created graph contains following edges:");
+		edgeCounts.forEach((k, v) -> LOGGER.debug(k.getName() + ": " + v));
+		return g;
+	}
+
+	public void printContent(){
+		Map<Class<?>, Long> edgeCounts = getAllEdges().stream().collect(groupingBy(Object::getClass, counting()));
+		Map<Class<?>, Long> nodeCounts = getAllNodes().stream().collect(groupingBy(Object::getClass, counting()));
+
+		LOGGER.debug("Graph contains following nodes:");
+		nodeCounts.forEach((k, v) -> LOGGER.debug(k.getName() + ": " + v));
+		LOGGER.debug("Graph contains following edges:");
+		edgeCounts.forEach((k, v) -> LOGGER.debug(k.getName() + ": " + v));
 	}
 
 	public int getIntIdForSourceId(long sourceId) {
@@ -85,11 +129,11 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 	}
 
 	public boolean containsEdge(int tmpFromId, int tmpToId) {
-		return edges.contains(tmpFromId, tmpToId);
+		return edges.containsKey(new EdgeId(tmpFromId, tmpToId));
 	}
 
 	public EdgeBuilder<? extends TEdge> getEdge(int tmpFromId, int tmpToId) {
-		return edges.get(tmpFromId, tmpToId);
+		return edges.get(new EdgeId(tmpFromId, tmpToId));
 	}
 
 	public NodeBuilder<? extends TNode> getNode(int tmpId) {
@@ -105,7 +149,7 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 	}
 
 	public int getMaxId() {
-		return nodes.keySet().stream().max(Integer::max).get();
+		return nodes.keySet().stream().max(Integer::compare).get();
 	}
 
 	public int getEdgeCount() {
@@ -116,8 +160,36 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 		return edges.values();
 	}
 
-	public void remove(EdgeBuilder<? extends TEdge> edgeBuilder) {
-		edges.remove(edgeBuilder.getTmpFromId(), edgeBuilder.getTmpToId());
+	@SuppressWarnings("unchecked")
+	public <T extends NodeBuilder<? extends TNode>> List<T> getNodesOfType(Class<T> type) {
+		return nodes.values().stream().filter(type::isInstance).map(n -> (T) n).collect(toList());
+	}
+
+	/**
+	 * Get all edge builders that feasible for given {@code mode}.
+	 *
+	 * @param mode
+	 *
+	 * @return
+	 */
+	public List<EdgeBuilder<? extends TEdge>> getFeasibleEdges(ModeOfTransport mode) {
+		return edges.values().stream().filter(e -> e.checkFeasibility(mode)).collect(toList());
+	}
+
+	/**
+	 * Get all nodes which are endpoints of an edge feasible for given {@code mode}.
+	 *
+	 * @param mode
+	 */
+	public Set<NodeBuilder<? extends TNode>> getFeasibleNodes(ModeOfTransport mode) {
+		Set<NodeBuilder<? extends TNode>> feasibleNodes = new HashSet<>();
+		for (EdgeBuilder<? extends TEdge> edge : edges.values()) {
+			if (edge.checkFeasibility(mode)) {
+				feasibleNodes.add(nodes.get(edge.getTmpFromId()));
+				feasibleNodes.add(nodes.get(edge.getTmpToId()));
+			}
+		}
+		return feasibleNodes;
 	}
 
 	/**
@@ -134,38 +206,111 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 		return pre - nodes.size();
 	}
 
-	public TreeMap<Integer, Set<Integer>> getNodesByDegree() {
-		Map<Integer, AtomicInteger> nodesDegree = new HashMap<>();
-		for (EdgeBuilder<?> edge : edges.values()) {
-			AtomicInteger result;
-			result = nodesDegree.get(edge.getTmpFromId());
-			if (result == null) {
-				result = new AtomicInteger(0);
-				nodesDegree.put(edge.getTmpFromId(), result);
+	/**
+	 * Removes all edges satisfying {@code predicate}.
+	 *
+	 * @param predicate
+	 *
+	 * @return
+	 */
+	public int removeEdges(Predicate<EdgeBuilder<? extends TEdge>> predicate) {
+		int pre = edges.size();
+		for (Iterator<EdgeBuilder<? extends TEdge>> it = edges.values().iterator(); it.hasNext(); ) {
+			EdgeBuilder<? extends TEdge> edge = it.next();
+			if (predicate.test(edge)) {
+				it.remove();
+				nodeIncomingEdges.remove(edge.getTmpToId(), edge);
+				nodeOutgoingEdges.remove(edge.getTmpFromId(), edge);
 			}
-			result.incrementAndGet();
-			result = nodesDegree.get(edge.getTmpToId());
-			if (result == null) {
-				result = new AtomicInteger(0);
-				nodesDegree.put(edge.getTmpToId(), result);
-			}
-			result.incrementAndGet();
 		}
+		return pre - edges.size();
+	}
 
-		TreeMap<Integer, Set<Integer>> collect = nodes.keySet().parallelStream().collect(groupingBy(id -> {
-			AtomicInteger atomicInteger = nodesDegree.get(id);
-			return atomicInteger == null ? 0 : atomicInteger.intValue();
-		}, TreeMap::new, toSet()));
+	public EdgeBuilder<? extends TEdge> remove(EdgeBuilder<? extends TEdge> edge) {
+		return remove(getId(edge));
+	}
 
+	public EdgeBuilder<? extends TEdge> remove(EdgeId edgeId) {
+		EdgeBuilder<? extends TEdge> edge = edges.remove(edgeId);
+		if (edge == null) {
+			return null;
+		} else {
+			nodeIncomingEdges.remove(edge.getTmpToId(), edge);
+			nodeOutgoingEdges.remove(edge.getTmpFromId(), edge);
+			return edge;
+		}
+	}
+
+	public int removeNodes(Collection<Integer> removedNodes) {
+		int counter = 0;
+		for (Integer nodeId : removedNodes) {
+			if (removeNode(nodeId)) {
+				counter++;
+			}
+		}
+		return counter;
+	}
+
+	public boolean removeNode(Integer nodeId) {
+		if (nodeIncomingEdges.containsKey(nodeId) || nodeOutgoingEdges.containsKey(nodeId)) {
+			throw new IllegalStateException("Node can't be removed because existing edges.");
+		}
+		return nodes.remove(nodeId) != null;
+	}
+
+	public TreeMap<Integer, Set<Integer>> getNodesByDegree() {
+		TreeMap<Integer, Set<Integer>> collect = nodes.keySet().stream().collect(groupingBy(id -> nodeIncomingEdges
+				.get(id).size() + nodeOutgoingEdges.get(id).size(), TreeMap::new, toSet()));
 		return collect;
 	}
 
-	public Map<Integer, EdgeBuilder<? extends TEdge>> getOutgoingEdges(NodeBuilder<? extends RoadNode> node) {
-		return edges.row(node.tmpId);
+	public TreeMap<Integer, Set<Integer>> getNodesByOutDegree() {
+		TreeMap<Integer, Set<Integer>> collect = nodes.keySet().stream().collect(groupingBy(id -> nodeOutgoingEdges
+				.get(id).size(), TreeMap::new, toSet()));
+		return collect;
 	}
 
-	public Map<Integer, EdgeBuilder<? extends TEdge>> getIncomingEdges(NodeBuilder<? extends RoadNode> node) {
-		return edges.column(node.tmpId);
+	public TreeMap<Integer, Set<Integer>> getNodesByInDegree() {
+		TreeMap<Integer, Set<Integer>> collect = nodes.keySet().stream().collect(groupingBy(id -> nodeIncomingEdges
+				.get(id).size(), TreeMap::new, toSet()));
+		return collect;
 	}
 
+	public List<EdgeBuilder<? extends TEdge>> getOutgoingEdges(NodeBuilder<? extends RoadNode> node) {
+		return nodeOutgoingEdges.get(node.tmpId);
+	}
+
+	public List<EdgeBuilder<? extends TEdge>> getIncomingEdges(NodeBuilder<? extends RoadNode> node) {
+		return nodeIncomingEdges.get(node.tmpId);
+	}
+
+	public List<EdgeBuilder<? extends TEdge>> getOutgoingEdges(int tmpId) {
+		return nodeOutgoingEdges.get(tmpId);
+	}
+
+	public List<EdgeBuilder<? extends TEdge>> getIncomingEdges(int tmpId) {
+		return nodeIncomingEdges.get(tmpId);
+	}
+
+	public Collection<NodeBuilder<? extends TNode>> getAllNodes() {
+		return nodes.values();
+	}
+
+	public void clear() {
+		nodes.clear();
+		edges.clear();
+		longIdToIntId.clear();
+	}
+
+	public boolean containsEdge(EdgeBuilder<?> edge) {
+		return containsEdge(edge.getTmpFromId(), edge.getTmpToId());
+	}
+
+	public Map<EdgeId, EdgeBuilder<? extends TEdge>> getEdgesById() {
+		return Collections.unmodifiableMap(edges);
+	}
+
+	public void addEdges(Collection<? extends EdgeBuilder<? extends TEdge>> virtualEdges) {
+		virtualEdges.forEach(this::addEdge);
+	}
 }

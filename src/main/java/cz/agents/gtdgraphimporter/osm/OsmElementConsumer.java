@@ -1,4 +1,4 @@
-package cz.agents.gtdgraphimporter;
+package cz.agents.gtdgraphimporter.osm;
 
 import cz.agents.gtdgraphimporter.osm.element.OsmNode;
 import cz.agents.gtdgraphimporter.osm.element.OsmRelation;

@@ -1,7 +1,10 @@
 package cz.agents.gtdgraphimporter;
 
 import com.google.common.collect.Sets;
+import cz.agents.basestructures.Graph;
 import cz.agents.geotools.EPSGProjection;
+import cz.agents.gtdgraphimporter.GTDGraphBuilder.PTSettings;
+import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsException;
 import cz.agents.gtdgraphimporter.structurebuilders.TmpGraphBuilder;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.edges.RoadEdge;
@@ -16,6 +19,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  * @author Marek Cuchý
@@ -26,25 +32,22 @@ public class Main {
 
 	public static void main(
 			String[] args) throws ParserConfigurationException, SAXException, IOException, FactoryException,
-			TransformException {
+			TransformException, SQLException, GtfsException {
 		DOMConfigurator.configure("log4j.xml");
 
-		URL osmUrl = new File("jmk.osm").toURI().toURL();
-//		Main.class.getResource("/Grid/grid.osm").
-		//				URL osmUrl = Main.class.getResource("/Grid/grid.osm");
-		//						URL osmUrl = new File("sck.osm").toURI().toURL();
+		String osm = "pathToOsmFile";
+		Connection connection = DriverManager.getConnection("jdbc:postgresql://its.felk.cvut" +
+				".cz:5432/mobility_model_prague", "user", "password");
+		PTSettings ptSettings = new PTSettings("2015-06-22", "2015-06-23");
 
-//		OsmGraphBuilder builder = new OsmGraphBuilder.Builder(osmUrl, new EPSGProjection(2065), Sets.immutableEnumSet
-//				(ModeOfTransport.CAR, ModeOfTransport.BIKE, ModeOfTransport.WALK)).build();
-//		//		Graph<RoadNode, RoadEdge> graphBuilder = builder.readOsmAndCreateGraph();
-//		TmpGraphBuilder<RoadNode, RoadEdge> osmBuilder = builder.readOsmAndGetGraphBuilder();
+		GTDGraphBuilder gtdBuilder = new GTDGraphBuilder(new EPSGProjection(2065), osm, Sets.immutableEnumSet
+				(ModeOfTransport.CAR, ModeOfTransport.BIKE, ModeOfTransport.WALK), ptSettings, connection);
 
-		GTDGraphBuilder gtdBuilder = new GTDGraphBuilder(new EPSGProjection(2065), "jmk.osm", Sets
-				.immutableEnumSet(ModeOfTransport.CAR, ModeOfTransport.BIKE, ModeOfTransport.WALK), null, null);
+		gtdBuilder.build();
+		//		gtdBuilder.buildPtGraph(0);
+		//		gtdBuilder.buildSimplifiedRoadGraph();
 
-		gtdBuilder.buildOsmGraph();
 		printMemory();
-
 	}
 
 	private static void printMemory() {

@@ -1,6 +1,6 @@
 package cz.agents.gtdgraphimporter.osm.handler;
 
-import cz.agents.gtdgraphimporter.OsmElementConsumer;
+import cz.agents.gtdgraphimporter.osm.OsmElementConsumer;
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

@@ -13,7 +13,7 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 
 	private Map<Integer, TNode> nodesByNodeId = new LinkedHashMap<>();
 	private Map<EdgeId, TEdge> edgeByFromToNodeIds = new LinkedHashMap<>();
-	private Map<Integer, List<TEdge>> nodeOutcomingEdges = new HashMap<>();
+	private Map<Integer, List<TEdge>> nodeOutgoingEdges = new HashMap<>();
 	private Map<Integer, List<TEdge>> nodeIncomingEdges = new HashMap<>();
 
 	public GraphBuilder() {
@@ -56,7 +56,7 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 		}
 
 		nodesByNodeId.put(node.id, node);
-		nodeOutcomingEdges.put(node.id, new ArrayList<>());
+		nodeOutgoingEdges.put(node.id, new ArrayList<>());
 		nodeIncomingEdges.put(node.id, new ArrayList<>());
 
 		longIdToIntId.put(node.osmId, node.id);
@@ -121,14 +121,14 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 
 		assert !edgeByFromToNodeIds.containsKey(edgeId) : "Edge has not to exist yet";
 
-		List<TEdge> outcomingEdgesFromNode = nodeOutcomingEdges.get(edge.fromId);
+		List<TEdge> outcomingEdgesFromNode = nodeOutgoingEdges.get(edge.fromId);
 		List<TEdge> incomingEdgesToNode = nodeIncomingEdges.get(edge.toId);
 
 		outcomingEdgesFromNode.add(edge);
 		incomingEdgesToNode.add(edge);
 
 		edgeByFromToNodeIds.put(edgeId, edge);
-		nodeOutcomingEdges.put(edge.fromId, outcomingEdgesFromNode);
+		nodeOutgoingEdges.put(edge.fromId, outcomingEdgesFromNode);
 		nodeIncomingEdges.put(edge.toId, incomingEdgesToNode);
 	}
 
@@ -158,7 +158,7 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 	}
 
 	public List<TEdge> getOutEdges(int nodeId) {
-		return nodeOutcomingEdges.get(nodeId);
+		return nodeOutgoingEdges.get(nodeId);
 	}
 
 	public Collection<TEdge> getAllEdges() {
@@ -176,7 +176,7 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 
 		this.nodesByNodeId = new HashMap<>();
 		this.edgeByFromToNodeIds = new HashMap<>();
-		this.nodeOutcomingEdges = new HashMap<>();
+		this.nodeOutgoingEdges = new HashMap<>();
 		this.nodeIncomingEdges = new HashMap<>();
 		this.longIdToIntId = new HashMap<>();
 
@@ -222,7 +222,7 @@ public class GraphBuilder<TNode extends Node, TEdge extends Edge> {
 			outgoingPositions[k] = j;
 
 			// iterate over outgoing edges
-			for (TEdge edge : nodeOutcomingEdges.get(k)) {
+			for (TEdge edge : nodeOutgoingEdges.get(k)) {
 
 				outgoingEdges.add(edge);
 				j++;

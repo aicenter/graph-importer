@@ -21,6 +21,27 @@ public abstract class NodeBuilder<TNode extends Node> {
 	public abstract TNode buildNode(int id);
 
 	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		NodeBuilder<?> that = (NodeBuilder<?>) o;
+
+		if (tmpId != that.tmpId) return false;
+		if (sourceId != that.sourceId) return false;
+		return location != null ? location.equals(that.location) : that.location == null;
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = tmpId;
+		result = 31 * result + (int) (sourceId ^ (sourceId >>> 32));
+		result = 31 * result + (location != null ? location.hashCode() : 0);
+		return result;
+	}
+
+	@Override
 	public String toString() {
 		return "NodeBuilder [" +
 				"tmpId=" + tmpId +

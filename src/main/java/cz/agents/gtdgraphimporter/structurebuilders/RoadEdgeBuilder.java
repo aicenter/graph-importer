@@ -15,8 +15,23 @@ public class RoadEdgeBuilder extends EdgeBuilder<RoadEdge> {
 	private long wayID;
 	private Set<ModeOfTransport> permittedModes = EnumSet.noneOf(ModeOfTransport.class);
 
+	public RoadEdgeBuilder() {
+	}
+
+	public RoadEdgeBuilder(int tmpFromId, int tmpToId) {
+		super(tmpFromId, tmpToId);
+	}
+
 	public RoadEdgeBuilder(int tmpFromId, int tmpToId, int length) {
 		super(tmpFromId, tmpToId, length);
+	}
+
+	public RoadEdgeBuilder(int tmpFromId, int tmpToId, float allowedMaxSpeedInMpS, long wayID,
+						   Set<ModeOfTransport> permittedModes) {
+		super(tmpFromId, tmpToId);
+		this.allowedMaxSpeedInMpS = allowedMaxSpeedInMpS;
+		this.wayID = wayID;
+		this.permittedModes = permittedModes;
 	}
 
 	public RoadEdgeBuilder(int tmpFromId, int tmpToId, int length, float allowedMaxSpeedInMpS, long wayID,
@@ -24,7 +39,7 @@ public class RoadEdgeBuilder extends EdgeBuilder<RoadEdge> {
 		super(tmpFromId, tmpToId, length);
 		this.allowedMaxSpeedInMpS = allowedMaxSpeedInMpS;
 		this.wayID = wayID;
-		this.permittedModes = permittedModes;
+		this.permittedModes = EnumSet.copyOf(permittedModes);
 	}
 
 	public float getAllowedMaxSpeedInMpS() {
@@ -54,14 +69,20 @@ public class RoadEdgeBuilder extends EdgeBuilder<RoadEdge> {
 		return this;
 	}
 
-	public RoadEdgeBuilder intersectPemittedModes(Set<ModeOfTransport> permittedModes) {
+	public RoadEdgeBuilder intersectPermittedModes(Set<ModeOfTransport> permittedModes) {
 		this.permittedModes.retainAll(permittedModes);
 		return this;
 	}
 
 	public RoadEdgeBuilder setPermittedModes(Set<ModeOfTransport> permittedModes) {
-		this.permittedModes = permittedModes;
+		this.permittedModes = EnumSet.copyOf(permittedModes);
 		return this;
+	}
+
+	public boolean equalAttributes(RoadEdgeBuilder that) {
+		if (Float.compare(that.allowedMaxSpeedInMpS, allowedMaxSpeedInMpS) != 0) return false;
+		if (wayID != that.wayID) return false;
+		return permittedModes != null ? permittedModes.equals(that.permittedModes) : that.permittedModes == null;
 	}
 
 	@Override
@@ -72,6 +93,29 @@ public class RoadEdgeBuilder extends EdgeBuilder<RoadEdge> {
 	@Override
 	public boolean checkFeasibility(ModeOfTransport mode) {
 		return permittedModes.contains(mode);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+
+		RoadEdgeBuilder that = (RoadEdgeBuilder) o;
+
+		if (Float.compare(that.allowedMaxSpeedInMpS, allowedMaxSpeedInMpS) != 0) return false;
+		if (wayID != that.wayID) return false;
+		return permittedModes != null ? permittedModes.equals(that.permittedModes) : that.permittedModes == null;
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + (allowedMaxSpeedInMpS != +0.0f ? Float.floatToIntBits(allowedMaxSpeedInMpS) : 0);
+		result = 31 * result + (int) (wayID ^ (wayID >>> 32));
+		result = 31 * result + (permittedModes != null ? permittedModes.hashCode() : 0);
+		return result;
 	}
 
 	@Override

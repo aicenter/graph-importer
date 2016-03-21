@@ -13,6 +13,8 @@ public abstract class EdgeBuilder<TEdge extends Edge> {
 
 	private int length;
 
+	private EdgeId edgeId;
+
 	public EdgeBuilder() {
 	}
 
@@ -33,6 +35,12 @@ public abstract class EdgeBuilder<TEdge extends Edge> {
 
 	public abstract TEdge build(int fromId, int toId);
 
+	public abstract boolean checkFeasibility(ModeOfTransport mode);
+
+	public boolean isCircle(EdgeBuilder<?> edge) {
+		return tmpFromId == edge.tmpToId && tmpToId == edge.tmpFromId;
+	}
+
 	public int getLength() {
 		return length;
 	}
@@ -46,6 +54,7 @@ public abstract class EdgeBuilder<TEdge extends Edge> {
 	}
 
 	public void setTmpFromId(int tmpFromId) {
+		this.edgeId = null;
 		this.tmpFromId = tmpFromId;
 	}
 
@@ -54,10 +63,37 @@ public abstract class EdgeBuilder<TEdge extends Edge> {
 	}
 
 	public void setTmpToId(int tmpToId) {
+		this.edgeId = null;
 		this.tmpToId = tmpToId;
 	}
 
-	public abstract boolean checkFeasibility(ModeOfTransport mode);
+	public EdgeId getEdgeId() {
+		if (edgeId == null) {
+			edgeId = new EdgeId(tmpFromId, tmpToId);
+		}
+		return edgeId;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		EdgeBuilder<?> that = (EdgeBuilder<?>) o;
+
+		if (tmpFromId != that.tmpFromId) return false;
+		if (tmpToId != that.tmpToId) return false;
+		return length == that.length;
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = tmpFromId;
+		result = 31 * result + tmpToId;
+		result = 31 * result + length;
+		return result;
+	}
 
 	@Override
 	public String toString() {
@@ -66,5 +102,40 @@ public abstract class EdgeBuilder<TEdge extends Edge> {
 				", tmpToId=" + tmpToId +
 				", length=" + length +
 				']';
+	}
+
+	public static class EdgeId {
+
+		public final int from;
+		public final int to;
+
+		public EdgeId(int from, int to) {
+			this.from = from;
+			this.to = to;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+
+			EdgeId edgeId = (EdgeId) o;
+
+			return from == edgeId.from && to == edgeId.to;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = from;
+			result = 31 * result + to;
+			return result;
+		}
+
+		@Override
+		public String toString() {
+			return "[" + from +
+					", " + to +
+					']';
+		}
 	}
 }

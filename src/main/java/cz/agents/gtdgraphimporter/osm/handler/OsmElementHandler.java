@@ -1,6 +1,6 @@
 package cz.agents.gtdgraphimporter.osm.handler;
 
-import cz.agents.gtdgraphimporter.OsmElementConsumer;
+import cz.agents.gtdgraphimporter.osm.OsmElementConsumer;
 import cz.agents.gtdgraphimporter.osm.element.OsmElement;
 import org.xml.sax.Attributes;
 
