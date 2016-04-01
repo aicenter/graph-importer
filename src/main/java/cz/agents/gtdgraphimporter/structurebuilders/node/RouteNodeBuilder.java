@@ -1,4 +1,4 @@
-package cz.agents.gtdgraphimporter.structurebuilders;
+package cz.agents.gtdgraphimporter.structurebuilders.node;
 
 import cz.agents.basestructures.GPSLocation;
 import cz.agents.multimodalstructures.nodes.RouteNode;

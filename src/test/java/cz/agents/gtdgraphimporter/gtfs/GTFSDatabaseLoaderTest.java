@@ -286,10 +286,10 @@ public final class GTFSDatabaseLoaderTest {
 			when(stopsResult.getString(1)).thenReturn("i1", "i2", "i3").thenThrow(
 					new UnsupportedOperationException("unexpected stub call"));
 			// Latitude
-			when(stopsResult.getDouble(2)).thenReturn(11., 12., 13.).thenThrow(
+			when(stopsResult.getDouble(2)).thenReturn(49., 50., 51.).thenThrow(
 					new UnsupportedOperationException("unexpected stub call"));
 			// Longitude
-			when(stopsResult.getDouble(3)).thenReturn(21., 22., 23.).thenThrow(
+			when(stopsResult.getDouble(3)).thenReturn(13., 14., 15.).thenThrow(
 					new UnsupportedOperationException("unexpected stub call"));
 			// Description
 			when(stopsResult.getString(4)).thenReturn(null, "d2", "d3").thenThrow(
@@ -338,14 +338,14 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addStop(eq("i1"), Matchers.<String>eq(null), eq("n1"), Matchers.<String>eq(null),
-				projectedEq(new GPSLocation(11., 21., 5636350, 484569)), Matchers.<String>eq(null),
+		verify(handler).addStop(eq("i1"), Matchers.eq(null), eq("n1"), Matchers.eq(null),
+				projectedEq(new GPSLocation(49, 13., 1147674, 862186)), Matchers.eq(null),
 				eq(WheelchairBoarding.NO_ACCESSIBILITY_INFORMATION));
 		verify(handler).addStop(eq("i2"), eq("c2"), eq("n2"), eq("d2"),
-				projectedEq(new GPSLocation(12., 22., 5513359, 354295)), eq("z2"),
+				projectedEq(new GPSLocation(50., 14., 1048448, 774041)), eq("z2"),
 				eq(WheelchairBoarding.AT_LEAST_SOME_VEHICLES));
 		verify(handler).addStop(eq("i3"), eq("c3"), eq("n3"), eq("d3"),
-				projectedEq(new GPSLocation(13., 23., 5389910, 226736)), eq("z3"), eq(WheelchairBoarding
+				projectedEq(new GPSLocation(51., 15., 947833, 688702)), eq("z3"), eq(WheelchairBoarding
 						.NOT_POSSIBLE));
 		verifyNoMoreInteractions(handler);
 	}
@@ -420,8 +420,8 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addStop(eq("i1"), Matchers.<String>eq(null), eq("n1"), Matchers.<String>eq(null),
-				projectedEq(new GPSLocation(11., 21., 0, 0)), Matchers.<String>eq(null),
+		verify(handler).addStop(eq("i1"), Matchers.<String>eq(null), eq("n1"), Matchers.eq(null),
+				projectedEq(new GPSLocation(11., 21., 0, 0)), Matchers.eq(null),
 				eq(WheelchairBoarding.NO_ACCESSIBILITY_INFORMATION));
 		verify(handler).addStop(eq("i2"), eq("c2"), eq("n2"), eq("d2"), projectedEq(new GPSLocation(12., 22., 0, 0)),
 				eq("z2"), eq(WheelchairBoarding.AT_LEAST_SOME_VEHICLES));

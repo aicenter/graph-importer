@@ -1,6 +1,12 @@
-package cz.agents.gtdgraphimporter.structurebuilders;
+package cz.agents.gtdgraphimporter.util;
 
-import cz.agents.gtdgraphimporter.structurebuilders.EdgeBuilder.EdgeId;
+import cz.agents.basestructures.EdgeId;
+import cz.agents.gtdgraphimporter.structurebuilders.TmpGraphBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.edge.RoadEdgeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.edge.SimplifiedEdgeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.node.NodeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.node.RoadNodeBuilder;
 import cz.agents.multimodalstructures.edges.RoadEdge;
 import cz.agents.multimodalstructures.nodes.RoadNode;
 import org.apache.log4j.Logger;

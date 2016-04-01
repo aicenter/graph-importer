@@ -2,17 +2,16 @@ package cz.agents.gtdgraphimporter.structurebuilders;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import cz.agents.basestructures.Edge;
-import cz.agents.basestructures.Graph;
-import cz.agents.basestructures.Node;
-import cz.agents.gtdgraphimporter.structurebuilders.EdgeBuilder.EdgeId;
+import cz.agents.basestructures.*;
+import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.node.NodeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.node.RouteNodeBuilder;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.nodes.RoadNode;
 import cz.agents.multimodalstructures.nodes.StopNode;
 import org.apache.log4j.Logger;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.*;
@@ -76,7 +75,7 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 		return builder.getEdgeId();
 	}
 
-	public Graph<TNode, TEdge> createGraph() {
+	public GraphBuilder<TNode, TEdge> createGraphBuilder() {
 		int id = 0;
 
 		GraphBuilder<TNode, TEdge> builder = new GraphBuilder<>();
@@ -102,6 +101,11 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 			int toId = tmpToFinalId.get(edgeBuilder.getTmpToId());
 			builder.addEdge(edgeBuilder.build(fromId, toId));
 		}
+		return builder;
+	}
+
+	public Graph<TNode, TEdge> createGraph() {
+		GraphBuilder<TNode, TEdge> builder = createGraphBuilder();
 		Graph<TNode, TEdge> g = builder.createGraph();
 
 		Map<Class<?>, Long> edgeCounts = g.getAllEdges().stream().collect(groupingBy(Object::getClass, counting()));
@@ -114,7 +118,7 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 		return g;
 	}
 
-	public void printContent(){
+	public void printContent() {
 		Map<Class<?>, Long> edgeCounts = getAllEdges().stream().collect(groupingBy(Object::getClass, counting()));
 		Map<Class<?>, Long> nodeCounts = getAllNodes().stream().collect(groupingBy(Object::getClass, counting()));
 

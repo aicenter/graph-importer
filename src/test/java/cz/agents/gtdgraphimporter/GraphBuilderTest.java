@@ -2,8 +2,8 @@ package cz.agents.gtdgraphimporter;
 
 import cz.agents.basestructures.Edge;
 import cz.agents.basestructures.Graph;
+import cz.agents.basestructures.GraphBuilder;
 import cz.agents.basestructures.Node;
-import cz.agents.gtdgraphimporter.structurebuilders.GraphBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,8 +64,8 @@ public class GraphBuilderTest {
 
 		GraphBuilder<Node, Edge> builder = new GraphBuilder<>();
 		builder.addNodes(nodes);
-		Assert.assertEquals(11, builder.getNode(1).osmId);
-		Assert.assertEquals(13, builder.getNode(3).osmId);
+		Assert.assertEquals(11, builder.getNode(1).sourceId);
+		Assert.assertEquals(13, builder.getNode(3).sourceId);
 
 	}
 

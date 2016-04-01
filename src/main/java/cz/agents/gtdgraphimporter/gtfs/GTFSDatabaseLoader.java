@@ -2,7 +2,8 @@ package cz.agents.gtdgraphimporter.gtfs;
 
 import com.google.common.collect.ImmutableMap;
 import cz.agents.basestructures.GPSLocation;
-import cz.agents.geotools.EPSGProjection;
+import cz.agents.geotools.GPSLocationTools;
+import cz.agents.geotools.Transformer;
 import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsParseException;
 import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsSQLException;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
@@ -68,7 +69,7 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 	/**
 	 * EPSG projector of coordinates.
 	 */
-	private final EPSGProjection epsgProjection;
+	private final Transformer transformer;
 
 	/**
 	 * A number used to multiply traveled distance specified in GTFS data to convert it to meters.
@@ -108,9 +109,8 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 	 * @param pruneAfterDate
 	 * 		Max. allowed loaded date (exclusive). This setting should be used rarely to accelerate GTFS loading time
 	 * 		. In
-	 * 		other cases, a GTFS graph filtering mechanism should be used.
 	 */
-	public GTFSDatabaseLoader(final Connection connection, final EPSGProjection projection,
+	public GTFSDatabaseLoader(final Connection connection, final Transformer projection,
 							  final double gtfsUnitToMetersMultiplier, final int sqlResultDownloadSize,
 							  final Date pruneBeforeDate, final Date pruneAfterDate) {
 		super();
@@ -132,7 +132,7 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		}
 
 		this.connection = connection;
-		this.epsgProjection = projection;
+		this.transformer = projection;
 		this.gtfsUnitToMetersMultiplier = gtfsUnitToMetersMultiplier;
 		this.sqlResultDownloadSize = sqlResultDownloadSize;
 		this.pruneBeforeDate = pruneBeforeDate;
@@ -161,12 +161,10 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 	 */
 	public GTFSDatabaseLoader(final Connection connection, final int epsgSrid, final double gtfsUnitToMetersMultiplier,
 							  final int sqlResultDownloadSize, final Date pruneBeforeDate, final Date pruneAfterDate) {
-		this(connection, createProjection(epsgSrid), gtfsUnitToMetersMultiplier, sqlResultDownloadSize, pruneBeforeDate,
-				pruneAfterDate);
+		this(connection, createProjection(epsgSrid), gtfsUnitToMetersMultiplier, sqlResultDownloadSize,
+				pruneBeforeDate, pruneAfterDate);
 
 	}
-
-
 
 	/**
 	 * Handle potential exception thrown when parsing the data.
@@ -305,15 +303,14 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 				}
 				if (wheelchairBoardingIndex < 0 || wheelchairBoardingIndex >= WheelchairBoarding.values().length) {
 					handleParseException(String.format("unknown wheelchair boarding type: %d",
-							wheelchairBoardingIndex),
-							null);
+							wheelchairBoardingIndex), null);
 					continue;
 				}
 
 				GPSLocation location;
-				if (epsgProjection != null) {
-					location = epsgProjection.getProjectedGPSLocation((int) (latitude * 1E6), (int) (longitude * 1E6),
-							0);
+				if (transformer != null) {
+					location = GPSLocationTools.createGPSLocation(latitude, longitude, 0,
+							transformer);
 				} else {
 					location = new GPSLocation(latitude, longitude, 0, 0);
 				}
@@ -412,14 +409,14 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		}
 
 		final String sqlQuery = String.format("SELECT DISTINCT %s, %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE " +
-						"%s" +
-						" < '%s' AND %s >= '%s';", SCHEMA_CALENDAR_TABLE_SERVICE_ID_COLUMN,
-				SCHEMA_CALENDAR_TABLE_START_COLUMN,
-				SCHEMA_CALENDAR_TABLE_END_COLUMN, SCHEMA_CALENDAR_TABLE_MONDAY_COLUMN,
-				SCHEMA_CALENDAR_TABLE_TUESDAY_COLUMN, SCHEMA_CALENDAR_TABLE_WEDNESDAY_COLUMN,
-				SCHEMA_CALENDAR_TABLE_THURSDAY_COLUMN, SCHEMA_CALENDAR_TABLE_FRIDAY_COLUMN,
-				SCHEMA_CALENDAR_TABLE_SATURDAY_COLUMN, SCHEMA_CALENDAR_TABLE_SUNDAY_COLUMN, SCHEMA_CALENDAR_TABLE,
-				SCHEMA_CALENDAR_TABLE_START_COLUMN, pruneAfterDate, SCHEMA_CALENDAR_TABLE_END_COLUMN, pruneBeforeDate);
+				"%s" +
+				" < '%s' AND %s >= '%s';", SCHEMA_CALENDAR_TABLE_SERVICE_ID_COLUMN,
+				SCHEMA_CALENDAR_TABLE_START_COLUMN, SCHEMA_CALENDAR_TABLE_END_COLUMN,
+				SCHEMA_CALENDAR_TABLE_MONDAY_COLUMN, SCHEMA_CALENDAR_TABLE_TUESDAY_COLUMN,
+				SCHEMA_CALENDAR_TABLE_WEDNESDAY_COLUMN, SCHEMA_CALENDAR_TABLE_THURSDAY_COLUMN,
+				SCHEMA_CALENDAR_TABLE_FRIDAY_COLUMN, SCHEMA_CALENDAR_TABLE_SATURDAY_COLUMN,
+				SCHEMA_CALENDAR_TABLE_SUNDAY_COLUMN, SCHEMA_CALENDAR_TABLE, SCHEMA_CALENDAR_TABLE_START_COLUMN,
+				pruneAfterDate, SCHEMA_CALENDAR_TABLE_END_COLUMN, pruneBeforeDate);
 
 		try {
 			connection.setAutoCommit(false); // Needed for "setFetchSize".
@@ -451,8 +448,8 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 				LocalDate endJoda = null;
 				try {
 					startJoda = new LocalDate(!startSql.before(pruneBeforeDate) ? startSql : pruneBeforeDate);
-					endJoda = endSql.before(pruneAfterDate) ? new LocalDate(endSql) : new LocalDate(
-							pruneAfterDate).minusDays(1);
+					endJoda = endSql.before(pruneAfterDate) ? new LocalDate(endSql) : new LocalDate(pruneAfterDate)
+							.minusDays(1);
 				} catch (Exception ignored) {
 				}
 
@@ -558,7 +555,7 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		Period frequencyOffset = Period.ZERO;
 
 		final String sqlQuery = String.format("SELECT DISTINCT %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s " +
-						"FROM" + " %s JOIN %s ON %s = %s LEFT JOIN %s ON %s = %s ORDER BY %s ASC, %s ASC, %s ASC;",
+				"FROM" + " %s JOIN %s ON %s = %s LEFT JOIN %s ON %s = %s ORDER BY %s ASC, %s ASC, %s ASC;",
 				SCHEMA_TRIPS_TABLE_ID_COLUMN, SCHEMA_TRIPS_TABLE_TRIP_HEADSIGN_COLUMN,
 				SCHEMA_STOP_TIMES_TABLE_SEQUENCE_COLUMN, SCHEMA_STOP_TIMES_TABLE_STOP_ID_COLUMN,
 				SCHEMA_TRIPS_TABLE_ROUTE_ID_COLUMN, SCHEMA_TRIPS_TABLE_SERVICE_ID_COLUMN,
@@ -606,8 +603,8 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 				}
 
 				// Convert data to acceptable data types.
-				final Period departurePeriod = Period.parse(departureS,
-						GTFSDataLoader.GTFS_ARRIVAL_DEPARTURE_FORMATTER);
+				final Period departurePeriod = Period.parse(departureS, GTFSDataLoader
+						.GTFS_ARRIVAL_DEPARTURE_FORMATTER);
 				final Period arrivalPeriod = Period.parse(arrivalS, GTFSDataLoader.GTFS_ARRIVAL_DEPARTURE_FORMATTER);
 				final Period frequencyStartPeriod = frequencyStartS == null ? null : Period.parse(frequencyStartS,
 						GTFSDataLoader.GTFS_ARRIVAL_DEPARTURE_FORMATTER);
@@ -627,20 +624,18 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 				} else if (!tripHasError) {
 					// Add new departure for previous stop because the arrival
 					// is known.
-					assert previousDeparture.order < nextDeparture.order : String.format(
-							"The SQL result is probably " + "not sorted by stop sequence numbers. Check the SQL " +
-									"results in the log and the query: " +
-									"%s", sqlQuery);
+					assert previousDeparture.order < nextDeparture.order : String.format("The SQL result is probably "
+							+ "not sorted by stop sequence numbers. Check the SQL " +
+							"results in the log and the query: " +
+							"%s", sqlQuery);
 					assert previousDeparture.route.equals(nextDeparture.route) : "Is it really meaningful?";
 
 					final ReadablePeriod startTime = previousDeparture.frequencyStart == null ? previousDeparture
-							.departureTime : previousDeparture.frequencyStart.plus(
-							frequencyOffset);
-					final ReadablePeriod timePeriod = previousDeparture.headway == null ? new Period(
-							1) : previousDeparture.headway;
+							.departureTime : previousDeparture.frequencyStart.plus(frequencyOffset);
+					final ReadablePeriod timePeriod = previousDeparture.headway == null ? new Period(1) :
+							previousDeparture.headway;
 					final ReadablePeriod endTime = previousDeparture.frequencyStart == null ? previousDeparture
-							.departureTime.plus(
-							timePeriod) : previousDeparture.frequencyEnd.plus(frequencyOffset);
+							.departureTime.plus(timePeriod) : previousDeparture.frequencyEnd.plus(frequencyOffset);
 					final Period travelTime = arrivalPeriod.minus(previousDeparture.departureTime);
 					final Period waitingTime = departurePeriod.minus(arrivalPeriod);
 
@@ -738,9 +733,9 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		return result.wasNull() ? null : boolean_;
 	}
 
-	private static EPSGProjection createProjection(int epsgSrid) {
+	private static Transformer createProjection(int epsgSrid) {
 		try {
-			return new EPSGProjection(epsgSrid);
+			return new Transformer(epsgSrid);
 		} catch (Exception e) {
 			throw new IllegalArgumentException("EPSGProjection could not be instantiated for EPSG=" + epsgSrid, e);
 		}
@@ -937,8 +932,6 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 			}
 		}
 	}
-
-
 
 	/**
 	 * Name of the "agency" table in the database schema.

@@ -3,9 +3,13 @@ package cz.agents.gtdgraphimporter.gtfs;
 import cz.agents.basestructures.GPSLocation;
 import cz.agents.basestructures.Graph;
 import cz.agents.basestructures.Node;
-import cz.agents.geotools.EdgeUtil;
+import cz.agents.geotools.GPSLocationTools;
 import cz.agents.gtdgraphimporter.structurebuilders.*;
-import cz.agents.multimodalstructures.edges.*;
+import cz.agents.gtdgraphimporter.structurebuilders.edge.InnerEdgeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.edge.RouteEdgeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.node.RouteNodeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.node.StopNodeBuilder;
+import cz.agents.multimodalstructures.edges.TimeDependentEdge;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -170,8 +174,7 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 	 */
 	private int getOrEstimateDistance(Double distanceInM, String origin, String destination) {
 		if (distanceInM == null) {
-			return (int) EdgeUtil.computeEuclideanDistance(stops.get(origin).location, stops.get(destination)
-					.location);
+			return GPSLocationTools.computeDistance(stops.get(origin).location, stops.get(destination).location);
 		} else {
 			return distanceInM.intValue();
 		}
@@ -291,8 +294,6 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 		if (!routes.containsKey(routeId)) throw new IllegalStateException("Route " + routeId + " must be added first" +
 				".");
 	}
-
-
 
 	private static class EdgeKey {
 

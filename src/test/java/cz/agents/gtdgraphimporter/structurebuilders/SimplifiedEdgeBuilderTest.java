@@ -1,7 +1,10 @@
 package cz.agents.gtdgraphimporter.structurebuilders;
 
+import cz.agents.basestructures.EdgeId;
 import cz.agents.basestructures.GPSLocation;
-import cz.agents.gtdgraphimporter.structurebuilders.EdgeBuilder.EdgeId;
+import cz.agents.gtdgraphimporter.structurebuilders.edge.RoadEdgeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.edge.SimplifiedEdgeBuilder;
+import cz.agents.gtdgraphimporter.structurebuilders.node.RoadNodeBuilder;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.edges.RoadEdge;
 import cz.agents.multimodalstructures.nodes.RoadNode;

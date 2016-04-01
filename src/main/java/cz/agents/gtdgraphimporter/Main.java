@@ -1,14 +1,10 @@
 package cz.agents.gtdgraphimporter;
 
 import com.google.common.collect.Sets;
-import cz.agents.basestructures.Graph;
-import cz.agents.geotools.EPSGProjection;
+import cz.agents.geotools.Transformer;
 import cz.agents.gtdgraphimporter.GTDGraphBuilder.PTSettings;
 import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsException;
-import cz.agents.gtdgraphimporter.structurebuilders.TmpGraphBuilder;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
-import cz.agents.multimodalstructures.edges.RoadEdge;
-import cz.agents.multimodalstructures.nodes.RoadNode;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.opengis.referencing.FactoryException;
@@ -16,9 +12,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -35,12 +29,16 @@ public class Main {
 			TransformException, SQLException, GtfsException {
 		DOMConfigurator.configure("log4j.xml");
 
-		String osm = "pathToOsmFile";
+		String osm = "jmk.osm";
 		Connection connection = DriverManager.getConnection("jdbc:postgresql://its.felk.cvut" +
-				".cz:5432/mobility_model_prague", "user", "password");
-		PTSettings ptSettings = new PTSettings("2015-06-22", "2015-06-23");
+				".cz:5432/mobility_model_jmk", "cuchy", "geovisio");
+		PTSettings ptSettings = new PTSettings("2013-12-02", "2013-12-04");
+//		String osm = "sck.osm";
+//		Connection connection = DriverManager.getConnection("jdbc:postgresql://its.felk.cvut" +
+//				".cz:5432/mobility_model_prague", "cuchy", "geovisio");
+//		PTSettings ptSettings = new PTSettings("2015-06-22", "2015-06-23");
 
-		GTDGraphBuilder gtdBuilder = new GTDGraphBuilder(new EPSGProjection(2065), osm, Sets.immutableEnumSet
+		GTDGraphBuilder gtdBuilder = new GTDGraphBuilder(new Transformer(2065), osm, Sets.immutableEnumSet
 				(ModeOfTransport.CAR, ModeOfTransport.BIKE, ModeOfTransport.WALK), ptSettings, connection);
 
 		gtdBuilder.build();

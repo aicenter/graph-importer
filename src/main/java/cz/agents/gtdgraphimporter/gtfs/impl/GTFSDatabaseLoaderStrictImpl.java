@@ -1,6 +1,6 @@
 package cz.agents.gtdgraphimporter.gtfs.impl;
 
-import cz.agents.geotools.EPSGProjection;
+import cz.agents.geotools.Transformer;
 import cz.agents.gtdgraphimporter.gtfs.GTFSDatabaseLoader;
 import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsParseException;
 
@@ -66,7 +66,7 @@ public final class GTFSDatabaseLoaderStrictImpl extends GTFSDatabaseLoader {
 	 *            used rarely to accelerate GTFS loading time. In other cases, a
 	 *            GTFS graph filtering mechanism should be used.
 	 */
-	public GTFSDatabaseLoaderStrictImpl(final Connection connection, final EPSGProjection epsgProjection,
+	public GTFSDatabaseLoaderStrictImpl(final Connection connection, final Transformer epsgProjection,
 			final double gtfsUnitToMetersMultiplier, final int sqlResultDownloadSize, final Date pruneBeforeDate,
 			final Date pruneAfterDate) {
 		super(connection, epsgProjection, gtfsUnitToMetersMultiplier, sqlResultDownloadSize, pruneBeforeDate, pruneAfterDate);

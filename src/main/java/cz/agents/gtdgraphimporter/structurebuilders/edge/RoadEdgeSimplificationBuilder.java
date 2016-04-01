@@ -1,4 +1,4 @@
-package cz.agents.gtdgraphimporter.structurebuilders;
+package cz.agents.gtdgraphimporter.structurebuilders.edge;
 
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
 
@@ -15,19 +15,19 @@ public class RoadEdgeSimplificationBuilder extends RoadEdgeBuilder {
 	private final List<RoadEdgeBuilder> toRemove = new ArrayList<>();
 
 	public RoadEdgeSimplificationBuilder(int tmpFromId, int tmpToId, float allowedMaxSpeedInMpS, long wayID,
-										 Set<ModeOfTransport> permittedModes) {
-		super(tmpFromId, tmpToId, allowedMaxSpeedInMpS, wayID, permittedModes);
+										 Set<ModeOfTransport> ModeOfTransports) {
+		super(tmpFromId, tmpToId, allowedMaxSpeedInMpS, wayID, ModeOfTransports);
 	}
 
 	public RoadEdgeSimplificationBuilder(int tmpFromId, int tmpToId, int length, float allowedMaxSpeedInMpS, long
 			wayID,
-										 Set<ModeOfTransport> permittedModes) {
-		super(tmpFromId, tmpToId, length, allowedMaxSpeedInMpS, wayID, permittedModes);
+										 Set<ModeOfTransport> ModeOfTransports) {
+		super(tmpFromId, tmpToId, length, allowedMaxSpeedInMpS, wayID, ModeOfTransports);
 	}
 
 	public RoadEdgeSimplificationBuilder(RoadEdgeBuilder edge) {
 		super(edge.getTmpFromId(), edge.getTmpToId(), edge.getAllowedMaxSpeedInMpS(), edge.getWayID(), edge
-				.getPermittedModes());
+				.getModeOfTransports());
 		toRemove.add(edge);
 	}
 

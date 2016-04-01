@@ -1,9 +1,10 @@
-package cz.agents.gtdgraphimporter.structurebuilders;
+package cz.agents.gtdgraphimporter.structurebuilders.edge;
 
 import com.google.common.collect.Lists;
+import cz.agents.basestructures.EdgeId;
 import cz.agents.basestructures.GPSLocation;
-import cz.agents.geotools.EdgeUtil;
-import cz.agents.gtdgraphimporter.structurebuilders.EdgeBuilder.EdgeId;
+import cz.agents.geotools.GPSLocationTools;
+import cz.agents.gtdgraphimporter.structurebuilders.TmpGraphBuilder;
 import cz.agents.multimodalstructures.edges.RoadEdge;
 import cz.agents.multimodalstructures.nodes.RoadNode;
 
@@ -176,7 +177,7 @@ public class SimplifiedEdgeBuilder {
 
 	private RoadEdgeBuilder createEdge(int from, int to, int length, RoadEdgeBuilder referenceEdge) {
 		return new RoadEdgeBuilder(from, to, length, referenceEdge.getAllowedMaxSpeedInMpS(), referenceEdge.getWayID()
-				, referenceEdge.getPermittedModes());
+				, referenceEdge.getModeOfTransports());
 	}
 
 	private double calculateLength(List<Integer> nodes, TmpGraphBuilder<RoadNode, RoadEdge> graph) {
@@ -184,7 +185,7 @@ public class SimplifiedEdgeBuilder {
 		GPSLocation prev = graph.getNode(nodes.get(0)).location;
 		for (int i = 1; i < nodes.size(); i++) {
 			GPSLocation curr = graph.getNode(nodes.get(i)).location;
-			length += EdgeUtil.computeEuclideanDistance(prev, curr);
+			length += GPSLocationTools.computeDistanceAsDouble(prev, curr);
 			prev = curr;
 		}
 		return length;

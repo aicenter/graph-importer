@@ -19,7 +19,7 @@ public class OsmHandler extends DefaultHandler {
 	private final WayHandler wayHandler;
 	private final RelationHandler relationHandler;
 
-	private OsmElementHandler currentElementHandler;
+	private OsmElementHandler<?> currentElementHandler;
 
 	public OsmHandler(OsmElementConsumer consumer) {
 		this(new NodeHandler(consumer), new WayHandler(consumer), new RelationHandler(consumer));

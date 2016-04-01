@@ -3,8 +3,8 @@ package cz.agents.gtdgraphimporter.gtfs;
 import com.google.common.collect.ImmutableList;
 import cz.agents.basestructures.GPSLocation;
 import cz.agents.basestructures.Graph;
+import cz.agents.basestructures.GraphBuilder;
 import cz.agents.basestructures.Node;
-import cz.agents.gtdgraphimporter.structurebuilders.GraphBuilder;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.additional.WheelchairBoarding;
 import cz.agents.multimodalstructures.edges.InnerEdge;
@@ -593,7 +593,7 @@ public final class GTFSGraphBuilderTest {
 		final RouteNode[] routeNodes = new RouteNode[]{
 				createRouteNode(2, stopNodes[0], "r0"), createRouteNode(3, stopNodes[1], "r0")};
 
-		final List<InnerEdge> innerEdges = new ArrayList<>();
+		final List<TimeDependentEdge> innerEdges = new ArrayList<>();
 		innerEdges.addAll(createInnerEdges(stopNodes[0], routeNodes[0]));
 		innerEdges.addAll(createInnerEdges(stopNodes[1], routeNodes[1]));
 
@@ -700,7 +700,7 @@ public final class GTFSGraphBuilderTest {
 		final RouteNode[] routeNodes = new RouteNode[]{
 				createRouteNode(2, stopNodes[0], "r0"), createRouteNode(3, stopNodes[1], "r0")};
 
-		final List<InnerEdge> innerEdges = new ArrayList<>();
+		final List<TimeDependentEdge> innerEdges = new ArrayList<>();
 		innerEdges.addAll(createInnerEdges(stopNodes[0], routeNodes[0]));
 		innerEdges.addAll(createInnerEdges(stopNodes[1], routeNodes[1]));
 

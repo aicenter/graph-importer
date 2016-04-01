@@ -1,6 +1,6 @@
 package cz.agents.gtdgraphimporter.gtfs.impl;
 
-import cz.agents.geotools.EPSGProjection;
+import cz.agents.geotools.Transformer;
 import cz.agents.gtdgraphimporter.gtfs.GTFSDataHandler;
 import cz.agents.gtdgraphimporter.gtfs.GTFSDatabaseLoader;
 import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsParseException;
@@ -65,7 +65,7 @@ public final class GTFSDatabaseLoaderPermissiveImpl extends GTFSDatabaseLoader {
 	 *            Max. allowed loaded date (exclusive). This setting should be used rarely to accelerate GTFS loading
 	 *            time. In other cases, a GTFS graph filtering mechanism should be used.
 	 */
-	public GTFSDatabaseLoaderPermissiveImpl(final Connection connection, final EPSGProjection epsgProjection,
+	public GTFSDatabaseLoaderPermissiveImpl(final Connection connection, final Transformer epsgProjection,
 			final double gtfsUnitToMetersMultiplier, final int sqlResultDownloadSize, final Date pruneBeforeDate,
 			final Date pruneAfterDate) {
 		super(connection, epsgProjection, gtfsUnitToMetersMultiplier, sqlResultDownloadSize, pruneBeforeDate, pruneAfterDate);

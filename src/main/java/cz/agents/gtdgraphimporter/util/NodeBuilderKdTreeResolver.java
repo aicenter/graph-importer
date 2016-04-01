@@ -1,7 +1,8 @@
-package cz.agents.gtdgraphimporter.kd;
+package cz.agents.gtdgraphimporter.util;
 
-import cz.agents.geotools.EdgeUtil;
-import cz.agents.gtdgraphimporter.structurebuilders.NodeBuilder;
+import cz.agents.geotools.DistanceUtil;
+import cz.agents.geotools.KDTreeResolver;
+import cz.agents.gtdgraphimporter.structurebuilders.node.NodeBuilder;
 
 /**
  * @author Marek Cuchý
@@ -13,7 +14,7 @@ public class NodeBuilderKdTreeResolver<T extends NodeBuilder<?>> implements KDTr
 	 */
 	@Override
 	public double computeDistance(T v1, double[] coords) {
-		return EdgeUtil.computeEuclideanDistance(v1.location.latProjected, v1.location.lonProjected, coords[1],
+		return DistanceUtil.computeEuclideanDistance(v1.location.latProjected, v1.location.lonProjected, coords[1],
 				coords[0]);
 	}
 
