@@ -29,21 +29,20 @@ public class Main {
 			TransformException, SQLException, GtfsException {
 		DOMConfigurator.configure("log4j.xml");
 
-		String osm = "jmk.osm";
-		Connection connection = DriverManager.getConnection("jdbc:postgresql://its.felk.cvut" +
-				".cz:5432/mobility_model_jmk", "cuchy", "geovisio");
-		PTSettings ptSettings = new PTSettings("2013-12-02", "2013-12-04");
-//		String osm = "sck.osm";
-//		Connection connection = DriverManager.getConnection("jdbc:postgresql://its.felk.cvut" +
-//				".cz:5432/mobility_model_prague", "cuchy", "geovisio");
-//		PTSettings ptSettings = new PTSettings("2015-06-22", "2015-06-23");
+		String osm = "path.osm";
+		Connection connection = DriverManager.getConnection("jdbc:postgresql://host:port:port/database", "user", "password");
 
+		//from date, to date - prune settings for PT timetables
+		PTSettings ptSettings = new PTSettings("2013-12-02", "2013-12-04");
+
+		//SRID for CZ is 2065
 		GTDGraphBuilder gtdBuilder = new GTDGraphBuilder(new Transformer(2065), osm, Sets.immutableEnumSet
 				(ModeOfTransport.CAR, ModeOfTransport.BIKE, ModeOfTransport.WALK), ptSettings, connection);
 
 		gtdBuilder.build();
-		//		gtdBuilder.buildPtGraph(0);
 		//		gtdBuilder.buildSimplifiedRoadGraph();
+		//		gtdBuilder.buildPtGraph(0);
+
 
 		printMemory();
 	}
