@@ -8,6 +8,7 @@ import cz.agents.basestructures.GraphBuilder;
 import cz.agents.basestructures.Node;
 import cz.agents.geotools.GPSLocationTools;
 import cz.agents.geotools.KDTree;
+import cz.agents.geotools.KDTree.ConflictResolverMode;
 import cz.agents.geotools.StronglyConnectedComponentsFinder;
 import cz.agents.geotools.Transformer;
 import cz.agents.gtdgraphimporter.gtfs.GTFSDataLoader;
@@ -137,7 +138,8 @@ public class GTDGraphBuilder {
 		List<StopNodeBuilder> stopNodes = ptGraph.getNodesOfType(StopNodeBuilder.class);
 		Set<NodeBuilder<? extends RoadNode>> walkNodes = osmGraph.getFeasibleNodes(ModeOfTransport.WALK);
 
-		KDTree<NodeBuilder<?>> kdTree = new KDTree<>(2, new NodeBuilderKdTreeResolver<>(), -1);
+		KDTree<NodeBuilder<?>> kdTree = new KDTree<>(2, new NodeBuilderKdTreeResolver<>(), ConflictResolverMode
+				.USE_OLD, NodeBuilder<?>[]::new);
 		walkNodes.forEach(kdTree::insert);
 
 		List<VirtualEdgeBuilder> virtualEdges = new ArrayList<>(stopNodes.size() * 2);
@@ -160,8 +162,8 @@ public class GTDGraphBuilder {
 				notMappedStops++;
 			}
 		}
-		LOGGER.debug(notMappedStops + " stops don't have any walk node close enough (" + ptSettings
-				.maxGtfsOsmMappingDistance + " metres)");
+		LOGGER.debug(notMappedStops + " stops don't have any walk node close enough (" +
+					 ptSettings.maxGtfsOsmMappingDistance + " metres)");
 		return virtualEdges;
 	}
 
