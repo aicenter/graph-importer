@@ -6,7 +6,7 @@
 
 	<groupId>cz.agents</groupId>
 	<artifactId>gtd-graph-importer</artifactId>
-	<version>1.4</version>
+	<version>1.5-SNAPSHOT</version>
 	<build>
 		<plugins>
 			<plugin>
