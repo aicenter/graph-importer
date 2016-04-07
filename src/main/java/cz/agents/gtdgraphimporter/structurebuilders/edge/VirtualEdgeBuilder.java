@@ -3,9 +3,11 @@ package cz.agents.gtdgraphimporter.structurebuilders.edge;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.edges.VirtualEdge;
 
+import java.util.Collections;
+
 /**
  * Builder for building of {@link VirtualEdge} instances. It does NOT support the path attribute. Instead, it insert
- * only {@code null}.
+ * only empty list.
  *
  * @author Marek Cuchý
  */
@@ -49,7 +51,8 @@ public class VirtualEdgeBuilder extends EdgeBuilder<VirtualEdge> {
 
 	@Override
 	public VirtualEdge build(int fromId, int toId) {
-		return new VirtualEdge(fromId, toId, speedUsedForPrecomputingInMpS, precomputedTime, mode, null, getLength());
+		return new VirtualEdge(fromId, toId, speedUsedForPrecomputingInMpS, precomputedTime, mode, Collections
+				.emptyList(), getLength());
 	}
 
 	@Override
