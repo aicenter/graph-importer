@@ -20,7 +20,10 @@ public class DoubleExtractor implements TagExtractor<Double> {
 	@Override
 	public Double apply(Map<String, String> tags) {
 		String value = tags.get(tagKey);
-		Double doubleVal = Doubles.tryParse(value);
+		Double doubleVal = null;
+		if (value != null) {
+			doubleVal = Doubles.tryParse(value);
+		}
 		return doubleVal == null ? defaultValue : doubleVal;
 	}
 
