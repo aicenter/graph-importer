@@ -43,8 +43,8 @@ public class RouteEdgeBuilder extends EdgeBuilder<RouteEdge> {
 		return this;
 	}
 
-	public void addDeparture(int departure, int duration){
-		departures.add(new Departure(departure,duration));
+	public void addDeparture(int departure, int duration) {
+		departures.add(new Departure(departure, duration));
 	}
 
 	@Override
@@ -69,6 +69,14 @@ public class RouteEdgeBuilder extends EdgeBuilder<RouteEdge> {
 	@Override
 	public boolean checkFeasibility(ModeOfTransport mode) {
 		return this.mode == mode;
+	}
+
+	@Override
+	public RouteEdgeBuilder copy(int tmpFromId, int tmpToId, int length) {
+		RouteEdgeBuilder builder = new RouteEdgeBuilder(tmpFromId, tmpToId, mode);
+		builder.setLength(getLength());
+		builder.departures.addAll(departures);
+		return builder;
 	}
 
 	public boolean isEmpty() {

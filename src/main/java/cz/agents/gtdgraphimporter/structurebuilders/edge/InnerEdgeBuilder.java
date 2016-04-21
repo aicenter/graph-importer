@@ -24,4 +24,11 @@ public class InnerEdgeBuilder extends EdgeBuilder<InnerEdge> {
 	public boolean checkFeasibility(ModeOfTransport mode) {
 		return mode == ModeOfTransport.WALK;
 	}
+
+	@Override
+	public InnerEdgeBuilder copy(int tmpFromId, int tmpToId, int length) {
+		InnerEdgeBuilder builder = new InnerEdgeBuilder(tmpFromId, tmpToId, duration);
+		builder.setLength(getLength());
+		return builder;
+	}
 }

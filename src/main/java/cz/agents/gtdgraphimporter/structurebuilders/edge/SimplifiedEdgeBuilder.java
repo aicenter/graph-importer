@@ -127,7 +127,7 @@ public class SimplifiedEdgeBuilder {
 	public List<RoadEdgeBuilder> build(int numberOfParts, TmpGraphBuilder<RoadNode, RoadEdge> graph,
 									   Map<EdgeId, RoadEdgeBuilder> removedEdges) {
 		if (numberOfParts < 1) throw new IllegalArgumentException("Number of parts must be positive.");
-		if (numberOfParts > 3) throw new UnsupportedOperationException("More parts than two aren't supported now.");
+		if (numberOfParts > 3) throw new UnsupportedOperationException("More parts than three aren't supported now.");
 
 		int numberOfNodes = numberOfNodes();
 		List<Integer> nodes = new ArrayList<>(numberOfNodes);
@@ -176,8 +176,7 @@ public class SimplifiedEdgeBuilder {
 	}
 
 	private RoadEdgeBuilder createEdge(int from, int to, int length, RoadEdgeBuilder referenceEdge) {
-		return new RoadEdgeBuilder(from, to, length, referenceEdge.getAllowedMaxSpeedInMpS(), referenceEdge.getWayID()
-				, referenceEdge.getModeOfTransports());
+		return referenceEdge.copy(from, to, length);
 	}
 
 	private double calculateLength(List<Integer> nodes, TmpGraphBuilder<RoadNode, RoadEdge> graph) {

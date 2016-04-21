@@ -1,6 +1,6 @@
 package cz.agents.gtdgraphimporter.osm;
 
-import cz.agents.gtdgraphimporter.osm.TagExtractor;
+import com.google.common.primitives.Doubles;
 
 import java.util.Collections;
 import java.util.Map;
@@ -8,9 +8,9 @@ import java.util.Map;
 /**
  * @author Marek Cuchý
  */
-public class SpeedExtractor implements TagExtractor<Double> {
+public class SpeedExtractor implements WayTagExtractor<Double> {
 
-	public static final Double DEFAULT_DEFAULT_SPEED = new Double(50);
+	public static final Double DEFAULT_DEFAULT_SPEED = 50d;
 
 	private final Double defaultSpeed;
 	private final Map<String, Double> mapping;
@@ -31,21 +31,45 @@ public class SpeedExtractor implements TagExtractor<Double> {
 		this.mapping.remove("default");
 	}
 
-	@Override
-	public Double apply(Map<String, String> tags) {
+	/**
+	 * Get speed based only on the {@code highway} tag.
+	 *
+	 * @param tags
+	 *
+	 * @return Speed in kmh.
+	 */
+	private Double getDefault(Map<String, String> tags) {
 		String highway = tags.get("highway");
-		return mapping.getOrDefault(highway, defaultSpeed) / 3.6;
+		return mapping.getOrDefault(highway, defaultSpeed);
 	}
 
-	public Double getDefaultSpeed() {
-		return defaultSpeed;
+	private Double getMainSpeedInKmh(Map<String, String> tags) {
+		return parseSpeedInKmh(tags.get("maxspeed"));
 	}
 
-	public Map<String, Double> getMapping() {
-		return mapping;
+	@Override
+	public Double getForwardValue(Map<String, String> tags) {
+		return resolve(tags, "maxspeed:forward");
 	}
 
-	public double getSpeed(Map<String, String> tags) {
-		return apply(tags);
+	@Override
+	public Double getBackwardValue(Map<String, String> tags) {
+		return resolve(tags, "maxspeed:backward");
+	}
+
+	private Double resolve(Map<String, String> tags, String key) {
+		Double speed = parseSpeedInKmh(tags.get(key));
+		if (speed == null) {
+			speed = getMainSpeedInKmh(tags);
+			if (speed == null) {
+				speed = getDefault(tags);
+			}
+		}
+		return speed / 3.6;
+	}
+
+	private Double parseSpeedInKmh(String s) {
+		if (s == null) return null;
+		return Doubles.tryParse(s);
 	}
 }

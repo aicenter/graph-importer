@@ -54,18 +54,17 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 	}
 
 	public void addNode(NodeBuilder<? extends TNode> builder) {
-		if (nodes.containsKey(builder.tmpId))
-			throw new IllegalArgumentException("Graph builder already contains node builder with tmp id: " + builder
-					.tmpId);
+		if (nodes.containsKey(builder.tmpId)) throw new IllegalArgumentException(
+				"Graph builder already contains node builder with tmp id: " + builder.tmpId);
 		nodes.put(builder.tmpId, builder);
 		longIdToIntId.put(builder.sourceId, builder.tmpId);
 	}
 
 	public void addEdge(EdgeBuilder<? extends TEdge> builder) {
 		EdgeId id = getId(builder);
-		if (edges.containsKey(id))
-			throw new IllegalArgumentException("Graph builder already contains edge builder: [" + builder.getTmpFromId
-					() + ", " + builder.getTmpToId() + "]");
+		if (edges.containsKey(id)) throw new IllegalArgumentException(
+				"Graph builder already contains edge builder: [" + builder.getTmpFromId() + ", " +
+				builder.getTmpToId() + "]");
 		nodeOutgoingEdges.put(builder.getTmpFromId(), builder);
 		nodeIncomingEdges.put(builder.getTmpToId(), builder);
 		edges.put(id, builder);
@@ -87,8 +86,8 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 			if (nodeBuilder instanceof RouteNodeBuilder) {
 				RouteNodeBuilder rnb = (RouteNodeBuilder) nodeBuilder;
 				if (!tmpToFinalId.containsKey(rnb.getStopNodeTmpId())) {
-					throw new IllegalStateException("Stop node builder must be inserted before the corresponding " +
-							"route node builders.");
+					throw new IllegalStateException(
+							"Stop node builder must be inserted before the corresponding route node builders.");
 				}
 				rnb.setStopNode((StopNode) builder.getNode(tmpToFinalId.get(rnb.getStopNodeTmpId())));
 			}
@@ -263,21 +262,22 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 	}
 
 	public TreeMap<Integer, Set<Integer>> getNodesByDegree() {
-		TreeMap<Integer, Set<Integer>> collect = nodes.keySet().stream().collect(groupingBy(id -> nodeIncomingEdges
-				.get(id).size() + nodeOutgoingEdges.get(id).size(), TreeMap::new, toSet()));
-		return collect;
+		return nodes.keySet()
+					.stream()
+					.collect(groupingBy(id -> nodeIncomingEdges.get(id).size() + nodeOutgoingEdges.get(id).size(),
+										TreeMap::new, toSet()));
 	}
 
 	public TreeMap<Integer, Set<Integer>> getNodesByOutDegree() {
-		TreeMap<Integer, Set<Integer>> collect = nodes.keySet().stream().collect(groupingBy(id -> nodeOutgoingEdges
-				.get(id).size(), TreeMap::new, toSet()));
-		return collect;
+		return nodes.keySet()
+					.stream()
+					.collect(groupingBy(id -> nodeOutgoingEdges.get(id).size(), TreeMap::new, toSet()));
 	}
 
 	public TreeMap<Integer, Set<Integer>> getNodesByInDegree() {
-		TreeMap<Integer, Set<Integer>> collect = nodes.keySet().stream().collect(groupingBy(id -> nodeIncomingEdges
-				.get(id).size(), TreeMap::new, toSet()));
-		return collect;
+		return nodes.keySet()
+					.stream()
+					.collect(groupingBy(id -> nodeIncomingEdges.get(id).size(), TreeMap::new, toSet()));
 	}
 
 	public List<EdgeBuilder<? extends TEdge>> getOutgoingEdges(NodeBuilder<? extends RoadNode> node) {

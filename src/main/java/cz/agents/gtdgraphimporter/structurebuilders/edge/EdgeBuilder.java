@@ -38,6 +38,8 @@ public abstract class EdgeBuilder<TEdge extends Edge> {
 
 	public abstract boolean checkFeasibility(ModeOfTransport mode);
 
+	public abstract EdgeBuilder<TEdge> copy(int tmpFromId, int tmpToId, int length);
+
 	public boolean isCircle(EdgeBuilder<?> edge) {
 		return tmpFromId == edge.tmpToId && tmpToId == edge.tmpFromId;
 	}
@@ -82,9 +84,7 @@ public abstract class EdgeBuilder<TEdge extends Edge> {
 
 		EdgeBuilder<?> that = (EdgeBuilder<?>) o;
 
-		if (tmpFromId != that.tmpFromId) return false;
-		if (tmpToId != that.tmpToId) return false;
-		return length == that.length;
+		return tmpFromId == that.tmpFromId && tmpToId == that.tmpToId && length == that.length;
 
 	}
 
@@ -99,10 +99,10 @@ public abstract class EdgeBuilder<TEdge extends Edge> {
 	@Override
 	public String toString() {
 		return "EdgeBuilder [" +
-				"tmpFromId=" + tmpFromId +
-				", tmpToId=" + tmpToId +
-				", length=" + length +
-				']';
+			   "tmpFromId=" + tmpFromId +
+			   ", tmpToId=" + tmpToId +
+			   ", length=" + length +
+			   ']';
 	}
 
 }

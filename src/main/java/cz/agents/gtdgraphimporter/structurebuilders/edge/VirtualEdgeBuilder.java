@@ -51,12 +51,18 @@ public class VirtualEdgeBuilder extends EdgeBuilder<VirtualEdge> {
 
 	@Override
 	public VirtualEdge build(int fromId, int toId) {
-		return new VirtualEdge(fromId, toId, speedUsedForPrecomputingInMpS, precomputedTime, mode, Collections
-				.emptyList(), getLength());
+		return new VirtualEdge(fromId, toId, speedUsedForPrecomputingInMpS, precomputedTime, mode,
+				Collections.emptyList(), getLength());
 	}
 
 	@Override
 	public boolean checkFeasibility(ModeOfTransport mode) {
 		return mode == this.mode;
+	}
+
+	@Override
+	public VirtualEdgeBuilder copy(int tmpFromId, int tmpToId, int length) {
+		return new VirtualEdgeBuilder(tmpFromId, tmpToId, length, speedUsedForPrecomputingInMpS, precomputedTime,
+				mode);
 	}
 }

@@ -8,6 +8,7 @@ import java.util.function.Function;
  *
  * @author Marek Cuchý
  */
+@FunctionalInterface
 public interface TagExtractor<TValue> extends Function<Map<String, String>, TValue> {
 
 }
