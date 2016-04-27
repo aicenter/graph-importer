@@ -1,15 +1,19 @@
 package cz.agents.gtdgraphimporter.gtfs;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import cz.agents.basestructures.GPSLocation;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.additional.WheelchairBoarding;
 import org.javatuples.Triplet;
-import org.joda.time.*;
 
+import java.time.*;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Handler for data that come from the GTFS database.
@@ -19,7 +23,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 	/**
 	 * Time zone for agency IDs (possibly {@code null}).
 	 */
-	final Map<String, DateTimeZone> agenciesTimeZones = new HashMap<>();
+	final Map<String, ZoneId> agenciesTimeZones = new HashMap<>();
 
 	/**
 	 * Details for agencies (name, URL, phone) identified by Agency ID
@@ -60,8 +64,9 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 	 * 		A time zone of times provided by the agency.
 	 */
 	@Override
-	public final void addAgency(final String id, final String agencyName, final DateTimeZone timeZone,
-								final String agencyUrl, final String agencyPhone) {
+	public final void addAgency(final String id, final String agencyName, final ZoneId timeZone, final String
+			agencyUrl,
+								final String agencyPhone) {
 		if (timeZone == null) {
 			throw new NullPointerException("bad time zone");
 		}
@@ -82,10 +87,9 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 			agenciesToDetails.put(id, details);
 		} else {
 			if (!details.equals(inMap)) {
-				throw new IllegalStateException(String.format(
-						"Agency already present with different details! " + "Agency ID : [%s], in map : [%s], incoming" +
-								" : [%s]",
-						id, inMap, details));
+				throw new IllegalStateException(String.format("Agency already present with different details! " +
+															  "Agency ID : [%s], in map : [%s], incoming" +
+															  " : [%s]", id, inMap, details));
 			}
 		}
 	}
@@ -155,14 +159,14 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 		}
 
 		Route newData = new Route(agency, agencyDetails.getValue0(), agencyDetails.getValue1(),
-				agencyDetails.getValue2(), mode, routeShortName, routeLongName, routeDescription);
+								  agencyDetails.getValue2(), mode, routeShortName, routeLongName, routeDescription);
 		if (details == null) {
 			routes.put(id, newData);
 		} else {
 			if (!details.equals(newData)) {
 				throw new IllegalStateException(
 						"The route is already present with different data! \n Data before : [" + details.toString() +
-								"], new data : [" + newData.toString() + "]");
+						"], new data : [" + newData.toString() + "]");
 			} else {
 				routes.put(id, newData);
 			}
@@ -179,9 +183,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 	 * @param end
 	 * 		Right endpoint of the interval.
 	 * @param isAvailableInDay
-	 * 		Flag for each day in week indicating whether the service is available. Index of each flag plus one is
-	 * 		equal to
-	 * 		the number of each day as they are defined in {@link org.joda.time.DateTimeConstants}.
+	 * 		Flag for each day in week indicating whether the service is available.
 	 */
 	@Override
 	public final void addDateInterval(final String id, final LocalDate start, final LocalDate end,
@@ -198,7 +200,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 		if (isAvailableInDay == null) {
 			throw new NullPointerException("bad week flags");
 		}
-		if (isAvailableInDay.size() != DateTimeConstants.DAYS_PER_WEEK) {
+		if (isAvailableInDay.size() != 7) {
 			throw new IllegalArgumentException("bad number of week flags");
 		}
 		if (isAvailableInDay.contains(null)) {
@@ -237,7 +239,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 			dates = new HashSet<>();
 			servicesToDatesIncluded.put(id, dates);
 		}
-		dates.add(new LocalDate(date));
+		dates.add(date);
 	}
 
 	/**
@@ -264,7 +266,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 			dates = new HashSet<>();
 			servicesToDatesExcluded.put(id, dates);
 		}
-		dates.add(new LocalDate(date));
+		dates.add(date);
 	}
 
 	/**
@@ -281,7 +283,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 	 * @param startTime
 	 * 		A time instant (inclusively) at which the departures starts.
 	 * @param timePeriod
-	 * 		A time period after which the departures repeats.
+	 * 		A time PERIOD after which the departures repeats.
 	 * @param endTime
 	 * 		A time instant (exclusively) at which the departures ends.
 	 * @param travelTime
@@ -290,9 +292,9 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 	 * @return Collection of Departures
 	 */
 	public final List<Departure> createDepartures(final String route, final String service, final String tripId,
-												  final String tripHeadsign, final ReadablePeriod startTime,
-												  final ReadablePeriod timePeriod, final ReadablePeriod endTime,
-												  final ReadablePeriod travelTime) {
+												  final String tripHeadsign, final Duration startTime,
+												  final Duration timePeriod, final Duration endTime,
+												  final Duration travelTime) {
 
 		List<Departure> departures = new ArrayList<>();
 
@@ -300,42 +302,45 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 			throw new NullPointerException("bad trip");
 		}
 
-		final DateTimeZone timeZone = getFinalTimeZone(route);
+		final ZoneId timeZone = getFinalTimeZone(route);
 		if (timeZone == null) {
 			throw new IllegalStateException("no time zone set for given route");
 		}
 
-		final Iterable<LocalDate> dates = getFinalDates(service);
+		final Collection<LocalDate> dates = getFinalDates(service);
 
 		if (dates == null) {
 			throw new IllegalStateException("no dates set for given service");
 		}
 
 		if (!dates.iterator().hasNext()) {
-			return Collections.emptyList();
+			return emptyList();
 		}
 
-		final DateTime aValidDate = dates.iterator().next().toDateTimeAtStartOfDay(timeZone);
-		final DateTime aValidStart = aValidDate.plus(startTime);
-		final DateTime aValidEnd = aValidDate.plus(endTime);
+		final LocalDate aValidDate = dates.iterator().next();
+		ZonedDateTime aValidStart = aValidDate.atStartOfDay(timeZone).plus(startTime);
+		ZonedDateTime aValidEnd = aValidDate.atStartOfDay(timeZone).plus(endTime);
+		//		final ZonedDateTime aValidStart = aValidDate.plus(startTime);
+		//		final ZonedDateTime aValidEnd = aValidDate.plus(endTime);
 		if (aValidStart.isAfter(aValidEnd)) {
 			throw new IllegalArgumentException("start cannot be after end");
 		}
 		if (aValidStart.equals(aValidEnd)) {
 			// "If [...] a start_time equal to end_time, no trip must be scheduled."
-			return Collections.emptyList();
+			return emptyList();
 		}
 		if (!aValidStart.plus(timePeriod).isAfter(aValidStart)) {
-			throw new IllegalArgumentException("time period must be positive");
+			throw new IllegalArgumentException("time PERIOD must be positive");
 		}
 
 		for (final LocalDate date : dates) {
-			final DateTime midnight = date.toDateTimeAtStartOfDay(timeZone);
-			final DateTime startDateTime = midnight.plus(startTime);
-			final DateTime endDateTime = midnight.plus(endTime);
-			for (DateTime time = startDateTime; time.isBefore(endDateTime); time = time.plus(timePeriod)) {
+			final ZonedDateTime midnight = date.atStartOfDay(timeZone);
+			final ZonedDateTime startZonedDateTime = midnight.plus(startTime);
+			final ZonedDateTime endZonedDateTime = midnight.plus(endTime);
+			for (ZonedDateTime time = startZonedDateTime; time.isBefore(endZonedDateTime); time = time.plus(
+					timePeriod)) {
 				departures.add(new Departure(time, travelTime, tripId, WheelchairBoarding.NO_ACCESSIBILITY_INFORMATION,
-						BikeBoarding.NO_ACCESSIBILITY_INFORMATION, tripHeadsign));
+											 BikeBoarding.NO_ACCESSIBILITY_INFORMATION, tripHeadsign));
 			}
 		}
 
@@ -353,7 +358,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 	 * @return The time zone or {@code null} if no agency is set for the route, no time zone is set for the agency or
 	 * the agency is ambiguous.
 	 */
-	private DateTimeZone getFinalTimeZone(final String route) {
+	private ZoneId getFinalTimeZone(final String route) {
 		if (!routes.containsKey(route)) {
 			return null;
 		}
@@ -382,28 +387,29 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 	 *
 	 * @return The dates.
 	 */
-	private Iterable<LocalDate> getFinalDates(final String service) {
+	private Collection<LocalDate> getFinalDates(final String service) {
 		if (!servicesToDates.containsKey(service) && !servicesToDatesIncluded.containsKey(service)) {
 			return null;
 		}
 
-		// Remove dates in interval from dates to be included.
-		final Iterable<LocalDate> datesIncluded = servicesToDatesIncluded.containsKey(
-				service) ? servicesToDatesIncluded.get(service) : Collections.<LocalDate>emptyList();
-		final Predicate<LocalDate> notInIntervalFilter = servicesToDates.containsKey(service) ? new DateNotInDates(
-				servicesToDates.get(service)) : new DateNotInCollection(Collections.<LocalDate>emptyList());
-		final Iterable<LocalDate> datesIncludedNotInInterval = Iterables.filter(datesIncluded, notInIntervalFilter);
+		if (!servicesToDates.containsKey(service)) {
+			return servicesToDatesIncluded.get(service);
+		} else {
+			Dates dates = servicesToDates.get(service);
 
-		// Remove excluded dates from dates in interval.
-		final Iterable<LocalDate> datesInterval = servicesToDates.containsKey(service) ? servicesToDates.get(
-				service) : Collections.<LocalDate>emptyList();
-		final Predicate<LocalDate> notExcludedFilter = servicesToDatesExcluded.containsKey(
-				service) ? new DateNotInCollection(servicesToDatesExcluded.get(service)) : new DateNotInCollection(
-				Collections.<LocalDate>emptyList());
-		final Iterable<LocalDate> datesIntervalNotExcluded = Iterables.filter(datesInterval, notExcludedFilter);
+			// Get included dates not contained in the date interval
+			Stream<LocalDate> datesIncludedNotInInterval = servicesToDatesIncluded.getOrDefault(service, emptyList())
+																				  .stream()
+																				  .filter(d -> !dates.contains(d));
 
-		return Iterables.concat(datesIncludedNotInInterval, datesIntervalNotExcluded);
+			// Get dates in interval without excluded ones
+			Collection<LocalDate> datesExcluded = servicesToDatesExcluded.get(service);
+			Predicate<LocalDate> notExcludedFilter =
+					datesExcluded != null ? d -> !datesExcluded.contains(d) : d -> true;
+			Stream<LocalDate> datesIntervalNotExcluded = dates.stream().filter(notExcludedFilter);
 
+			return Stream.concat(datesIncludedNotInInterval, datesIntervalNotExcluded).collect(toList());
+		}
 	}
 
 	/**
@@ -411,7 +417,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 	 *
 	 * @author Radek Holy
 	 */
-	private final static class Dates implements Iterable<LocalDate> {
+	private final static class Dates extends AbstractCollection<LocalDate> implements Iterable<LocalDate> {
 
 		/**
 		 * Left endpoint of the interval (inclusively).
@@ -424,8 +430,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 		public final LocalDate end;
 
 		/**
-		 * Flag for each day in week indicating whether the service is available. Index of each flag plus one is equal
-		 * to the number of each day as they are defined in {@link org.joda.time.DateTimeConstants}.
+		 * Flag for each day in week indicating whether the service is available.
 		 */
 		public final List<Boolean> isAvailableInDay;
 
@@ -437,9 +442,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 		 * @param end
 		 * 		Right endpoint of the interval (exclusively).
 		 * @param isAvailableInDay
-		 * 		Flag for each day in week indicating whether the service is available. Index of each flag plus one is
-		 * 		equal
-		 * 		to the number of each day as they are defined in {@link org.joda.time.DateTimeConstants}.
+		 * 		Flag for each day in week indicating whether the service is available.
 		 */
 		public Dates(final LocalDate start, final LocalDate end, final List<Boolean> isAvailableInDay) {
 			super();
@@ -456,7 +459,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 			if (isAvailableInDay == null) {
 				throw new NullPointerException("bad week flags");
 			}
-			if (isAvailableInDay.size() != DateTimeConstants.DAYS_PER_WEEK) {
+			if (isAvailableInDay.size() != 7) {
 				throw new IllegalArgumentException("flags for some days miss");
 			}
 			if (isAvailableInDay.contains(null)) {
@@ -481,7 +484,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 				throw new NullPointerException("bad date");
 			}
 
-			final int day = date.getDayOfWeek() - 1;
+			final int day = date.getDayOfWeek().ordinal();
 
 			return (isAvailableInDay.get(day) && !isBefore(date) && !isAfter(date));
 		}
@@ -526,6 +529,11 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 			return new DatesIterator(this);
 		}
 
+		@Override
+		public int size() {
+			return -1;
+		}
+
 		/**
 		 * {@inheritDoc}
 		 */
@@ -536,8 +544,8 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 			if (obj.getClass() != getClass()) return false;
 
 			final Dates rhs = (Dates) obj;
-			return Objects.equals(start, rhs.start) && Objects.equals(end, rhs.end) && Objects.equals(isAvailableInDay,
-					rhs.isAvailableInDay);
+			return Objects.equals(start, rhs.start) && Objects.equals(end, rhs.end) &&
+				   Objects.equals(isAvailableInDay, rhs.isAvailableInDay);
 		}
 
 		/**
@@ -559,7 +567,7 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 		/**
 		 * Period between each pair of dates.
 		 */
-		private static final ReadablePeriod period = Period.days(1);
+		private static final Period PERIOD = Period.ofDays(1);
 
 		/**
 		 * The date interval.
@@ -629,90 +637,12 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 		private LocalDate findNext(final LocalDate start) {
 			LocalDate date = start != null ? start : dates.start;
 			while (!dates.isBefore(date)) {
-				date = date.plus(period);
+				date = date.plus(PERIOD);
 				if (dates.contains(date)) {
 					return date;
 				}
 			}
 			return null;
-		}
-	}
-
-	/**
-	 * Predicate testing whether a date is in a collection.
-	 *
-	 * @author Radek Holy
-	 */
-	private final static class DateNotInCollection implements Predicate<LocalDate> {
-
-		/**
-		 * The collection of dates.
-		 */
-		private final Collection<LocalDate> collection;
-
-		/**
-		 * Construct a new instance.
-		 *
-		 * @param collection
-		 * 		A collection.
-		 */
-		public DateNotInCollection(final Collection<LocalDate> collection) {
-			if (collection == null) {
-				throw new NullPointerException("bad collection");
-			}
-
-			this.collection = collection;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public final boolean apply(final LocalDate date) {
-			if (date == null) {
-				throw new NullPointerException("bad date");
-			}
-
-			return !collection.contains(date);
-		}
-	}
-
-	/**
-	 * Predicate testing whether a date is in a date interval.
-	 *
-	 * @author Radek Holy
-	 */
-	private final static class DateNotInDates implements Predicate<LocalDate> {
-
-		/**
-		 * The interval.
-		 */
-		private final Dates dates;
-
-		/**
-		 * Construct a new instance.
-		 *
-		 * @param dates
-		 * 		A date interval.
-		 */
-		public DateNotInDates(final Dates dates) {
-			if (dates == null) {
-				throw new NullPointerException("bad dates");
-			}
-
-			this.dates = dates;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public final boolean apply(final LocalDate date) {
-			if (date == null) {
-				throw new NullPointerException("bad date");
-			}
-
-			return !dates.contains(date);
 		}
 	}
 
@@ -769,14 +699,14 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 		@Override
 		public String toString() {
 			return "Stop [" +
-					"id='" + id + '\'' +
-					", code='" + code + '\'' +
-					", name='" + name + '\'' +
-					", description='" + description + '\'' +
-					", location=" + location +
-					", zoneId='" + zoneId + '\'' +
-					", wheelchairBoarding=" + wheelchairBoarding +
-					']';
+				   "id='" + id + '\'' +
+				   ", code='" + code + '\'' +
+				   ", name='" + name + '\'' +
+				   ", description='" + description + '\'' +
+				   ", location=" + location +
+				   ", zoneId='" + zoneId + '\'' +
+				   ", wheelchairBoarding=" + wheelchairBoarding +
+				   ']';
 		}
 	}
 
@@ -819,8 +749,8 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 				return false;
 			if (routeLongName != null ? !routeLongName.equals(route.routeLongName) : route.routeLongName != null)
 				return false;
-			return routeDescription != null ? routeDescription.equals(
-					route.routeDescription) : route.routeDescription == null;
+			return routeDescription != null ? routeDescription.equals(route.routeDescription) :
+					route.routeDescription == null;
 
 		}
 
@@ -840,28 +770,28 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 		@Override
 		public String toString() {
 			return "Route [" +
-					"agencyId='" + agencyId + '\'' +
-					", agencyName='" + agencyName + '\'' +
-					", agencyUrl='" + agencyUrl + '\'' +
-					", agencyPhone='" + agencyPhone + '\'' +
-					", ptMode=" + ptMode +
-					", routeShortName='" + routeShortName + '\'' +
-					", routeLongName='" + routeLongName + '\'' +
-					", routeDescription='" + routeDescription + '\'' +
-					']';
+				   "agencyId='" + agencyId + '\'' +
+				   ", agencyName='" + agencyName + '\'' +
+				   ", agencyUrl='" + agencyUrl + '\'' +
+				   ", agencyPhone='" + agencyPhone + '\'' +
+				   ", ptMode=" + ptMode +
+				   ", routeShortName='" + routeShortName + '\'' +
+				   ", routeLongName='" + routeLongName + '\'' +
+				   ", routeDescription='" + routeDescription + '\'' +
+				   ']';
 		}
 	}
 
 	protected static class Departure {
 
-		public final DateTime departureTime;
-		public final ReadablePeriod travelTime;
+		public final ZonedDateTime departureTime;
+		public final Duration travelTime;
 		public final String tripId;
 		public final WheelchairBoarding wheelchairBoarding;
 		public final BikeBoarding bikeBoarding;
 		public final String tripHeadsign;
 
-		public Departure(DateTime departureTime, ReadablePeriod travelTime, String tripId,
+		public Departure(ZonedDateTime departureTime, Duration travelTime, String tripId,
 						 WheelchairBoarding wheelchairBoarding, BikeBoarding bikeBoarding, String tripHeadsign) {
 			this.departureTime = departureTime;
 			this.travelTime = travelTime;
@@ -878,15 +808,15 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 
 			Departure departure1 = (Departure) o;
 
-			if (departureTime != null ? !departureTime.equals(
-					departure1.departureTime) : departure1.departureTime != null) return false;
+			if (departureTime != null ? !departureTime.equals(departure1.departureTime) :
+					departure1.departureTime != null) return false;
 			if (travelTime != null ? !travelTime.equals(departure1.travelTime) : departure1.travelTime != null)
 				return false;
 			if (tripId != null ? !tripId.equals(departure1.tripId) : departure1.tripId != null) return false;
 			if (wheelchairBoarding != departure1.wheelchairBoarding) return false;
 			if (bikeBoarding != departure1.bikeBoarding) return false;
-			return tripHeadsign != null ? tripHeadsign.equals(
-					departure1.tripHeadsign) : departure1.tripHeadsign == null;
+			return tripHeadsign != null ? tripHeadsign.equals(departure1.tripHeadsign) :
+					departure1.tripHeadsign == null;
 
 		}
 
@@ -904,13 +834,13 @@ public abstract class AbstractGTFSDataHandler implements GTFSDataHandler {
 		@Override
 		public String toString() {
 			return "Departure [" +
-					"departureTime=" + departureTime +
-					", arrivalTime=" + travelTime +
-					", tripId='" + tripId + '\'' +
-					", wheelchairBoarding=" + wheelchairBoarding +
-					", bikeBoarding=" + bikeBoarding +
-					", tripHeadsign='" + tripHeadsign + '\'' +
-					']';
+				   "departureTime=" + departureTime +
+				   ", travelTime=" + travelTime +
+				   ", tripId='" + tripId + '\'' +
+				   ", wheelchairBoarding=" + wheelchairBoarding +
+				   ", bikeBoarding=" + bikeBoarding +
+				   ", tripHeadsign='" + tripHeadsign + '\'' +
+				   ']';
 		}
 	}
 }

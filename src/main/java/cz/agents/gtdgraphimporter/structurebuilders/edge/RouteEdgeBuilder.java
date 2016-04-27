@@ -102,7 +102,7 @@ public class RouteEdgeBuilder extends EdgeBuilder<RouteEdge> {
 
 		@Override
 		public int compareTo(Departure o) {
-			return departure - o.departure;
+			return Integer.compare(departure, o.departure);
 		}
 	}
 }

@@ -6,7 +6,8 @@ import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsException;
 import cz.agents.gtdgraphimporter.structurebuilders.TmpGraphBuilder;
 import cz.agents.multimodalstructures.edges.TimeDependentEdge;
 import org.apache.log4j.Logger;
-import org.joda.time.LocalDate;
+
+import java.time.LocalDate;
 
 /**
  * This class converts GTFS data to appropriate format.

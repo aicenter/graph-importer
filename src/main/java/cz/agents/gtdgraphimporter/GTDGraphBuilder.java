@@ -32,11 +32,11 @@ import cz.agents.multimodalstructures.edges.TimeDependentEdge;
 import cz.agents.multimodalstructures.edges.VirtualEdge;
 import cz.agents.multimodalstructures.nodes.RoadNode;
 import org.apache.log4j.Logger;
-import org.joda.time.LocalDate;
 
 import java.io.File;
 import java.sql.Connection;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
@@ -259,8 +259,7 @@ public class GTDGraphBuilder {
 	}
 
 	private LocalDate createLocalDate(Date oldDate) {
-		java.time.LocalDate ld = oldDate.toLocalDate();
-		return new LocalDate(ld.getYear(), ld.getMonthValue(), ld.getDayOfMonth());
+		return oldDate.toLocalDate();
 	}
 
 	private boolean checkOneComponent(TmpGraphBuilder<RoadNode, RoadEdge> osmGraph) {

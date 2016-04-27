@@ -11,11 +11,12 @@ import cz.agents.gtdgraphimporter.structurebuilders.node.RouteNodeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.node.StopNodeBuilder;
 import cz.agents.multimodalstructures.edges.TimeDependentEdge;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
-import org.joda.time.ReadablePeriod;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -60,7 +61,7 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 	 */
 	private final LocalDate epochStart;
 
-	private DateTime epochStartWithTimeZone = null;
+	private ZonedDateTime epochStartWithTimeZone = null;
 
 	private int numberOfStops = 0;
 	private int numberOfRoutes = 0;
@@ -94,13 +95,13 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 	@Override
 	public final void addDepartures(final String origin, final String destination, final String route,
 									final String service, final String tripId, final String tripHeadsign,
-									final ReadablePeriod startTime, final ReadablePeriod timePeriod,
-									final ReadablePeriod endTime, final Boolean isExact, final Double distanceInM,
-									final ReadablePeriod travelTime) {
+									final Duration startTime, final Duration timePeriod,
+									final Duration endTime, final Boolean isExact, final Double distanceInM,
+									final Duration travelTime) {
 		checkStop(origin);
 		checkStop(destination);
 		checkRoute(route);
-		DateTime epochStart = getEpochStart();
+		ZonedDateTime epochStart = getEpochStart();
 
 		final Collection<Departure> departures = createDepartures(route, service, tripId, tripHeadsign, startTime,
 				timePeriod, endTime, travelTime);
@@ -111,25 +112,25 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 		}
 	}
 
-	private int getDuration(ReadablePeriod travelTime) {
-		return travelTime.toPeriod().toStandardSeconds().getSeconds();
+	private int getDuration(Duration travelTime) {
+		return (int) travelTime.getSeconds();
 	}
 
-	private int getDeparture(DateTime epochStart, DateTime departureTime) {
-		return (int) (departureTime.minus(epochStart.getMillis()).getMillis() / 1000L);
+	private int getDeparture(ZonedDateTime epochStart, ZonedDateTime departureTime) {
+		return (int) ChronoUnit.SECONDS.between(epochStart, departureTime);
 	}
 
-	private DateTime getEpochStart() {
+	private ZonedDateTime getEpochStart() {
 		if (epochStartWithTimeZone == null) {
 			//check if there is only one time zone
-			Set<DateTimeZone> timeZones = new HashSet<>(agenciesTimeZones.values());
+			Set<ZoneId> timeZones = new HashSet<>(agenciesTimeZones.values());
 			if (timeZones.size() > 1) {
 				throw new IllegalStateException("The GTFS contains data from more time zones.");
 			}
 
 			//convert epoch start to format with time zone of the GTFS
-			DateTimeZone timeZone = timeZones.iterator().next();
-			this.epochStartWithTimeZone = this.epochStart.toDateTimeAtStartOfDay(timeZone);
+			ZoneId timeZone = timeZones.iterator().next();
+			this.epochStartWithTimeZone = this.epochStart.atStartOfDay(timeZone);
 		}
 		return this.epochStartWithTimeZone;
 	}

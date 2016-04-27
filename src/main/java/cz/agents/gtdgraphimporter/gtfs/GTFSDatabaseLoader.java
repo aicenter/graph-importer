@@ -8,9 +8,11 @@ import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsParseException;
 import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsSQLException;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.additional.WheelchairBoarding;
-import org.joda.time.*;
 
 import java.sql.*;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -162,7 +164,8 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 	public GTFSDatabaseLoader(final Connection connection, final int epsgSrid, final double gtfsUnitToMetersMultiplier,
 							  final int sqlResultDownloadSize, final Date pruneBeforeDate, final Date pruneAfterDate) {
 		this(connection, createProjection(epsgSrid), gtfsUnitToMetersMultiplier, sqlResultDownloadSize,
-				pruneBeforeDate, pruneAfterDate);
+			 pruneBeforeDate,
+			 pruneAfterDate);
 
 	}
 
@@ -213,8 +216,9 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		}
 
 		final String sqlQuery = String.format("SELECT DISTINCT %s, %s, %s, %s, %s FROM %s;",
-				SCHEMA_AGENCY_TABLE_ID_COLUMN, SCHEMA_AGENCY_TABLE_NAME_COLUMN, SCHEMA_AGENCY_TABLE_TIMEZONE_COLUMN,
-				SCHEMA_AGENCY_TABLE_URL_COLUMN, SCHEMA_AGENCY_TABLE_PHONE_COLUMN, SCHEMA_AGENCY_TABLE);
+											  SCHEMA_AGENCY_TABLE_ID_COLUMN, SCHEMA_AGENCY_TABLE_NAME_COLUMN,
+											  SCHEMA_AGENCY_TABLE_TIMEZONE_COLUMN, SCHEMA_AGENCY_TABLE_URL_COLUMN,
+											  SCHEMA_AGENCY_TABLE_PHONE_COLUMN, SCHEMA_AGENCY_TABLE);
 		// logger.debug(sqlQuery);
 
 		try {
@@ -236,9 +240,9 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 				}
 
 				// Convert data to acceptable data types.
-				final DateTimeZone timeZone;
+				final ZoneId timeZone;
 				try {
-					timeZone = DateTimeZone.forID(timeZoneId);
+					timeZone = ZoneId.of(timeZoneId);
 				} catch (final IllegalArgumentException e) {
 					handleParseException("unknown time zone ID: ".concat(timeZoneId), e);
 					continue;
@@ -275,10 +279,11 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		}
 
 		final String sqlQuery = String.format("SELECT DISTINCT %s, %s, %s, %s, %s, %s, %s, %s FROM %s;",
-				SCHEMA_STOPS_TABLE_ID_COLUMN, SCHEMA_STOPS_TABLE_LATITUDE_COLUMN, SCHEMA_STOPS_TABLE_LONGITUDE_COLUMN,
-				SCHEMA_STOPS_TABLE_DESCRIPTION_COLUMN, SCHEMA_STOPS_TABLE_ZONE_ID_COLUMN,
-				SCHEMA_STOPS_TABLE_CODE_COLUMN, SCHEMA_STOPS_TABLE_NAME_COLUMN,
-				SCHEMA_STOPS_TABLE_WHEELCHAIR_BOARDING_COLUMN, SCHEMA_STOPS_TABLE);
+											  SCHEMA_STOPS_TABLE_ID_COLUMN, SCHEMA_STOPS_TABLE_LATITUDE_COLUMN,
+											  SCHEMA_STOPS_TABLE_LONGITUDE_COLUMN,
+											  SCHEMA_STOPS_TABLE_DESCRIPTION_COLUMN, SCHEMA_STOPS_TABLE_ZONE_ID_COLUMN,
+											  SCHEMA_STOPS_TABLE_CODE_COLUMN, SCHEMA_STOPS_TABLE_NAME_COLUMN,
+											  SCHEMA_STOPS_TABLE_WHEELCHAIR_BOARDING_COLUMN, SCHEMA_STOPS_TABLE);
 
 		try {
 			connection.setAutoCommit(false); // Needed for "setFetchSize".
@@ -303,14 +308,14 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 				}
 				if (wheelchairBoardingIndex < 0 || wheelchairBoardingIndex >= WheelchairBoarding.values().length) {
 					handleParseException(String.format("unknown wheelchair boarding type: %d",
-							wheelchairBoardingIndex), null);
+													   wheelchairBoardingIndex),
+										 null);
 					continue;
 				}
 
 				GPSLocation location;
 				if (transformer != null) {
-					location = GPSLocationTools.createGPSLocation(latitude, longitude, 0,
-							transformer);
+					location = GPSLocationTools.createGPSLocation(latitude, longitude, 0, transformer);
 				} else {
 					location = new GPSLocation(latitude, longitude, 0, 0);
 				}
@@ -347,9 +352,10 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		}
 
 		final String sqlQuery = String.format("SELECT DISTINCT %s, %s, %s, %s, %s, %s FROM %s;",
-				SCHEMA_ROUTES_TABLE_ID_COLUMN, SCHEMA_ROUTES_TABLE_AGENCY_ID_COLUMN, SCHEMA_ROUTES_TABLE_TYPE_COLUMN,
-				SCHEMA_ROUTES_TABLE_SHORT_NAME_COLUMN, SCHEMA_ROUTES_TABLE_LONG_NAME_COLUMN,
-				SCHEMA_ROUTES_TABLE_DESCRIPTION_COLUMN, SCHEMA_ROUTES_TABLE);
+											  SCHEMA_ROUTES_TABLE_ID_COLUMN, SCHEMA_ROUTES_TABLE_AGENCY_ID_COLUMN,
+											  SCHEMA_ROUTES_TABLE_TYPE_COLUMN, SCHEMA_ROUTES_TABLE_SHORT_NAME_COLUMN,
+											  SCHEMA_ROUTES_TABLE_LONG_NAME_COLUMN,
+											  SCHEMA_ROUTES_TABLE_DESCRIPTION_COLUMN, SCHEMA_ROUTES_TABLE);
 
 		try {
 			connection.setAutoCommit(false); // Needed for "setFetchSize".
@@ -409,14 +415,18 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		}
 
 		final String sqlQuery = String.format("SELECT DISTINCT %s, %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE " +
-				"%s" +
-				" < '%s' AND %s >= '%s';", SCHEMA_CALENDAR_TABLE_SERVICE_ID_COLUMN,
-				SCHEMA_CALENDAR_TABLE_START_COLUMN, SCHEMA_CALENDAR_TABLE_END_COLUMN,
-				SCHEMA_CALENDAR_TABLE_MONDAY_COLUMN, SCHEMA_CALENDAR_TABLE_TUESDAY_COLUMN,
-				SCHEMA_CALENDAR_TABLE_WEDNESDAY_COLUMN, SCHEMA_CALENDAR_TABLE_THURSDAY_COLUMN,
-				SCHEMA_CALENDAR_TABLE_FRIDAY_COLUMN, SCHEMA_CALENDAR_TABLE_SATURDAY_COLUMN,
-				SCHEMA_CALENDAR_TABLE_SUNDAY_COLUMN, SCHEMA_CALENDAR_TABLE, SCHEMA_CALENDAR_TABLE_START_COLUMN,
-				pruneAfterDate, SCHEMA_CALENDAR_TABLE_END_COLUMN, pruneBeforeDate);
+											  "%s" +
+											  " < '%s' AND %s >= '%s';", SCHEMA_CALENDAR_TABLE_SERVICE_ID_COLUMN,
+											  SCHEMA_CALENDAR_TABLE_START_COLUMN, SCHEMA_CALENDAR_TABLE_END_COLUMN,
+											  SCHEMA_CALENDAR_TABLE_MONDAY_COLUMN,
+											  SCHEMA_CALENDAR_TABLE_TUESDAY_COLUMN,
+											  SCHEMA_CALENDAR_TABLE_WEDNESDAY_COLUMN,
+											  SCHEMA_CALENDAR_TABLE_THURSDAY_COLUMN,
+											  SCHEMA_CALENDAR_TABLE_FRIDAY_COLUMN,
+											  SCHEMA_CALENDAR_TABLE_SATURDAY_COLUMN,
+											  SCHEMA_CALENDAR_TABLE_SUNDAY_COLUMN, SCHEMA_CALENDAR_TABLE,
+											  SCHEMA_CALENDAR_TABLE_START_COLUMN, pruneAfterDate,
+											  SCHEMA_CALENDAR_TABLE_END_COLUMN, pruneBeforeDate);
 
 		try {
 			connection.setAutoCommit(false); // Needed for "setFetchSize".
@@ -428,8 +438,8 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 				final String id = sqlResult.getString(1);
 				final Date startSql = sqlResult.getDate(2);
 				final Date endSql = sqlResult.getDate(3);
-				final List<Boolean> isAvailableInDay = new ArrayList<>(DateTimeConstants.DAYS_PER_WEEK);
-				for (int i = 0; i < DateTimeConstants.DAYS_PER_WEEK; i++) {
+				final List<Boolean> isAvailableInDay = new ArrayList<>(7);
+				for (int i = 0; i < 7; i++) {
 					isAvailableInDay.add(getBoolean(sqlResult, 4 + i));
 				}
 
@@ -447,9 +457,9 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 				LocalDate startJoda = null;
 				LocalDate endJoda = null;
 				try {
-					startJoda = new LocalDate(!startSql.before(pruneBeforeDate) ? startSql : pruneBeforeDate);
-					endJoda = endSql.before(pruneAfterDate) ? new LocalDate(endSql) : new LocalDate(pruneAfterDate)
-							.minusDays(1);
+					startJoda = (!startSql.before(pruneBeforeDate) ? startSql : pruneBeforeDate).toLocalDate();
+					endJoda = endSql.before(pruneAfterDate) ? endSql.toLocalDate() : pruneAfterDate.toLocalDate()
+																								   .minusDays(1);
 				} catch (Exception ignored) {
 				}
 
@@ -485,10 +495,11 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		}
 
 		final String sqlQuery = String.format("SELECT DISTINCT %s, %s, %s FROM %s WHERE %s >= '%s' AND %s < '%s';",
-				SCHEMA_CALENDAR_DATES_TABLE_SERVICE_ID_COLUMN, SCHEMA_CALENDAR_DATES_TABLE_DATE_COLUMN,
-				SCHEMA_CALENDAR_DATES_TABLE_TYPE_COLUMN, SCHEMA_CALENDAR_DATES_TABLE,
-				SCHEMA_CALENDAR_DATES_TABLE_DATE_COLUMN, pruneBeforeDate, SCHEMA_CALENDAR_DATES_TABLE_DATE_COLUMN,
-				pruneAfterDate);
+											  SCHEMA_CALENDAR_DATES_TABLE_SERVICE_ID_COLUMN,
+											  SCHEMA_CALENDAR_DATES_TABLE_DATE_COLUMN,
+											  SCHEMA_CALENDAR_DATES_TABLE_TYPE_COLUMN, SCHEMA_CALENDAR_DATES_TABLE,
+											  SCHEMA_CALENDAR_DATES_TABLE_DATE_COLUMN, pruneBeforeDate,
+											  SCHEMA_CALENDAR_DATES_TABLE_DATE_COLUMN, pruneAfterDate);
 
 		try {
 			connection.setAutoCommit(false); // Needed for "setFetchSize".
@@ -512,7 +523,7 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 				}
 
 				// Convert data to acceptable data types.
-				final LocalDate dateJoda = new LocalDate(dateSql);
+				final LocalDate dateJoda = dateSql.toLocalDate();
 				final boolean isAvailable = GTFSDataLoader.GTFS_EXCEPTION_TYPE_TO_AVAILABILITY_FLAG.get(type);
 
 				try {
@@ -552,21 +563,30 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		final TripMemory lastTrips = new TripMemory();
 		boolean tripHasError = false;
 		PartialDeparture previousDeparture = null;
-		Period frequencyOffset = Period.ZERO;
+		Duration frequencyOffset = Duration.ZERO;
 
 		final String sqlQuery = String.format("SELECT DISTINCT %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s " +
-				"FROM" + " %s JOIN %s ON %s = %s LEFT JOIN %s ON %s = %s ORDER BY %s ASC, %s ASC, %s ASC;",
-				SCHEMA_TRIPS_TABLE_ID_COLUMN, SCHEMA_TRIPS_TABLE_TRIP_HEADSIGN_COLUMN,
-				SCHEMA_STOP_TIMES_TABLE_SEQUENCE_COLUMN, SCHEMA_STOP_TIMES_TABLE_STOP_ID_COLUMN,
-				SCHEMA_TRIPS_TABLE_ROUTE_ID_COLUMN, SCHEMA_TRIPS_TABLE_SERVICE_ID_COLUMN,
-				SCHEMA_STOP_TIMES_TABLE_DISTANCE_COLUMN, SCHEMA_STOP_TIMES_TABLE_ARRIVAL_COLUMN,
-				SCHEMA_STOP_TIMES_TABLE_DEPARTURE_COLUMN, SCHEMA_FREQUENCIES_TABLE_START_COLUMN,
-				SCHEMA_FREQUENCIES_TABLE_END_COLUMN, SCHEMA_FREQUENCIES_TABLE_HEADWAY_COLUMN,
-				SCHEMA_FREQUENCIES_TABLE_EXACT_COLUMN, SCHEMA_STOP_TIMES_TABLE, SCHEMA_TRIPS_TABLE,
-				SCHEMA_STOP_TIMES_TABLE_TRIP_ID_COLUMN, SCHEMA_TRIPS_TABLE_ID_COLUMN, SCHEMA_FREQUENCIES_TABLE,
-				SCHEMA_STOP_TIMES_TABLE_TRIP_ID_COLUMN, SCHEMA_FREQUENCIES_TABLE_TRIP_ID_COLUMN,
-				SCHEMA_TRIPS_TABLE_ID_COLUMN, SCHEMA_FREQUENCIES_TABLE_START_COLUMN,
-				SCHEMA_STOP_TIMES_TABLE_SEQUENCE_COLUMN);
+											  "FROM" +
+											  " %s JOIN %s ON %s = %s LEFT JOIN %s ON %s = %s ORDER BY %s ASC, %s " +
+											  "ASC," +
+											  " %s ASC;", SCHEMA_TRIPS_TABLE_ID_COLUMN,
+											  SCHEMA_TRIPS_TABLE_TRIP_HEADSIGN_COLUMN,
+											  SCHEMA_STOP_TIMES_TABLE_SEQUENCE_COLUMN,
+											  SCHEMA_STOP_TIMES_TABLE_STOP_ID_COLUMN,
+											  SCHEMA_TRIPS_TABLE_ROUTE_ID_COLUMN, SCHEMA_TRIPS_TABLE_SERVICE_ID_COLUMN,
+											  SCHEMA_STOP_TIMES_TABLE_DISTANCE_COLUMN,
+											  SCHEMA_STOP_TIMES_TABLE_ARRIVAL_COLUMN,
+											  SCHEMA_STOP_TIMES_TABLE_DEPARTURE_COLUMN,
+											  SCHEMA_FREQUENCIES_TABLE_START_COLUMN,
+											  SCHEMA_FREQUENCIES_TABLE_END_COLUMN,
+											  SCHEMA_FREQUENCIES_TABLE_HEADWAY_COLUMN,
+											  SCHEMA_FREQUENCIES_TABLE_EXACT_COLUMN, SCHEMA_STOP_TIMES_TABLE,
+											  SCHEMA_TRIPS_TABLE, SCHEMA_STOP_TIMES_TABLE_TRIP_ID_COLUMN,
+											  SCHEMA_TRIPS_TABLE_ID_COLUMN, SCHEMA_FREQUENCIES_TABLE,
+											  SCHEMA_STOP_TIMES_TABLE_TRIP_ID_COLUMN,
+											  SCHEMA_FREQUENCIES_TABLE_TRIP_ID_COLUMN, SCHEMA_TRIPS_TABLE_ID_COLUMN,
+											  SCHEMA_FREQUENCIES_TABLE_START_COLUMN,
+											  SCHEMA_STOP_TIMES_TABLE_SEQUENCE_COLUMN);
 
 		try {
 			connection.setAutoCommit(false); // Needed for "setFetchSize".
@@ -592,67 +612,72 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 
 				// Check all required values are provided.
 				final boolean isDefinedByFrequency = frequencyStartS != null && frequencyEndS != null &&
-						headwayInSeconds != null;
-				assert isDefinedByFrequency || (frequencyStartS == null && frequencyEndS == null && headwayInSeconds
-						== null && exactTimes == null) : "How to handle null in frequency definition.";
-				if (id == null || order == null || stop == null || route == null || service == null || arrivalS ==
-						null || departureS == null) {
+													 headwayInSeconds != null;
+				assert isDefinedByFrequency ||
+					   (frequencyStartS == null && frequencyEndS == null && headwayInSeconds == null &&
+						exactTimes == null) : "How to handle null in frequency definition.";
+				if (id == null || order == null || stop == null || route == null || service == null ||
+					arrivalS == null || departureS == null) {
 					handleParseException("not all necessary information about trip set: ".concat(id), null);
 					tripHasError = true;
 					continue;
 				}
 
 				// Convert data to acceptable data types.
-				final Period departurePeriod = Period.parse(departureS, GTFSDataLoader
-						.GTFS_ARRIVAL_DEPARTURE_FORMATTER);
-				final Period arrivalPeriod = Period.parse(arrivalS, GTFSDataLoader.GTFS_ARRIVAL_DEPARTURE_FORMATTER);
-				final Period frequencyStartPeriod = frequencyStartS == null ? null : Period.parse(frequencyStartS,
-						GTFSDataLoader.GTFS_ARRIVAL_DEPARTURE_FORMATTER);
-				final Period frequencyEndPeriod = frequencyEndS == null ? null : Period.parse(frequencyEndS,
-						GTFSDataLoader.GTFS_ARRIVAL_DEPARTURE_FORMATTER);
-				final Period headwayPeriod = headwayInSeconds == null ? null : Period.seconds(headwayInSeconds);
+				final Duration departurePeriod = GTFSDataLoader.parseDuration(departureS);
+				final Duration arrivalPeriod = GTFSDataLoader.parseDuration(arrivalS);
+				final Duration frequencyStartPeriod =
+						frequencyStartS == null ? null : GTFSDataLoader.parseDuration(frequencyStartS);
+				final Duration frequencyEndPeriod =
+						frequencyEndS == null ? null : GTFSDataLoader.parseDuration(frequencyEndS);
+				final Duration headwayPeriod = headwayInSeconds == null ? null : Duration.ofSeconds(headwayInSeconds);
 				final PartialDeparture nextDeparture = new PartialDeparture(id, stop, order, route, service,
-						distanceFromStart, departurePeriod, frequencyStartPeriod, frequencyEndPeriod, headwayPeriod,
-						exactTimes);
+																			distanceFromStart, departurePeriod,
+																			frequencyStartPeriod, frequencyEndPeriod,
+																			headwayPeriod, exactTimes);
 
 				if (lastTrips.isNew(nextDeparture)) {
 					// Start of a new trip resets variables.
 					lastTrips.add(nextDeparture);
 					tripHasError = false;
 					previousDeparture = null;
-					frequencyOffset = Period.ZERO;
+					frequencyOffset = Duration.ZERO;
 				} else if (!tripHasError) {
 					// Add new departure for previous stop because the arrival
 					// is known.
-					assert previousDeparture.order < nextDeparture.order : String.format("The SQL result is probably "
-							+ "not sorted by stop sequence numbers. Check the SQL " +
+					assert previousDeparture.order < nextDeparture.order : String.format(
+							"The SQL result is probably " + "not sorted by stop sequence numbers. Check the SQL " +
 							"results in the log and the query: " +
 							"%s", sqlQuery);
 					assert previousDeparture.route.equals(nextDeparture.route) : "Is it really meaningful?";
 
-					final ReadablePeriod startTime = previousDeparture.frequencyStart == null ? previousDeparture
-							.departureTime : previousDeparture.frequencyStart.plus(frequencyOffset);
-					final ReadablePeriod timePeriod = previousDeparture.headway == null ? new Period(1) :
-							previousDeparture.headway;
-					final ReadablePeriod endTime = previousDeparture.frequencyStart == null ? previousDeparture
-							.departureTime.plus(timePeriod) : previousDeparture.frequencyEnd.plus(frequencyOffset);
-					final Period travelTime = arrivalPeriod.minus(previousDeparture.departureTime);
-					final Period waitingTime = departurePeriod.minus(arrivalPeriod);
+					final Duration startTime = previousDeparture.frequencyStart ==
+											   null ? previousDeparture.departureTime : previousDeparture
+							.frequencyStart
+							.plus(frequencyOffset);
+					final Duration timePeriod =
+							previousDeparture.headway == null ? Duration.ofMillis(1) : previousDeparture.headway;
+					final Duration endTime =
+							previousDeparture.frequencyStart == null ? previousDeparture.departureTime.plus(
+									timePeriod) : previousDeparture.frequencyEnd.plus(frequencyOffset);
+					final Duration travelTime = arrivalPeriod.minus(previousDeparture.departureTime);
+					final Duration waitingTime = departurePeriod.minus(arrivalPeriod);
 
 					final Double distanceInM;
 					if (nextDeparture.distanceFromStart == null || previousDeparture.distanceFromStart == null) {
-						assert nextDeparture.distanceFromStart == null && previousDeparture.distanceFromStart == null
-								: "How to handle one null in two given distances?";
+						assert nextDeparture.distanceFromStart == null && previousDeparture.distanceFromStart == null :
+								"How to handle one null in two given " + "distances?";
 						distanceInM = null;
 					} else {
 						distanceInM = (nextDeparture.distanceFromStart - previousDeparture.distanceFromStart) *
-								gtfsUnitToMetersMultiplier;
+									  gtfsUnitToMetersMultiplier;
 					}
 
 					try {
 						dataHandler.addDepartures(previousDeparture.stop, nextDeparture.stop, previousDeparture.route,
-								previousDeparture.service, previousDeparture.id, trip_headsign, startTime, timePeriod,
-								endTime, previousDeparture.isExact, distanceInM, travelTime);
+												  previousDeparture.service, previousDeparture.id, trip_headsign,
+												  startTime, timePeriod, endTime, previousDeparture.isExact,
+												  distanceInM, travelTime);
 					} catch (final IllegalStateException e) {
 						handleParseException("not all necessary information about trip already set: ".concat(id), e);
 						tripHasError = true;
@@ -781,22 +806,22 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		/**
 		 * Time of the departure.
 		 */
-		public final Period departureTime;
+		public final Duration departureTime;
 
 		/**
 		 * Left endpoint of departure frequency interval (inclusive). Possibly {@code null}.
 		 */
-		public final Period frequencyStart;
+		public final Duration frequencyStart;
 
 		/**
 		 * Right endpoint of departure frequency interval (exclusive). Possibly {@code null}.
 		 */
-		public final Period frequencyEnd;
+		public final Duration frequencyEnd;
 
 		/**
 		 * Period of departure frequency. Possibly {@code null}.
 		 */
-		public final Period headway;
+		public final Duration headway;
 
 		/**
 		 * Flag indicating whether the departure time is exact. Possibly {@code null}.
@@ -830,9 +855,8 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		 * 		Flag indicating whether the departure time is exact. Possibly {@code null}.
 		 */
 		public PartialDeparture(final String id, final String stop, final int order, final String route,
-								final String service, final Double distanceFromStart,
-								final ReadablePeriod departureTime, final ReadablePeriod frequencyStart,
-								final ReadablePeriod frequencyEnd, final ReadablePeriod headway,
+								final String service, final Double distanceFromStart, final Duration departureTime,
+								final Duration frequencyStart, final Duration frequencyEnd, final Duration headway,
 								final Boolean isExact) {
 			if (id == null) {
 				throw new NullPointerException("bad identifier");
@@ -856,10 +880,10 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 			this.route = route;
 			this.service = service;
 			this.distanceFromStart = distanceFromStart;
-			this.departureTime = new Period(departureTime);
-			this.frequencyStart = frequencyStart != null ? new Period(frequencyStart) : null;
-			this.frequencyEnd = frequencyEnd != null ? new Period(frequencyEnd) : null;
-			this.headway = headway != null ? new Period(headway) : null;
+			this.departureTime = departureTime;
+			this.frequencyStart = frequencyStart;
+			this.frequencyEnd = frequencyEnd;
+			this.headway = headway;
 			this.isExact = isExact;
 		}
 	}
@@ -879,12 +903,12 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 		/**
 		 * Time frequency start of the last departure.
 		 */
-		private ReadablePeriod lastTime = null;
+		private Duration lastTime = null;
 
 		/**
 		 * All trip IDs of last departures.
 		 */
-		private Collection<String> lastIds = new HashSet<String>();
+		private Collection<String> lastIds = new HashSet<>();
 
 		/**
 		 * Add last departure.
@@ -898,7 +922,7 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 			}
 
 			lastId = departure.id;
-			lastTime = departure.frequencyStart == null ? null : new Period(departure.frequencyStart);
+			lastTime = departure.frequencyStart;
 			lastIds.add(departure.id);
 		}
 
@@ -1032,13 +1056,13 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 	 * Name of the column with service IDs in the "calendar dates" database table.
 	 */
 	private static final String SCHEMA_CALENDAR_DATES_TABLE_SERVICE_ID_COLUMN = SCHEMA_CALENDAR_DATES_TABLE + "" +
-			".service_id";
+																				".service_id";
 
 	/**
 	 * Name of the column with exception types in the "calendar dates" database table.
 	 */
 	private static final String SCHEMA_CALENDAR_DATES_TABLE_TYPE_COLUMN = SCHEMA_CALENDAR_DATES_TABLE + "" +
-			".exception_type";
+																		  ".exception_type";
 
 	/**
 	 * Name of the "frequencies" table in the database schema.
@@ -1144,7 +1168,7 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 	 * Name of the column with wheelchair boarding possibilities in the "stops" database table.
 	 */
 	private static final String SCHEMA_STOPS_TABLE_WHEELCHAIR_BOARDING_COLUMN = SCHEMA_STOPS_TABLE + "" +
-			".wheelchair_boarding";
+																				".wheelchair_boarding";
 
 	/**
 	 * Name of the column with zone IDs in the "stops" database table.
@@ -1170,7 +1194,7 @@ public abstract class GTFSDatabaseLoader implements GTFSDataLoader {
 	 * Name of the column with traveled distances in the "stop times" database table.
 	 */
 	private static final String SCHEMA_STOP_TIMES_TABLE_DISTANCE_COLUMN = SCHEMA_STOP_TIMES_TABLE + "" +
-			".shape_dist_traveled";
+																		  ".shape_dist_traveled";
 
 	/**
 	 * Name of the column with sequence numbers in the "stop times" database table.

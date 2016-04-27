@@ -7,9 +7,6 @@ import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsParseException;
 import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.additional.WheelchairBoarding;
 import org.hamcrest.Description;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
-import org.joda.time.Period;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
@@ -17,6 +14,9 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import java.sql.*;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -222,9 +222,9 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addAgency(null, null, DateTimeZone.forID("Europe/Prague"), null, null);
-		verify(handler).addAgency("id1", null, DateTimeZone.forID("Europe/Helsinki"), null, null);
-		verify(handler).addAgency("id2", null, DateTimeZone.forID("Europe/Prague"), null, null);
+		verify(handler).addAgency(null, null, ZoneId.of("Europe/Prague"), null, null);
+		verify(handler).addAgency("id1", null, ZoneId.of("Europe/Helsinki"), null, null);
+		verify(handler).addAgency("id2", null, ZoneId.of("Europe/Prague"), null, null);
 		verifyNoMoreInteractions(handler);
 	}
 
@@ -649,11 +649,11 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addDateInterval("i1", new LocalDate(2010, 1, 1), new LocalDate(2015, 1, 2),
-				Arrays.asList(false, false, false, false, true, true, true));
-		verify(handler).addDateInterval("i2", new LocalDate(2010, 7, 24), new LocalDate(2015, 7, 25),
+		verify(handler).addDateInterval("i1", LocalDate.of(2010, 1, 1), LocalDate.of(2015, 1, 2),
+										Arrays.asList(false, false, false, false, true, true, true));
+		verify(handler).addDateInterval("i2", LocalDate.of(2010, 7, 24), LocalDate.of(2015, 7, 25),
 				Arrays.asList(false, false, true, true, false, false, true));
-		verify(handler).addDateInterval("i3", new LocalDate(2010, 12, 31), new LocalDate(2016, 1, 1),
+		verify(handler).addDateInterval("i3", LocalDate.of(2010, 12, 31), LocalDate.of(2016, 1, 1),
 				Arrays.asList(false, true, false, true, false, true, false));
 		verifyNoMoreInteractions(handler);
 	}
@@ -738,11 +738,11 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addDateInterval("i1", new LocalDate(2010, 7, 24), new LocalDate(2015, 1, 2),
+		verify(handler).addDateInterval("i1", LocalDate.of(2010, 7, 24), LocalDate.of(2015, 1, 2),
 				Arrays.asList(false, false, false, false, true, true, true));
-		verify(handler).addDateInterval("i2", new LocalDate(2010, 7, 24), new LocalDate(2015, 7, 24),
+		verify(handler).addDateInterval("i2", LocalDate.of(2010, 7, 24), LocalDate.of(2015, 7, 24),
 				Arrays.asList(false, false, true, true, false, false, true));
-		verify(handler).addDateInterval("i3", new LocalDate(2010, 12, 31), new LocalDate(2015, 7, 24),
+		verify(handler).addDateInterval("i3", LocalDate.of(2010, 12, 31), LocalDate.of(2015, 7, 24),
 				Arrays.asList(false, true, false, true, false, true, false));
 		verifyNoMoreInteractions(handler);
 	}
@@ -841,9 +841,9 @@ public final class GTFSDatabaseLoaderTest {
 			return;
 		}
 
-		verify(handler).addDate("i1", new LocalDate(2010, 1, 1));
-		verify(handler).addDate("i2", new LocalDate(2013, 7, 24));
-		verify(handler).removeDate("i3", new LocalDate(2015, 12, 31));
+		verify(handler).addDate("i1", LocalDate.of(2010, 1, 1));
+		verify(handler).addDate("i2", LocalDate.of(2013, 7, 24));
+		verify(handler).removeDate("i3", LocalDate.of(2015, 12, 31));
 		verifyNoMoreInteractions(handler);
 	}
 
@@ -979,19 +979,19 @@ public final class GTFSDatabaseLoaderTest {
 		}
 
 		verify(handler).addDepartures("s11", "s12", "r1", "d1", "i1", "h1",
-				Period.hours(1).withMinutes(1).withSeconds(1), Period.millis(1),
-				Period.hours(1).withMinutes(1).withSeconds(1).withMillis(1), null, null,
-				Period.hours(1).withSeconds(-1));
+				Duration.ofHours(1).plusMinutes(1).withSeconds(1), Duration.ofMillis(1),
+				Duration.ofHours(1).plusMinutes(1).withSeconds(1).plusMillis(1), null, null,
+				Duration.ofHours(1).withSeconds(-1));
 		verify(handler).addDepartures("s21", "s22", "r2", "d2", "i2", "h2",
-				Period.hours(23).withMinutes(2).withSeconds(1), Period.millis(1),
-				Period.hours(23).withMinutes(2).withSeconds(1).withMillis(1), null, 0.,
-				Period.hours(31).withSeconds(-1));
-		verify(handler).addDepartures("s31", "s32", "r3", "d3", "i3", "h3", Period.hours(0), Period.seconds(7200),
-				Period.hours(25), true, null, Period.hours(1).withSeconds(-1));
-		verify(handler).addDepartures("s41", "s42", "r3", "d3", "i3", "h3", Period.seconds(1), Period.seconds(3600),
-				Period.hours(5), true, 1., Period.hours(31).withSeconds(-2));
-		verify(handler).addDepartures("s42", "s43", "r3", "d3", "i3", "h3", Period.hours(31).withSeconds(51),
-				Period.seconds(3600), Period.hours(36).withSeconds(50), true, 7., Period.hours(1).withSeconds(-52));
+				Duration.ofHours(23).plusMinutes(2).withSeconds(1), Duration.ofMillis(1),
+				Duration.ofHours(23).plusMinutes(2).withSeconds(1).plusMillis(1), null, 0.,
+				Duration.ofHours(31).withSeconds(-1));
+		verify(handler).addDepartures("s31", "s32", "r3", "d3", "i3", "h3", Duration.ofHours(0), Duration.ofSeconds(7200),
+				Duration.ofHours(25), true, null, Duration.ofHours(1).withSeconds(-1));
+		verify(handler).addDepartures("s41", "s42", "r3", "d3", "i3", "h3", Duration.ofSeconds(1), Duration.ofSeconds(3600),
+				Duration.ofHours(5), true, 1., Duration.ofHours(31).withSeconds(-2));
+		verify(handler).addDepartures("s42", "s43", "r3", "d3", "i3", "h3", Duration.ofHours(31).withSeconds(51),
+									  Duration.ofSeconds(3600), Duration.ofHours(36).withSeconds(50), true, 7., Duration.ofHours(1).withSeconds(-52));
 		verifyNoMoreInteractions(handler);
 	}
 
@@ -1079,12 +1079,12 @@ public final class GTFSDatabaseLoaderTest {
 		}
 
 		verify(handler).addDepartures("s11", "s12", "r1", "d1", "i1", "h1",
-				Period.hours(1).withMinutes(1).withSeconds(1), Period.millis(1),
-				Period.hours(1).withMinutes(1).withSeconds(1).withMillis(1), null, 3., Period.hours(1).withSeconds
+				Duration.ofHours(1).plusMinutes(1).withSeconds(1), Duration.ofMillis(1),
+				Duration.ofHours(1).plusMinutes(1).withSeconds(1).plusMillis(1), null, 3., Duration.ofHours(1).withSeconds
 						(-1));
 		verify(handler).addDepartures("s12", "s13", "r1", "d1", "i1", "h1",
-				Period.hours(2).withMinutes(1).withSeconds(1), Period.millis(1),
-				Period.hours(2).withMinutes(1).withSeconds(1).withMillis(1), null, 9., Period.hours(1).withSeconds
+				Duration.ofHours(2).plusMinutes(1).withSeconds(1), Duration.ofMillis(1),
+				Duration.ofHours(2).plusMinutes(1).withSeconds(1).plusMillis(1), null, 9., Duration.ofHours(1).withSeconds
 						(-1));
 		verifyNoMoreInteractions(handler);
 	}
