@@ -4,10 +4,12 @@ import cz.agents.basestructures.Graph;
 import cz.agents.basestructures.Node;
 import cz.agents.gtdgraphimporter.gtfs.exceptions.GtfsException;
 import cz.agents.gtdgraphimporter.structurebuilders.TmpGraphBuilder;
+import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.edges.TimeDependentEdge;
 import org.apache.log4j.Logger;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 /**
  * This class converts GTFS data to appropriate format.
@@ -88,8 +90,10 @@ public class GTFSImporter {
 	 * @throws GtfsException
 	 * 		If the source cannot be parsed.
 	 */
-	public Graph<Node, TimeDependentEdge> importGraph(final long initialSourceNodeId, final short getOnDurationInS,
-													  final short getOffDurationInS, LocalDate epochStart) throws GtfsException {
+	public Graph<Node, TimeDependentEdge> importGraph(final long initialSourceNodeId,
+													  final Map<ModeOfTransport, Short> getOnDurationInS,
+													  final Map<ModeOfTransport, Short> getOffDurationInS,
+													  LocalDate epochStart) throws GtfsException {
 		return importGraph(new GTFSGraphBuilder(initialSourceNodeId, getOnDurationInS, getOffDurationInS, epochStart));
 	}
 
@@ -102,12 +106,15 @@ public class GTFSImporter {
 	 * 		If the source cannot be parsed.
 	 */
 	public TmpGraphBuilder<Node, TimeDependentEdge> importGtfsToGraphBuilder(long initialSourceNodeId,
-																			 short getOnDurationInS,
-																			 short getOffDurationInS,
+																			 Map<ModeOfTransport, Short>
+																					 getOnDurationInS,
+																			 Map<ModeOfTransport, Short>
+																					 getOffDurationInS,
 																			 LocalDate epochStart,
 																			 int initialTmpNodeId) throws
 			GtfsException {
-		return readGtfsAndGetGraphBuilder(new GTFSGraphBuilder(initialSourceNodeId, getOnDurationInS,
-				getOffDurationInS, epochStart), initialTmpNodeId);
+		return readGtfsAndGetGraphBuilder(
+				new GTFSGraphBuilder(initialSourceNodeId, getOnDurationInS, getOffDurationInS, epochStart),
+				initialTmpNodeId);
 	}
 }

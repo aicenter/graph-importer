@@ -9,6 +9,7 @@ import cz.agents.gtdgraphimporter.structurebuilders.edge.InnerEdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.edge.RouteEdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.node.RouteNodeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.node.StopNodeBuilder;
+import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.edges.TimeDependentEdge;
 import org.apache.log4j.Logger;
 
@@ -34,12 +35,12 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 	/**
 	 * Duration of getting on in seconds.
 	 */
-	private final short getOnDurationInS;
+	private final Map<ModeOfTransport, Short> getOnDurationInS;
 
 	/**
 	 * Duration of getting off in seconds.
 	 */
-	private final short getOffDurationInS;
+	private final Map<ModeOfTransport, Short> getOffDurationInS;
 
 	/**
 	 * Source ID of the newly created node.
@@ -76,13 +77,12 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 	 * @param getOffDurationInS
 	 * @param epochStart
 	 */
-	public GTFSGraphBuilder(final long initialSourceNodeId, final short getOnDurationInS, final short
-			getOffDurationInS,
-							LocalDate epochStart) {
+	public GTFSGraphBuilder(final long initialSourceNodeId, final Map<ModeOfTransport, Short> getOnDurationInS,
+							final Map<ModeOfTransport, Short> getOffDurationInS, LocalDate epochStart) {
 		LOGGER.warn("The lengths of routes (without appropriate distance information) are just estimated.");
 		LOGGER.warn("All departures are handled as if they are defined by exact times (even those defined by " +
-				"non-exact" +
-				" " + "frequencies).");
+					"non-exact" +
+					" " + "frequencies).");
 		this.newNodeSourceID = initialSourceNodeId;
 		this.getOnDurationInS = getOnDurationInS;
 		this.getOffDurationInS = getOffDurationInS;
@@ -95,20 +95,19 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 	@Override
 	public final void addDepartures(final String origin, final String destination, final String route,
 									final String service, final String tripId, final String tripHeadsign,
-									final Duration startTime, final Duration timePeriod,
-									final Duration endTime, final Boolean isExact, final Double distanceInM,
-									final Duration travelTime) {
+									final Duration startTime, final Duration timePeriod, final Duration endTime,
+									final Boolean isExact, final Double distanceInM, final Duration travelTime) {
 		checkStop(origin);
 		checkStop(destination);
 		checkRoute(route);
 		ZonedDateTime epochStart = getEpochStart();
 
 		final Collection<Departure> departures = createDepartures(route, service, tripId, tripHeadsign, startTime,
-				timePeriod, endTime, travelTime);
+																  timePeriod, endTime, travelTime);
 		if (!departures.isEmpty()) {
 			RouteEdgeBuilder edgeBuilder = fetchRouteEdgeBuilder(origin, destination, route, distanceInM);
-			departures.forEach(departure -> edgeBuilder.addDeparture(getDeparture(epochStart, departure.departureTime)
-					, getDuration(departure.travelTime)));
+			departures.forEach(departure -> edgeBuilder.addDeparture(getDeparture(epochStart, departure.departureTime),
+																	 getDuration(departure.travelTime)));
 		}
 	}
 
@@ -158,8 +157,9 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 			this.edgeBuilders.put(key, edgeBuilder);
 		}
 		assert distanceInM == null || Math.abs(distanceInM - edgeBuilder.getLength()) <= 1 : "Restored edge has " +
-				"different length than the " +
-				"requested one.";
+																							 "different length than " +
+																							 "the " +
+																							 "requested one.";
 		return edgeBuilder;
 	}
 
@@ -247,13 +247,16 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 			return routeNodes.get(key);
 		} else {
 			RouteNodeBuilder routeNode = new RouteNodeBuilder(newNodeId++, newNodeSourceID++, stopNode.location,
-					routeId, stopNode.tmpId);
+															  routeId, stopNode.tmpId);
 			routeNodes.put(key, routeNode);
 			graphBuilder.addNode(routeNode);
 
+			ModeOfTransport routeMode = routes.get(routeId).ptMode;
 			//create edges between stop node and route node.
-			InnerEdgeBuilder onEdge = new InnerEdgeBuilder(stopNode.tmpId, routeNode.tmpId, getOnDurationInS);
-			InnerEdgeBuilder offEdge = new InnerEdgeBuilder(routeNode.tmpId, stopNode.tmpId, getOffDurationInS);
+			InnerEdgeBuilder onEdge = new InnerEdgeBuilder(stopNode.tmpId, routeNode.tmpId,
+														   getOnDurationInS.get(routeMode));
+			InnerEdgeBuilder offEdge = new InnerEdgeBuilder(routeNode.tmpId, stopNode.tmpId,
+															getOffDurationInS.get(routeMode));
 
 			graphBuilder.addEdge(onEdge);
 			graphBuilder.addEdge(offEdge);
@@ -280,7 +283,7 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 			Stop stop = stops.get(fromStop);
 			GPSLocation loc = stop.location;
 			StopNodeBuilder stopNode = new StopNodeBuilder(newNodeId++, newNodeSourceID++, loc, stop.id, stop.name,
-					stop.zoneId, stop.wheelchairBoarding);
+														   stop.zoneId, stop.wheelchairBoarding);
 			stopNodes.put(stop.id, stopNode);
 			graphBuilder.addNode(stopNode);
 			return stopNode;
@@ -293,7 +296,7 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 
 	private void checkRoute(String routeId) {
 		if (!routes.containsKey(routeId)) throw new IllegalStateException("Route " + routeId + " must be added first" +
-				".");
+																		  ".");
 	}
 
 	private static class EdgeKey {
@@ -332,10 +335,10 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 		@Override
 		public String toString() {
 			return "EdgeKey [" +
-					"fromStop='" + fromStop + '\'' +
-					", toStop='" + toStop + '\'' +
-					", routeId='" + routeId + '\'' +
-					']';
+				   "fromStop='" + fromStop + '\'' +
+				   ", toStop='" + toStop + '\'' +
+				   ", routeId='" + routeId + '\'' +
+				   ']';
 		}
 	}
 
@@ -371,9 +374,9 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 		@Override
 		public String toString() {
 			return "RouteNodeKey [" +
-					"stopId='" + stopId + '\'' +
-					", routeId='" + routeId + '\'' +
-					']';
+				   "stopId='" + stopId + '\'' +
+				   ", routeId='" + routeId + '\'' +
+				   ']';
 		}
 	}
 }

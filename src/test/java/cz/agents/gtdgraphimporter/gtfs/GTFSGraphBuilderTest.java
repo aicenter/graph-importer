@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
@@ -635,9 +636,13 @@ public final class GTFSGraphBuilderTest {
 		expectedBuilder.addEdges(innerEdges);
 		final Graph<Node, TimeDependentEdge> expected = expectedBuilder.createGraph();
 
-		final GTFSGraphBuilder actualBuilder = new GTFSGraphBuilder(INITIAL_SOURCE_NODE_ID, GET_ON_DURATION_IN_SECONDS,
-																	GET_OFF_DURATION_IN_SECONDS,
-																	LocalDate.of(2013, 3, 31));
+		Map<ModeOfTransport, Short> getOnDurations = new EnumMap<>(ModeOfTransport.class);
+		Arrays.stream(ModeOfTransport.values()).forEach(m -> getOnDurations.put(m, GET_ON_DURATION_IN_SECONDS));
+		Map<ModeOfTransport, Short> getOffDurations = new EnumMap<>(ModeOfTransport.class);
+		Arrays.stream(ModeOfTransport.values()).forEach(m -> getOffDurations.put(m, GET_OFF_DURATION_IN_SECONDS));
+
+		final GTFSGraphBuilder actualBuilder = new GTFSGraphBuilder(INITIAL_SOURCE_NODE_ID, getOnDurations,
+																	getOffDurations, LocalDate.of(2013, 3, 31));
 		actualBuilder.addAgency(null, null, ZoneId.of(TEST_TIMEZONE), null, null);
 		actualBuilder.addStop("i0", "c0", "n0", "d0", new GPSLocation(10, 10, 0, 0), "z0",
 							  WheelchairBoarding.AT_LEAST_SOME_VEHICLES);
@@ -707,8 +712,11 @@ public final class GTFSGraphBuilderTest {
 	 * @return The instance.
 	 */
 	private static GTFSGraphBuilder createDefaultBuilder() {
-		return new GTFSGraphBuilder(INITIAL_SOURCE_NODE_ID, GET_ON_DURATION_IN_SECONDS, GET_OFF_DURATION_IN_SECONDS,
-									EPOCH_START);
+		Map<ModeOfTransport, Short> getOnDurations = new EnumMap<>(ModeOfTransport.class);
+		Arrays.stream(ModeOfTransport.values()).forEach(m -> getOnDurations.put(m, GET_ON_DURATION_IN_SECONDS));
+		Map<ModeOfTransport, Short> getOffDurations = new EnumMap<>(ModeOfTransport.class);
+		Arrays.stream(ModeOfTransport.values()).forEach(m -> getOffDurations.put(m, GET_OFF_DURATION_IN_SECONDS));
+		return new GTFSGraphBuilder(INITIAL_SOURCE_NODE_ID, getOnDurations, getOffDurations, EPOCH_START);
 	}
 
 	/**

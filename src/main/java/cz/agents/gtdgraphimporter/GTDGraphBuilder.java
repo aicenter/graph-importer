@@ -55,14 +55,21 @@ public class GTDGraphBuilder {
 	 * Set of all currently supported PT modes that can be loaded from GTFS.
 	 */
 	public static final Set<ModeOfTransport> PT_MODES = Sets.immutableEnumSet(ModeOfTransport.BUS, ModeOfTransport
-			.TRAM, ModeOfTransport.UNDERGROUND, ModeOfTransport.TRAIN, ModeOfTransport.TROLLEYBUS, ModeOfTransport
-			.FERRY, ModeOfTransport.OTHER);
+			.TRAM,
+																			  ModeOfTransport.UNDERGROUND,
+																			  ModeOfTransport.TRAIN,
+																			  ModeOfTransport.TROLLEYBUS,
+																			  ModeOfTransport.FERRY,
+																			  ModeOfTransport.OTHER);
 
 	/**
 	 * Set of all modes that can be loaded from OSM without any additional information required.
 	 */
-	public static final Set<ModeOfTransport> OSM_MODES = Sets.immutableEnumSet(ModeOfTransport.WALK, ModeOfTransport
-			.TAXI, ModeOfTransport.CAR, ModeOfTransport.MOTORCYCLE, ModeOfTransport.BIKE);
+	public static final Set<ModeOfTransport> OSM_MODES = Sets.immutableEnumSet(ModeOfTransport.WALK,
+																			   ModeOfTransport.TAXI,
+																			   ModeOfTransport.CAR,
+																			   ModeOfTransport.MOTORCYCLE,
+																			   ModeOfTransport.BIKE);
 
 	private final Transformer projection;
 
@@ -121,9 +128,16 @@ public class GTDGraphBuilder {
 			ptGraph.addEdges(virtualEdges);
 			assert checkOneComponent(osmGraph) : "Graph isn't one component";
 			GraphBuilder<Node, TimeDependentEdge> builder = ptGraph.createGraphBuilder();
-			Collection<? extends VirtualEdge> transfers = TransfersUtil.precomputeTransfers(builder.dumpCurrentGraph()
-					, ptSettings.defaultWalkSpeed, ptSettings.maxPrecomputedTransfersLength, Executors
-							.newFixedThreadPool(Runtime.getRuntime().availableProcessors()));
+			Collection<? extends VirtualEdge> transfers = TransfersUtil.precomputeTransfers(builder.dumpCurrentGraph(),
+																							ptSettings
+																									.defaultWalkSpeed,
+																							ptSettings
+																									.maxPrecomputedTransfersLength,
+																							Executors
+																									.newFixedThreadPool(
+																									Runtime
+																											.getRuntime()
+																										   .availableProcessors()));
 			builder.addEdges(Collections.unmodifiableCollection(transfers)); //TODO: remove after added wildcards
 			return ptGraph.createGraph();
 		} else {
@@ -139,7 +153,8 @@ public class GTDGraphBuilder {
 		Set<NodeBuilder<? extends RoadNode>> walkNodes = osmGraph.getFeasibleNodes(ModeOfTransport.WALK);
 
 		KDTree<NodeBuilder<?>> kdTree = new KDTree<>(2, new NodeBuilderKdTreeResolver<>(), ConflictResolverMode
-				.USE_OLD, NodeBuilder<?>[]::new);
+				.USE_OLD,
+													 NodeBuilder<?>[]::new);
 		walkNodes.forEach(kdTree::insert);
 
 		List<VirtualEdgeBuilder> virtualEdges = new ArrayList<>(stopNodes.size() * 2);
@@ -153,10 +168,12 @@ public class GTDGraphBuilder {
 				distance = Math.max(distance, ptSettings.minGtfsOsmMappingDistance);
 				int dist = (int) Math.round(distance);
 				int time = (int) Math.round(distance / ptSettings.defaultWalkSpeed);
-				virtualEdges.add(new VirtualEdgeBuilder(stop.tmpId, nearestNode.tmpId, dist, ptSettings
-						.defaultWalkSpeed, time, ModeOfTransport.WALK));
-				virtualEdges.add(new VirtualEdgeBuilder(nearestNode.tmpId, stop.tmpId, dist, ptSettings
-						.defaultWalkSpeed, time, ModeOfTransport.WALK));
+				virtualEdges.add(
+						new VirtualEdgeBuilder(stop.tmpId, nearestNode.tmpId, dist, ptSettings.defaultWalkSpeed, time,
+											   ModeOfTransport.WALK));
+				virtualEdges.add(
+						new VirtualEdgeBuilder(nearestNode.tmpId, stop.tmpId, dist, ptSettings.defaultWalkSpeed, time,
+											   ModeOfTransport.WALK));
 				notToBeRemovedNodes.add(nearestNode.tmpId);
 			} else {
 				notMappedStops++;
@@ -179,16 +196,24 @@ public class GTDGraphBuilder {
 			return null;
 		}
 
+		LOGGER.info("Used PT graph settings:");
+		LOGGER.info(ptSettings);
 		GTFSDataLoader gtfsLoader = new GTFSDatabaseLoaderPermissiveImpl(connectionToGtfs, projection, 1, 10000,
-				ptSettings.pruneBefore, ptSettings.pruneAfter);
+																		 ptSettings.pruneBefore, ptSettings
+																				 .pruneAfter);
 
 		GTFSImporter gtfsImporter = new GTFSImporter(gtfsLoader);
-		TmpGraphBuilder<Node, TimeDependentEdge> ptGraph = gtfsImporter.importGtfsToGraphBuilder(ptSettings
-				.initialSourceNodeId, ptSettings.getOnDuration, ptSettings.getOffDuration, createLocalDate(ptSettings
-				.pruneBefore), initialNodeId);
+
+		TmpGraphBuilder<Node, TimeDependentEdge> ptGraph = gtfsImporter.importGtfsToGraphBuilder(
+				ptSettings.initialSourceNodeId, ptSettings.getGetOnDurations(), ptSettings.getGetOffDurations(),
+				createLocalDate(ptSettings.pruneBefore), initialNodeId);
 		ptGraph.printContent();
-		List<NodeBuilder<? extends Node>> l = ptGraph.getNodesByDegree().get(2).stream().map(ptGraph::getNode).filter
-				(e -> e instanceof RouteNodeBuilder).collect(toList());
+		List<NodeBuilder<? extends Node>> l = ptGraph.getNodesByDegree()
+													 .get(2)
+													 .stream()
+													 .map(ptGraph::getNode)
+													 .filter(e -> e instanceof RouteNodeBuilder)
+													 .collect(toList());
 		LOGGER.debug(l);
 		return ptGraph;
 	}
@@ -273,12 +298,15 @@ public class GTDGraphBuilder {
 		private final Date pruneBefore;
 		private Date pruneAfter;
 
-		private short getOnDuration = 50;
-		private short getOffDuration = 10;
+		private short defaultGetOnDuration = 50;
+		private short defaultGetOffDuration = 10;
+
+		private Map<ModeOfTransport, Short> getOnDurations = new EnumMap<>(ModeOfTransport.class);
+		private Map<ModeOfTransport, Short> getOffDurations = new EnumMap<>(ModeOfTransport.class);
 		/**
 		 * Maximum distance for creating of virtual edge between a stop and its nearest walking node in metres.
 		 */
-		private double maxGtfsOsmMappingDistance = 1000;
+		private double maxGtfsOsmMappingDistance = 1500;
 
 		/**
 		 * Minimum distance for creating of virtual edge between a stop and its nearest walking node in metres.
@@ -288,7 +316,7 @@ public class GTDGraphBuilder {
 		/**
 		 * Maximum distance for creating of virtual edges for transfers in metres.
 		 */
-		private int maxPrecomputedTransfersLength = 1000;
+		private int maxPrecomputedTransfersLength = 1500;
 
 		/**
 		 * Default walk speed in m/s. Used for gtfs-osm virtual edges.
@@ -325,13 +353,23 @@ public class GTDGraphBuilder {
 			return this;
 		}
 
-		public PTSettings setGetOnDuration(short getOnDuration) {
-			this.getOnDuration = getOnDuration;
+		public PTSettings setDefaultGetOnDuration(short defaultGetOnDuration) {
+			this.defaultGetOnDuration = defaultGetOnDuration;
 			return this;
 		}
 
-		public PTSettings setGetOffDuration(short getOffDuration) {
-			this.getOffDuration = getOffDuration;
+		public PTSettings setDefaultGetOffDuration(short defaultGetOffDuration) {
+			this.defaultGetOffDuration = defaultGetOffDuration;
+			return this;
+		}
+
+		public PTSettings setGetOnDuration(ModeOfTransport mode, short duration) {
+			this.getOnDurations.put(mode, duration);
+			return this;
+		}
+
+		public PTSettings setGetOffDuration(ModeOfTransport mode, short duration) {
+			this.getOffDurations.put(mode, duration);
 			return this;
 		}
 
@@ -358,6 +396,35 @@ public class GTDGraphBuilder {
 		public PTSettings setDefaultWalkSpeed(float defaultWalkSpeed) {
 			this.defaultWalkSpeed = defaultWalkSpeed;
 			return this;
+		}
+
+		private Map<ModeOfTransport, Short> getGetOnDurations() {
+			Map<ModeOfTransport, Short> map = new EnumMap<>(getOnDurations);
+			PT_MODES.stream().filter(m -> !map.containsKey(m)).forEach(m -> map.put(m, defaultGetOnDuration));
+			return map;
+		}
+
+		private Map<ModeOfTransport, Short> getGetOffDurations() {
+			Map<ModeOfTransport, Short> map = new EnumMap<>(getOffDurations);
+			PT_MODES.stream().filter(m -> !map.containsKey(m)).forEach(m -> map.put(m, defaultGetOffDuration));
+			return map;
+		}
+
+		@Override
+		public String toString() {
+			return "PTSettings [" +
+				   "pruneBefore=" + pruneBefore +
+				   ", pruneAfter=" + pruneAfter +
+				   ", defaultGetOnDuration=" + defaultGetOnDuration +
+				   ", defaultGetOffDuration=" + defaultGetOffDuration +
+				   ", getOnDurations=" + getOnDurations +
+				   ", getOffDurations=" + getOffDurations +
+				   ", maxGtfsOsmMappingDistance=" + maxGtfsOsmMappingDistance +
+				   ", minGtfsOsmMappingDistance=" + minGtfsOsmMappingDistance +
+				   ", maxPrecomputedTransfersLength=" + maxPrecomputedTransfersLength +
+				   ", defaultWalkSpeed=" + defaultWalkSpeed +
+				   ", initialSourceNodeId=" + initialSourceNodeId +
+				   ']';
 		}
 
 		//		/**
