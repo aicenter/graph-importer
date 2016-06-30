@@ -156,10 +156,10 @@ public final class GTFSGraphBuilder extends AbstractGTFSDataHandler {
 			edgeBuilder = new RouteEdgeBuilder(getOrEstimateDistance(distanceInM, origin, destination));
 			this.edgeBuilders.put(key, edgeBuilder);
 		}
-		assert distanceInM == null || Math.abs(distanceInM - edgeBuilder.getLength()) <= 1 : "Restored edge has " +
-																							 "different length than " +
-																							 "the " +
-																							 "requested one.";
+//		assert distanceInM == null || Math.abs(distanceInM - edgeBuilder.getLength()) <= 1 : "Restored edge has " +
+//																							 "different length than " +
+//																							 "the " +
+//																							 "requested one.";
 		return edgeBuilder;
 	}
 
