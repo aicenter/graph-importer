@@ -204,7 +204,7 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 		int pre = nodes.size();
 		TreeMap<Integer, Set<Integer>> nodesByDegree = getNodesByDegree();
 		Set<Integer> isolatedIds = nodesByDegree.get(0);
-		if (isolatedIds.isEmpty()) return 0;
+		if (isolatedIds == null || isolatedIds.isEmpty()) return 0;
 		nodes.keySet().removeAll(isolatedIds);
 		return pre - nodes.size();
 	}
