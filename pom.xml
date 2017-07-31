@@ -34,11 +34,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>cz.agents</groupId>
-			<artifactId>multimodalplanning</artifactId>
-			<version>1.9</version>
-		</dependency>
-		<dependency>
-			<groupId>cz.agents</groupId>
 			<artifactId>geotools</artifactId>
 			<version>1.4</version>
 		</dependency>
@@ -66,11 +61,33 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>1.10.19</version>
-			<scope>test</scope>
-		</dependency>
+	 <dependency>
+	  <groupId>cz.agents</groupId>
+	  <artifactId>multimodal-structures</artifactId>
+	  <version>2.2</version>
+	  <scope>compile</scope>
+	  <type>jar</type>
+	 </dependency>
+	 <dependency>
+	  <groupId>cz.agents</groupId>
+	  <artifactId>basestructures</artifactId>
+	  <version>1.6</version>
+	  <scope>compile</scope>
+	  <type>jar</type>
+	 </dependency>
+	 <dependency>
+	  <groupId>com.fasterxml.jackson.core</groupId>
+	  <artifactId>jackson-annotations</artifactId>
+	  <version>2.7.0</version>
+	  <scope>compile</scope>
+	  <type>jar</type>
+	 </dependency>
+<!--	 <dependency>
+	  <groupId>org.geotools</groupId>
+	  <artifactId>gt-opengis</artifactId>
+	  <version>14.2</version>
+	  <scope>compile</scope>
+	  <type>jar</type>
+	 </dependency>-->
 	</dependencies>
 </project>
