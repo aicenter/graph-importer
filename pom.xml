@@ -32,6 +32,11 @@
 	</build>
 
 	<dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        
 		<dependency>
 			<groupId>cz.agents</groupId>
 			<artifactId>geotools</artifactId>
@@ -41,11 +46,6 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>19.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.javatuples</groupId>
-			<artifactId>javatuples</artifactId>
-			<version>1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -75,19 +75,5 @@
 	  <scope>compile</scope>
 	  <type>jar</type>
 	 </dependency>
-	 <dependency>
-	  <groupId>com.fasterxml.jackson.core</groupId>
-	  <artifactId>jackson-annotations</artifactId>
-	  <version>2.7.0</version>
-	  <scope>compile</scope>
-	  <type>jar</type>
-	 </dependency>
-<!--	 <dependency>
-	  <groupId>org.geotools</groupId>
-	  <artifactId>gt-opengis</artifactId>
-	  <version>14.2</version>
-	  <scope>compile</scope>
-	  <type>jar</type>
-	 </dependency>-->
 	</dependencies>
 </project>
