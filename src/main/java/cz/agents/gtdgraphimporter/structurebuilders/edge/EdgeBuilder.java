@@ -2,7 +2,7 @@ package cz.agents.gtdgraphimporter.structurebuilders.edge;
 
 import cz.agents.basestructures.Edge;
 import cz.agents.basestructures.EdgeId;
-import cz.agents.multimodalstructures.additional.ModeOfTransport;
+import cz.agents.gtdgraphimporter.TransportMode;
 
 /**
  * @author Marek Cuchý
@@ -36,7 +36,7 @@ public abstract class EdgeBuilder<TEdge extends Edge> {
 
 	public abstract TEdge build(int fromId, int toId);
 
-	public abstract boolean checkFeasibility(ModeOfTransport mode);
+	public abstract boolean checkFeasibility(TransportMode mode);
 
 	public abstract EdgeBuilder<TEdge> copy(int tmpFromId, int tmpToId, int length);
 

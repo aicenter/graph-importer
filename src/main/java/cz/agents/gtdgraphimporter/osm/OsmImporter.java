@@ -15,6 +15,7 @@ import cz.agents.geotools.GPSLocationTools;
 import cz.agents.geotools.Transformer;
 import cz.agents.gtdgraphimporter.GraphCreator;
 import cz.agents.gtdgraphimporter.Importer;
+import cz.agents.gtdgraphimporter.TransportMode;
 import cz.agents.gtdgraphimporter.osm.element.OsmNode;
 import cz.agents.gtdgraphimporter.osm.element.OsmRelation;
 import cz.agents.gtdgraphimporter.osm.element.OsmWay;
@@ -25,7 +26,6 @@ import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalNodeBuilder
 import cz.agents.gtdgraphimporter.structurebuilders.TmpGraphBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalEdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.node.NodeBuilder;
-import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,7 +67,7 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
     /**
      * Predicate for each mode, allowed in the graph, that says if the mode is allowed on a particular way (edge)
      */
-    private final Map<ModeOfTransport, TagEvaluator> modeEvaluators;
+    private final Map<TransportMode, TagEvaluator> modeEvaluators;
     
     /**
      * Predicate that says if nodes of a way are in opposite order than they really are. Important only for one-way
@@ -92,11 +92,11 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
      /**
      * Predicate for each mode, allowed in the graph, that says if a way (edge) is one-way for the mode
      */
-    private final Map<ModeOfTransport, TagEvaluator> oneWayEvaluators;
+    private final Map<TransportMode, TagEvaluator> oneWayEvaluators;
     
     private final File osmFile;
     
-    protected final Set<ModeOfTransport> allowedModes;
+    protected final Set<TransportMode> allowedModes;
     
     /**
      * Function extracting max speed from way tags
@@ -113,17 +113,17 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
     
     
 
-    public OsmImporter(File osmFile, Set<ModeOfTransport> allowedOsmModes, Transformer projection) {
+    public OsmImporter(File osmFile, Set<TransportMode> allowedOsmModes, Transformer projection) {
         this.projection = projection;
         this.osmFile = osmFile;
         allowedModes = allowedOsmModes;
         
         osmNodes = new HashMap<>();
-        modeEvaluators = new EnumMap<>(ModeOfTransport.class);
+        modeEvaluators = new EnumMap<>(TransportMode.class);
         oppositeDirectionEvaluator = new OneTagEvaluator("oneway", "-1");
         builder = new TmpGraphBuilder<>();
         elevationExtractor = new DoubleExtractor("height", 0);
-        oneWayEvaluators = new EnumMap<>(ModeOfTransport.class);
+        oneWayEvaluators = new EnumMap<>(TransportMode.class);
         mergedEdges = 0;
     }
     
@@ -146,7 +146,7 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
     public void accept(OsmWay way) {
         way.removeMissingNodes(osmNodes.keySet());
 
-        Set<ModeOfTransport> modesOfTransport = getModesOfTransport(way);
+        Set<TransportMode> modesOfTransport = getModesOfTransport(way);
 
         if (!modesOfTransport.isEmpty()) {
             createEdges(way, modesOfTransport);
@@ -191,8 +191,8 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
    }
 
    private void loadModeEvaluatorsIfNeeded() {
-       Set<ModeOfTransport> missingModes = Sets.difference(allowedModes, modeEvaluators.keySet());
-       for (ModeOfTransport mode : missingModes) {
+       Set<TransportMode> missingModes = Sets.difference(allowedModes, modeEvaluators.keySet());
+       for (TransportMode mode : missingModes) {
            InputStream stream = OsmImporter.class.getResourceAsStream("mode/" + mode.name().toLowerCase() +
                    ".json");
            if (stream == null) {
@@ -209,11 +209,11 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
    }
 
    private void loadOneWayEvaluatorsIfNeeded() {
-       Set<ModeOfTransport> missingModes = Sets.difference(allowedModes, oneWayEvaluators.keySet());
+       Set<TransportMode> missingModes = Sets.difference(allowedModes, oneWayEvaluators.keySet());
 
        //default evaluator for all modes.
        TagEvaluator defaultEval = TagEvaluator.ALWAYS_FALSE;
-       for (ModeOfTransport mode : missingModes) {
+       for (TransportMode mode : missingModes) {
            InputStream stream = OsmImporter.class.getResourceAsStream("oneway/" + mode.name().toLowerCase() +
                    ".json");
            if (stream == null) {
@@ -265,11 +265,11 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
     /**
      * OSM way modes
      */
-    private Set<ModeOfTransport> getModesOfTransport(OsmWay way) {
-        Set<ModeOfTransport> ModesOfTransport = EnumSet.noneOf(ModeOfTransport.class);
+    private Set<TransportMode> getModesOfTransport(OsmWay way) {
+        Set<TransportMode> ModesOfTransport = EnumSet.noneOf(TransportMode.class);
 
-        for (Map.Entry<ModeOfTransport, TagEvaluator> entry : modeEvaluators.entrySet()) {
-            ModeOfTransport mode = entry.getKey();
+        for (Map.Entry<TransportMode, TagEvaluator> entry : modeEvaluators.entrySet()) {
+            TransportMode mode = entry.getKey();
             if (entry.getValue().test(way.getTags())) {
                 ModesOfTransport.add(mode);
             }
@@ -280,7 +280,7 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
      /**
      * Create nodes & edges section
      */
-    private void createEdges(OsmWay way, Set<ModeOfTransport> modeOfTransports) {
+    private void createEdges(OsmWay way, Set<TransportMode> modeOfTransports) {
         List<Long> nodes = way.getNodes();
 
         //reverse nodes if way is the opposite direction. Have to cooperate with one-way evaluators.
@@ -289,7 +289,7 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
         }
         nodes.forEach(this::createAndAddNode);
 
-        Set<ModeOfTransport> bidirectionalModes = getBidirectionalModes(way, modeOfTransports);
+        Set<TransportMode> bidirectionalModes = getBidirectionalModes(way, modeOfTransports);
 
         //the EdgeType parameters doesn't take into account the possibility of reversed direction - possible fix in
         // the future
@@ -337,14 +337,14 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
      *                            If the number is 1, it is a bidirectional edge (in FORWARD) and if the number is 2,
      *                            then it is the opposite direction of the edge (BACKWARD)
      */
-    private void createAndAddOrMergeEdges(List<Long> nodes, Set<ModeOfTransport> modeOfTransports, OsmWay way,
+    private void createAndAddOrMergeEdges(List<Long> nodes, Set<TransportMode> modeOfTransports, OsmWay way,
                                           EdgeType edgeType, int bidirectionalStatus) {
         for (int i = 1; i < nodes.size(); i++) {
             createAndAddOrMergeEdge(nodes.get(i - 1), nodes.get(i), modeOfTransports, way, edgeType, bidirectionalStatus);
         }
     }
     
-    protected void createAndAddOrMergeEdge(long fromSourceId, long toSourceId, Set<ModeOfTransport> modeOfTransports,
+    protected void createAndAddOrMergeEdge(long fromSourceId, long toSourceId, Set<TransportMode> modeOfTransports,
                                            OsmWay way, EdgeType edgeType, int bidirectionalStatus) {
         int tmpFromId = builder.getIntIdForSourceId(fromSourceId);
         int tmpToId = builder.getIntIdForSourceId(toSourceId);
@@ -377,7 +377,7 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
         }
     }
     
-    protected void resolveConflictEdges(int tmpFromId, int tmpToId, Set<ModeOfTransport> newModeOfTransports,
+    protected void resolveConflictEdges(int tmpFromId, int tmpToId, Set<TransportMode> newModeOfTransports,
                                         OsmWay way, EdgeType edgeType) {
         InternalEdgeBuilder internalEdgeBuilder = (InternalEdgeBuilder) builder.getEdge(tmpFromId, tmpToId);
         internalEdgeBuilder.addModeOfTransports(newModeOfTransports);
@@ -404,11 +404,11 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
     /**
      * Return subset of {@code ModeOfTransports} for which the way is bidirectional (isn't one-way).
      */
-    private Set<ModeOfTransport> getBidirectionalModes(OsmWay way, Set<ModeOfTransport> ModeOfTransports) {
+    private Set<TransportMode> getBidirectionalModes(OsmWay way, Set<TransportMode> ModeOfTransports) {
         return ModeOfTransports.stream().filter(mode -> isBidirectional(way, mode)).collect(toSet());
     }
     
-    private boolean isBidirectional(OsmWay way, ModeOfTransport mode) {
+    private boolean isBidirectional(OsmWay way, TransportMode mode) {
         return !oneWayEvaluators.get(mode).test(way.getTags());
     }
 

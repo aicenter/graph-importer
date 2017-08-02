@@ -5,8 +5,8 @@
  */
 package cz.agents.gtdgraphimporter.structurebuilders.internal;
 
+import cz.agents.gtdgraphimporter.TransportMode;
 import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
-import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +20,7 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge>{
     
     private final Map<String,Object> otherParams;
     
-    private Set<ModeOfTransport> modeOfTransports = EnumSet.noneOf(ModeOfTransport.class);
+    private Set<TransportMode> modeOfTransports = EnumSet.noneOf(TransportMode.class);
     
     public long wayID; // OsmWay ID
     
@@ -34,7 +34,7 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge>{
     
 
     public InternalEdgeBuilder(int tmpFromId, int tmpToId, long osmWayId, int uniqueWayId, int oppositeWayUniqueId, int length, 
-            Set<ModeOfTransport> modeOfTransports, float allowedMaxSpeedInMpS, Integer lanesCount) {
+            Set<TransportMode> modeOfTransports, float allowedMaxSpeedInMpS, Integer lanesCount) {
         super(tmpFromId, tmpToId, length);
         
         this.wayID = osmWayId;
@@ -49,7 +49,7 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge>{
         otherParams = new HashMap<>();
     }
     
-    public InternalEdgeBuilder addModeOfTransports(Set<ModeOfTransport> ModeOfTransports) {
+    public InternalEdgeBuilder addModeOfTransports(Set<TransportMode> ModeOfTransports) {
         this.modeOfTransports.addAll(ModeOfTransports);
         return this;
     }
@@ -66,7 +66,7 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge>{
     }
 
     @Override
-    public boolean checkFeasibility(ModeOfTransport mode) {
+    public boolean checkFeasibility(TransportMode mode) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

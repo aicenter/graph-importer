@@ -3,10 +3,10 @@ package cz.agents.gtdgraphimporter.structurebuilders;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import cz.agents.basestructures.*;
+import cz.agents.gtdgraphimporter.TransportMode;
 import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.node.NodeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.node.RouteNodeBuilder;
-import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import cz.agents.multimodalstructures.nodes.RoadNode;
 import cz.agents.multimodalstructures.nodes.StopNode;
 import org.apache.log4j.Logger;
@@ -175,7 +175,7 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 	 *
 	 * @return
 	 */
-	public List<EdgeBuilder<? extends TEdge>> getFeasibleEdges(ModeOfTransport mode) {
+	public List<EdgeBuilder<? extends TEdge>> getFeasibleEdges(TransportMode mode) {
 		return edges.values().stream().filter(e -> e.checkFeasibility(mode)).collect(toList());
 	}
 
@@ -184,7 +184,7 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 	 *
 	 * @param mode
 	 */
-	public Set<NodeBuilder<? extends TNode>> getFeasibleNodes(ModeOfTransport mode) {
+	public Set<NodeBuilder<? extends TNode>> getFeasibleNodes(TransportMode mode) {
 		Set<NodeBuilder<? extends TNode>> feasibleNodes = new HashSet<>();
 		for (EdgeBuilder<? extends TEdge> edge : edges.values()) {
 			if (edge.checkFeasibility(mode)) {
