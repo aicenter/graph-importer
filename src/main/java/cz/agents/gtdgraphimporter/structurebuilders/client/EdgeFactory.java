@@ -5,8 +5,8 @@
  */
 package cz.agents.gtdgraphimporter.structurebuilders.client;
 
-import cz.agents.basestructures.Edge;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalEdge;
+import cz.cvut.fel.aic.geographtools.Edge;
 
 /**
  *

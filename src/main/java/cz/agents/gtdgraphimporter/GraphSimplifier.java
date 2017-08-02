@@ -1,12 +1,12 @@
 package cz.agents.gtdgraphimporter;
 
-import cz.agents.basestructures.EdgeId;
 import cz.agents.gtdgraphimporter.structurebuilders.TmpGraphBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalEdge;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalEdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalNode;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.SimplifiedInternalEdgeBuilder;
+import cz.cvut.fel.aic.geographtools.EdgeId;
 import org.apache.log4j.Logger;
 
 import java.util.*;

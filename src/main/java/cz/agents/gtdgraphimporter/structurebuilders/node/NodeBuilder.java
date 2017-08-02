@@ -1,7 +1,8 @@
 package cz.agents.gtdgraphimporter.structurebuilders.node;
 
-import cz.agents.basestructures.GPSLocation;
-import cz.agents.basestructures.Node;
+import cz.cvut.fel.aic.geographtools.GPSLocation;
+import cz.cvut.fel.aic.geographtools.Node;
+
 
 /**
  * @author Marek Cuchý

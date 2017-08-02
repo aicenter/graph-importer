@@ -1,8 +1,8 @@
 package cz.agents.gtdgraphimporter.structurebuilders.edge;
 
-import cz.agents.basestructures.Edge;
-import cz.agents.basestructures.EdgeId;
 import cz.agents.gtdgraphimporter.TransportMode;
+import cz.cvut.fel.aic.geographtools.Edge;
+import cz.cvut.fel.aic.geographtools.EdgeId;
 
 /**
  * @author Marek Cuchý

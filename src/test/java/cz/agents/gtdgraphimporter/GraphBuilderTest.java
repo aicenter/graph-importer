@@ -1,9 +1,9 @@
 package cz.agents.gtdgraphimporter;
 
-import cz.agents.basestructures.Edge;
-import cz.agents.basestructures.Graph;
-import cz.agents.basestructures.GraphBuilder;
-import cz.agents.basestructures.Node;
+import cz.cvut.fel.aic.geographtools.Edge;
+import cz.cvut.fel.aic.geographtools.Graph;
+import cz.cvut.fel.aic.geographtools.GraphBuilder;
+import cz.cvut.fel.aic.geographtools.Node;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,10 +1,10 @@
 package cz.agents.gtdgraphimporter.structurebuilders.internal;
 
 import com.google.common.collect.Lists;
-import cz.agents.basestructures.EdgeId;
-import cz.agents.basestructures.GPSLocation;
-import cz.agents.geotools.GPSLocationTools;
 import cz.agents.gtdgraphimporter.structurebuilders.TmpGraphBuilder;
+import cz.cvut.fel.aic.geographtools.EdgeId;
+import cz.cvut.fel.aic.geographtools.GPSLocation;
+import cz.cvut.fel.aic.geographtools.util.GPSLocationTools;
 
 import java.util.*;
 

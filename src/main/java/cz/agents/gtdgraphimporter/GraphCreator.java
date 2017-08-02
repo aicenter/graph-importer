@@ -1,11 +1,5 @@
 package cz.agents.gtdgraphimporter;
 
-import cz.agents.basestructures.Edge;
-import cz.agents.basestructures.Graph;
-import cz.agents.basestructures.GraphBuilder;
-import cz.agents.basestructures.Node;
-import cz.agents.geotools.StronglyConnectedComponentsFinder;
-import cz.agents.geotools.Transformer;
 import cz.agents.gtdgraphimporter.structurebuilders.TmpGraphBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.client.EdgeFactory;
 import cz.agents.gtdgraphimporter.structurebuilders.client.NodeFactory;
@@ -13,6 +7,12 @@ import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalEdge;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalEdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalNode;
+import cz.cvut.fel.aic.geographtools.Edge;
+import cz.cvut.fel.aic.geographtools.Graph;
+import cz.cvut.fel.aic.geographtools.GraphBuilder;
+import cz.cvut.fel.aic.geographtools.Node;
+import cz.cvut.fel.aic.geographtools.util.StronglyConnectedComponentsFinder;
+import cz.cvut.fel.aic.geographtools.util.Transformer;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import org.apache.log4j.Logger;

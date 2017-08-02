@@ -2,10 +2,14 @@ package cz.agents.gtdgraphimporter.structurebuilders;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import cz.agents.basestructures.*;
 import cz.agents.gtdgraphimporter.TransportMode;
 import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.node.NodeBuilder;
+import cz.cvut.fel.aic.geographtools.Edge;
+import cz.cvut.fel.aic.geographtools.EdgeId;
+import cz.cvut.fel.aic.geographtools.Graph;
+import cz.cvut.fel.aic.geographtools.GraphBuilder;
+import cz.cvut.fel.aic.geographtools.Node;
 import org.apache.log4j.Logger;
 
 import java.util.*;

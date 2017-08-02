@@ -5,8 +5,8 @@
  */
 package cz.agents.gtdgraphimporter.structurebuilders.internal;
 
-import cz.agents.basestructures.GPSLocation;
 import cz.agents.gtdgraphimporter.structurebuilders.node.NodeBuilder;
+import cz.cvut.fel.aic.geographtools.GPSLocation;
 
 
 

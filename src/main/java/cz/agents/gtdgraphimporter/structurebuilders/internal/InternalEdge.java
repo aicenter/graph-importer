@@ -5,7 +5,7 @@
  */
 package cz.agents.gtdgraphimporter.structurebuilders.internal;
 
-import cz.agents.basestructures.Edge;
+import cz.cvut.fel.aic.geographtools.Edge;
 import java.util.Map;
 
 /**

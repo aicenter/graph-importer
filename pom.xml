@@ -32,6 +32,13 @@
 	</build>
 
 	<dependencies>
+        <!--aic-->
+        <dependency>
+            <groupId>cz.cvut.fel.aic</groupId>
+            <artifactId>geographtools</artifactId>
+        </dependency>
+        
+        <!--other-->
         <dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
@@ -54,21 +61,5 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-        
-        
-		<dependency>
-			<groupId>cz.agents</groupId>
-			<artifactId>geotools</artifactId>
-			<version>1.4</version>
-		</dependency>
-		
-		
-	 <dependency>
-	  <groupId>cz.agents</groupId>
-	  <artifactId>basestructures</artifactId>
-	  <version>1.6</version>
-	  <scope>compile</scope>
-	  <type>jar</type>
-	 </dependency>
 	</dependencies>
 </project>
