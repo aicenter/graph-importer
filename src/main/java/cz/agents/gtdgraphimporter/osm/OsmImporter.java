@@ -193,7 +193,7 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
    private void loadModeEvaluatorsIfNeeded() {
        Set<ModeOfTransport> missingModes = Sets.difference(allowedModes, modeEvaluators.keySet());
        for (ModeOfTransport mode : missingModes) {
-           InputStream stream = OsmGraphBuilder.class.getResourceAsStream("mode/" + mode.name().toLowerCase() +
+           InputStream stream = OsmImporter.class.getResourceAsStream("mode/" + mode.name().toLowerCase() +
                    ".json");
            if (stream == null) {
                throw new IllegalStateException("Default mode evaluator for " + mode + " isn't defined. You " +
@@ -214,7 +214,7 @@ public class OsmImporter extends Importer implements OsmElementConsumer{
        //default evaluator for all modes.
        TagEvaluator defaultEval = TagEvaluator.ALWAYS_FALSE;
        for (ModeOfTransport mode : missingModes) {
-           InputStream stream = OsmGraphBuilder.class.getResourceAsStream("oneway/" + mode.name().toLowerCase() +
+           InputStream stream = OsmImporter.class.getResourceAsStream("oneway/" + mode.name().toLowerCase() +
                    ".json");
            if (stream == null) {
                oneWayEvaluators.put(mode, defaultEval);
