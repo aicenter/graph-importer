@@ -7,7 +7,6 @@ import cz.agents.gtdgraphimporter.TransportMode;
 import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.node.NodeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.node.RouteNodeBuilder;
-import cz.agents.multimodalstructures.nodes.RoadNode;
 import cz.agents.multimodalstructures.nodes.StopNode;
 import org.apache.log4j.Logger;
 
@@ -280,11 +279,11 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 					.collect(groupingBy(id -> nodeIncomingEdges.get(id).size(), TreeMap::new, toSet()));
 	}
 
-	public List<EdgeBuilder<? extends TEdge>> getOutgoingEdges(NodeBuilder<? extends RoadNode> node) {
+	public List<EdgeBuilder<? extends TEdge>> getOutgoingEdges(NodeBuilder<? extends Node> node) {
 		return nodeOutgoingEdges.get(node.tmpId);
 	}
 
-	public List<EdgeBuilder<? extends TEdge>> getIncomingEdges(NodeBuilder<? extends RoadNode> node) {
+	public List<EdgeBuilder<? extends TEdge>> getIncomingEdges(NodeBuilder<? extends Node> node) {
 		return nodeIncomingEdges.get(node.tmpId);
 	}
 
