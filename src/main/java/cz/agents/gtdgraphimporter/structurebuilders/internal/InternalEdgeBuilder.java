@@ -5,7 +5,7 @@
  */
 package cz.agents.gtdgraphimporter.structurebuilders.internal;
 
-import cz.agents.gtdgraphimporter.TransportMode;
+import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
 import java.util.EnumSet;
 import java.util.HashMap;

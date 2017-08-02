@@ -2,7 +2,7 @@ package cz.agents.gtdgraphimporter.structurebuilders;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import cz.agents.gtdgraphimporter.TransportMode;
+import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.node.NodeBuilder;
 import cz.cvut.fel.aic.geographtools.Edge;

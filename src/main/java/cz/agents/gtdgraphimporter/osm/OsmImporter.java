@@ -12,7 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import cz.agents.gtdgraphimporter.GraphCreator;
 import cz.agents.gtdgraphimporter.Importer;
-import cz.agents.gtdgraphimporter.TransportMode;
+import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.agents.gtdgraphimporter.osm.element.OsmNode;
 import cz.agents.gtdgraphimporter.osm.element.OsmRelation;
 import cz.agents.gtdgraphimporter.osm.element.OsmWay;
