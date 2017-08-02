@@ -1,6 +1,5 @@
 package cz.agents.gtdgraphimporter;
 
-import com.google.common.collect.Sets;
 import cz.agents.basestructures.Edge;
 import cz.agents.basestructures.Graph;
 import cz.agents.basestructures.GraphBuilder;
@@ -14,7 +13,6 @@ import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalEdge;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalEdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.internal.InternalNode;
-import cz.agents.multimodalstructures.additional.ModeOfTransport;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import org.apache.log4j.Logger;
@@ -41,17 +39,6 @@ import java.util.function.Predicate;
 public class GraphCreator<N extends Node, E extends Edge>{
     private static final Logger LOGGER = Logger.getLogger(GraphCreator.class);
     
-       
-    /**
-     * Set of all modes that can be loaded from OSM without any additional information required.
-     */
-    public static final Set<ModeOfTransport> OSM_MODES = Sets.immutableEnumSet(
-            ModeOfTransport.WALK,
-            ModeOfTransport.TAXI,
-            ModeOfTransport.CAR,
-            ModeOfTransport.MOTORCYCLE,
-            ModeOfTransport.BIKE);
-    
     
     
     
@@ -63,8 +50,6 @@ public class GraphCreator<N extends Node, E extends Edge>{
     
     private final boolean simplificationOn;
     
-    protected final Set<ModeOfTransport> allowedModes;
-    
     protected TmpGraphBuilder<InternalNode, InternalEdge> builder;
     
     private final Importer importer;
@@ -72,14 +57,13 @@ public class GraphCreator<N extends Node, E extends Edge>{
 
 
 
-    public GraphCreator(Set<ModeOfTransport> allowedOsmModes, Transformer projection, boolean serializationOn, 
+    public GraphCreator(Transformer projection, boolean serializationOn, 
             boolean simplificationOn, Importer importer, NodeFactory<N> nodeFactory, EdgeFactory<E> edgeFactory) {
         this.serializationOn = serializationOn;
         this.importer = importer;
         this.simplificationOn = serializationOn;
         this.nodeFactory = nodeFactory;
         this.edgeFactory = edgeFactory;
-        allowedModes = allowedOsmModes;
     }
     
     /**
