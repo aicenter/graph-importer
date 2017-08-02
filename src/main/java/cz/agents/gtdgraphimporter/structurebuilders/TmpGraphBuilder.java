@@ -6,8 +6,6 @@ import cz.agents.basestructures.*;
 import cz.agents.gtdgraphimporter.TransportMode;
 import cz.agents.gtdgraphimporter.structurebuilders.edge.EdgeBuilder;
 import cz.agents.gtdgraphimporter.structurebuilders.node.NodeBuilder;
-import cz.agents.gtdgraphimporter.structurebuilders.node.RouteNodeBuilder;
-import cz.agents.multimodalstructures.nodes.StopNode;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -81,15 +79,6 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 		Map<Integer, Integer> tmpToFinalId = new HashMap<>();
 
 		for (NodeBuilder<? extends TNode> nodeBuilder : nodes.values()) {
-			//StopNode for route nodes have to be set
-			if (nodeBuilder instanceof RouteNodeBuilder) {
-				RouteNodeBuilder rnb = (RouteNodeBuilder) nodeBuilder;
-				if (!tmpToFinalId.containsKey(rnb.getStopNodeTmpId())) {
-					throw new IllegalStateException(
-							"Stop node builder must be inserted before the corresponding route node builders.");
-				}
-				rnb.setStopNode((StopNode) builder.getNode(tmpToFinalId.get(rnb.getStopNodeTmpId())));
-			}
 			tmpToFinalId.put(nodeBuilder.tmpId, id);
 			builder.addNode(nodeBuilder.buildNode(id++));
 		}
