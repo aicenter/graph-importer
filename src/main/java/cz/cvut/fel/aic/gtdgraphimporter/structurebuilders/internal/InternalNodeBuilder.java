@@ -22,8 +22,8 @@ public class InternalNodeBuilder extends NodeBuilder<InternalNode>{
 
     @Override
     public InternalNode buildNode(int id) {
-        return new InternalNode(id, sourceId, location.latE6, location.lonE6, location.getLatitudeProjected1E6(), 
-                location.getLongitudeProjected1E6(), location.elevation);
+        return new InternalNode(id, sourceId, location.latE6, location.lonE6, location.getLatitudeProjected1E2(), 
+                location.getLongitudeProjected1E2(), location.elevation);
     }
     
 }
