@@ -61,7 +61,7 @@ public class GraphCreator<N extends Node, E extends Edge>{
             boolean simplificationOn, Importer importer, NodeFactory<N> nodeFactory, EdgeFactory<E> edgeFactory) {
         this.serializationOn = serializationOn;
         this.importer = importer;
-        this.simplificationOn = serializationOn;
+        this.simplificationOn = simplificationOn;
         this.nodeFactory = nodeFactory;
         this.edgeFactory = edgeFactory;
     }
