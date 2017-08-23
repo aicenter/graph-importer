@@ -204,14 +204,15 @@ public class GeoJSONReader extends Importer {
         return value;
     }
 
+
     private int getOrCreateNode(JSONArray latLon, JSONObject properties) {
         String nodesIdKey = "node_id";
         int elevation = 0;
         String coordinatesString = latLon.toString();
 
-        String nodeId = null;
-        nodeId = (String) properties.get(nodesIdKey);
-        long sourceId = 0l;
+
+        long sourceId = tryParseLong(properties, nodesIdKey, -1);
+
 
         if (!nodes.containsKey(coordinatesString)) {
             GPSLocation location = getGpsLocation(latLon, elevation);
@@ -268,21 +269,22 @@ public class GeoJSONReader extends Importer {
     protected void parseGEOJSON() {
         LOGGER.info("Parsing of geojson started...");
 
-        HashMap<String, Integer> nodesMapping = new HashMap<>();
-
         long t1 = System.currentTimeMillis();
-        try (FileReader fr = new FileReader(geoJsonFile)) {
-            parseFeatures(fr);
-            processFeatures();
-        } catch (IOException | ParseException e) {
-            throw new IllegalStateException("GeoJSON can't be parsed.", e);
-        }
+
         try (FileReader fr = new FileReader(geoJsonNodeFile)) {
             parseFeatures(fr);
             processFeatures();
         } catch (IOException | ParseException e) {
-            throw new IllegalStateException("GeoJSON can't be parsed.", e);
+            throw new IllegalStateException("GeoJSON Nodes can't be parsed.", e);
         }
+
+        try (FileReader fr = new FileReader(geoJsonFile)) {
+            parseFeatures(fr);
+            processFeatures();
+        } catch (IOException | ParseException e) {
+            throw new IllegalStateException("GeoJSON Edges can't be parsed.", e);
+        }
+
 
         long t2 = System.currentTimeMillis();
         LOGGER.info("Parsing of GeoJSON finished in " + (t2 - t1) + "ms");
