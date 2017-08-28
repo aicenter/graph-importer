@@ -3,8 +3,6 @@ package cz.cvut.fel.aic.graphimporter.structurebuilders;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import cz.cvut.fel.aic.geographtools.TransportMode;
-import cz.cvut.fel.aic.graphimporter.structurebuilders.edge.EdgeBuilder;
-import cz.cvut.fel.aic.graphimporter.structurebuilders.node.NodeBuilder;
 import cz.cvut.fel.aic.geographtools.Edge;
 import cz.cvut.fel.aic.geographtools.EdgeId;
 import cz.cvut.fel.aic.geographtools.Graph;

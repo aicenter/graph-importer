@@ -5,7 +5,7 @@
  */
 package cz.cvut.fel.aic.graphimporter.structurebuilders.internal;
 
-import cz.cvut.fel.aic.graphimporter.structurebuilders.node.NodeBuilder;
+import cz.cvut.fel.aic.graphimporter.structurebuilders.NodeBuilder;
 import cz.cvut.fel.aic.geographtools.GPSLocation;
 
 

@@ -22,7 +22,7 @@ import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNodeBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.TmpGraphBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdgeBuilder;
-import cz.cvut.fel.aic.graphimporter.structurebuilders.node.NodeBuilder;
+import cz.cvut.fel.aic.graphimporter.structurebuilders.NodeBuilder;
 import cz.cvut.fel.aic.geographtools.GPSLocation;
 import cz.cvut.fel.aic.geographtools.util.GPSLocationTools;
 import cz.cvut.fel.aic.geographtools.util.Transformer;

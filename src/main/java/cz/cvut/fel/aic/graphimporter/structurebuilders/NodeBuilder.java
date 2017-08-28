@@ -1,4 +1,4 @@
-package cz.cvut.fel.aic.graphimporter.structurebuilders.node;
+package cz.cvut.fel.aic.graphimporter.structurebuilders;
 
 import cz.cvut.fel.aic.geographtools.GPSLocation;
 import cz.cvut.fel.aic.geographtools.Node;

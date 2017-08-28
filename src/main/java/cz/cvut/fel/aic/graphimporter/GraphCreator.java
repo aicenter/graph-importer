@@ -3,7 +3,7 @@ package cz.cvut.fel.aic.graphimporter;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.TmpGraphBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.client.EdgeFactory;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.client.NodeFactory;
-import cz.cvut.fel.aic.graphimporter.structurebuilders.edge.EdgeBuilder;
+import cz.cvut.fel.aic.graphimporter.structurebuilders.EdgeBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdge;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdgeBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;

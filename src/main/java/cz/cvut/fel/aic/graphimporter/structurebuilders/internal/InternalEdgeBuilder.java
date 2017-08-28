@@ -6,7 +6,7 @@
 package cz.cvut.fel.aic.graphimporter.structurebuilders.internal;
 
 import cz.cvut.fel.aic.geographtools.TransportMode;
-import cz.cvut.fel.aic.graphimporter.structurebuilders.edge.EdgeBuilder;
+import cz.cvut.fel.aic.graphimporter.structurebuilders.EdgeBuilder;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package cz.cvut.fel.aic.graphimporter.structurebuilders.edge;
+package cz.cvut.fel.aic.graphimporter.structurebuilders;
 
 import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.cvut.fel.aic.geographtools.Edge;
