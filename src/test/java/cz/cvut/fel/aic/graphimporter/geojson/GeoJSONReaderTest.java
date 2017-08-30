@@ -10,8 +10,14 @@ public class GeoJSONReaderTest {
 
 
     @Test
-    public void testGetNode() throws Exception {
+    public void test1() throws Exception {
         GeoJSONReader roadImporter = new GeoJSONReader(getClass().getResource("test1/graph_edges.geojson").getPath(), getClass().getResource("test1/graph_nodes.geojson").getPath(), new Transformer(3857));
+        TmpGraphBuilder<InternalNode, InternalEdge> graph = roadImporter.loadGraph();
+    }
+
+    @Test
+    public void test2() throws Exception {
+        GeoJSONReader roadImporter = new GeoJSONReader(getClass().getResource("test2/graph_edges.geojson").getPath(), getClass().getResource("test2/graph_nodes.geojson").getPath(), new Transformer(3857));
         TmpGraphBuilder<InternalNode, InternalEdge> graph = roadImporter.loadGraph();
     }
 }
