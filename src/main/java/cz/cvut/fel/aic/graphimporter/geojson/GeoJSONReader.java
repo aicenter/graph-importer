@@ -19,9 +19,7 @@ import org.json.simple.parser.ParseException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class GeoJSONReader extends Importer {
 
@@ -85,9 +83,9 @@ public class GeoJSONReader extends Importer {
             JSONArray toLatlon = (JSONArray) coordinates.get(coordinates.size() - 1);
             int fromId = getOrCreateNode(fromLatLon, properties);
             int toId = getOrCreateNode(toLatlon, properties);
-            addEdge(fromId, toId, properties);
+            addEdge(fromId, toId, properties, coordinates);
             if (!isOneWay || isBothWayOverride) {
-                addEdge(toId, fromId, properties);
+                addEdge(toId, fromId, properties, coordinates);
             }
         } else if (geometryType.equals("Point")) {
             int fromId = getOrCreateNode(coordinates, properties);
@@ -111,7 +109,7 @@ public class GeoJSONReader extends Importer {
     }
 
 
-    void addEdge(int fromId, int toId, JSONObject properties) {
+    void addEdge(int fromId, int toId, JSONObject properties, JSONArray coordinates) {
         Long osmId = null;
         try {
             osmId = tryParseLong(properties, "id");
@@ -123,8 +121,16 @@ public class GeoJSONReader extends Importer {
             modeOfTransports.add(TransportMode.CAR);
             float allowedMaxSpeedInMpS = tryParseFloat(properties, "speed") / 3.6f;
             int lanesCount = tryParseInt(properties, "lanes");
+            List<GPSLocation> gpsLocations = null;
+            if (coordinates.size() > 2) {
+                gpsLocations = new ArrayList<>();
+                for (int i = 0; i < coordinates.size(); i++) {
+                    gpsLocations.add(getGpsLocation((JSONArray) coordinates.get(i),0));
+                }
+            }
+
             InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, osmId, uniqueWayId, oppositeWayUniqueId,
-                    length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount);
+                    length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, gpsLocations);
             builder.addEdge(edgeBuilder);
         } catch (GeoJSONException e) {
             e.printStackTrace();

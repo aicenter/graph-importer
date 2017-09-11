@@ -5,10 +5,13 @@
  */
 package cz.cvut.fel.aic.graphimporter.structurebuilders.internal;
 
+import cz.cvut.fel.aic.geographtools.GPSLocation;
 import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.EdgeBuilder;
+
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,10 +34,12 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge>{
     public float allowedMaxSpeedInMpS;
     
     public int lanesCount;
+
+    public List<GPSLocation> gpsLocations;
     
 
     public InternalEdgeBuilder(int tmpFromId, int tmpToId, long osmWayId, int uniqueWayId, int oppositeWayUniqueId, int length, 
-            Set<TransportMode> modeOfTransports, float allowedMaxSpeedInMpS, Integer lanesCount) {
+            Set<TransportMode> modeOfTransports, float allowedMaxSpeedInMpS, Integer lanesCount, List<GPSLocation> gpsLocations) {
         super(tmpFromId, tmpToId, length);
         
         this.wayID = osmWayId;
@@ -45,6 +50,7 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge>{
         //extras
         this.allowedMaxSpeedInMpS = allowedMaxSpeedInMpS;
         this.lanesCount = lanesCount;
+        this.gpsLocations = gpsLocations;
         
         otherParams = new HashMap<>();
     }
@@ -62,6 +68,7 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge>{
         otherParams.put("modeOfTransports", modeOfTransports);
         otherParams.put("allowedMaxSpeedInMpS", allowedMaxSpeedInMpS);
         otherParams.put("lanesCount", lanesCount);
+        otherParams.put("gpsLocations", gpsLocations);
         return new InternalEdge(fromId, toId, getLength(), otherParams);
     }
 
@@ -73,7 +80,7 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge>{
     @Override
     public InternalEdgeBuilder copy(int tmpFromId, int tmpToId, int length) {
         return new InternalEdgeBuilder(tmpFromId, tmpToId, wayID, uniqueWayID, oppositeWayUniqueId,
-                length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount);
+                length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, gpsLocations);
     }
     
     public boolean equalAttributes(InternalEdgeBuilder that) {
