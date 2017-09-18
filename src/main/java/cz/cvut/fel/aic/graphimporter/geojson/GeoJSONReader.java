@@ -121,12 +121,12 @@ public class GeoJSONReader extends Importer {
             modeOfTransports.add(TransportMode.CAR);
             float allowedMaxSpeedInMpS = tryParseFloat(properties, "speed") / 3.6f;
             int lanesCount = tryParseInt(properties, "lanes");
-            List<GPSLocation> gpsLocations = new ArrayList<>();
+            List<GPSLocation> coordinateList = new ArrayList<>();
             for (int i = 0; i < coordinates.size(); i++) {
-                gpsLocations.add(getGpsLocation((JSONArray) coordinates.get(i),0));
+                coordinateList.add(getGpsLocation((JSONArray) coordinates.get(i),0));
             }
             InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, osmId, uniqueWayId, oppositeWayUniqueId,
-                    length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, gpsLocations);
+                    length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList);
             builder.addEdge(edgeBuilder);
         } catch (GeoJSONException e) {
             e.printStackTrace();
