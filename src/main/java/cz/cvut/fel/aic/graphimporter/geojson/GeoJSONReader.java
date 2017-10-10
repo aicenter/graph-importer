@@ -154,6 +154,9 @@ public class GeoJSONReader extends Importer {
         List<Map<String, Integer>> lanes = new ArrayList<>();
         try {
             List<JSONObject> list = tryParseList(properties, key);
+            if (list == null) {
+                return null;
+            }
             for (JSONObject l : list) {
                 Map<String, Integer> lane = new HashMap<>();
                 data = tryParseDict(l, null);

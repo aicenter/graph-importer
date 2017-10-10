@@ -104,14 +104,16 @@ public class GeoJSONParser {
 
     static List<JSONObject> tryParseList(JSONObject properties, String key) throws GeoJSONException {
         JSONArray m = (JSONArray) properties.get(key);
+        if (m == null){
+            return null;
+        }
+
         List<JSONObject> list = new ArrayList<>();
-        if (m != null) {
-            for (Object aM : m) {
-                if (aM instanceof JSONObject) {
-                    list.add((JSONObject) aM);
-                } else {
-                    throw new GeoJSONException(properties, key);
-                }
+        for (Object aM : m) {
+            if (aM instanceof JSONObject) {
+                list.add((JSONObject) aM);
+            } else {
+                throw new GeoJSONException(properties, key);
             }
         }
         return list;
