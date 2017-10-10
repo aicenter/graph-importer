@@ -359,9 +359,11 @@ public class OsmImporter extends Importer implements OsmElementConsumer {
             }
 
             // create temporary edge
-            InternalEdgeBuilder internalEdgeBuilder = new InternalEdgeBuilder(tmpFromId, tmpToId, way.getId(), uniqueId,
+            InternalEdgeBuilder internalEdgeBuilder = new InternalEdgeBuilder(tmpFromId, tmpToId, uniqueId,
                     oppositeWayUniqueId, (int) calculateLength(tmpFromId, tmpToId), modeOfTransports,
-                    extractSpeed(way, edgeType), extractLanesCount(way, edgeType), Arrays.asList(builder.getNode(tmpFromId).location, builder.getNode(tmpToId).location));
+                    extractSpeed(way, edgeType), extractLanesCount(way, edgeType),
+                    Arrays.asList(builder.getNode(tmpFromId).location,
+                    builder.getNode(tmpToId).location), null);
 
             // add edge to TmpGraphBuilder
             builder.addEdge(internalEdgeBuilder);
