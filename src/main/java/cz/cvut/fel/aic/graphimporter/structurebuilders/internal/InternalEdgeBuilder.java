@@ -84,7 +84,8 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge> {
     }
 
     public boolean equalAttributes(InternalEdgeBuilder that) {
-        return  lanesCount == that.lanesCount
+        return  uniqueWayID == that.uniqueWayID
+                &&lanesCount == that.lanesCount
                 && (modeOfTransports != null ? modeOfTransports.equals(that.modeOfTransports)
                 && Float.compare(that.allowedMaxSpeedInMpS, allowedMaxSpeedInMpS) == 0 :
                 that.modeOfTransports == null);
