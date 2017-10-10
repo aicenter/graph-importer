@@ -35,8 +35,6 @@ public class GeoJSONReader extends Importer {
     private final File geoJsonNodeFile;
 
 
-    private boolean isBothWayOverride = false;
-
     private final TmpGraphBuilder<InternalNode, InternalEdge> builder;
 
     public GeoJSONReader(String geoJsonEdgeFile, String geoJsonNodeFile, Transformer projection) {
@@ -99,33 +97,30 @@ public class GeoJSONReader extends Importer {
 
     private void addEdge(int fromId, int toId, JSONObject properties, JSONArray coordinates) {
         try {
-
-            //TODO: repair to correct osmID
-            Long osmId = tryParseLong(properties, "id");
-
             //in case of unknown ID, use negative negative builder edge count
             int uniqueWayId = tryParseInt(properties, "id", -builder.getEdgeCount());
-            int oppositeWayUniqueId = tryParseInt(properties, "id_opposite",-1);
+            int oppositeWayUniqueId = tryParseInt(properties, "id_opposite", -1);
 
-            //int length = tryParseInt(properties, "length");
-            int length = 100;
+            int length = tryParseInt(properties, "length");
 
             Set<TransportMode> modeOfTransports = new HashSet<>();
             modeOfTransports.add(TransportMode.CAR);
 
-            //float allowedMaxSpeedInMpS = tryParseFloat(properties, "speed") / 3.6f;
-            float allowedMaxSpeedInMpS = 50;
+            float allowedMaxSpeedInMpS = tryParseFloat(properties, "speed") / 3.6f;
             int lanesCount = tryParseInt(properties, "lanes", 1);
 
-            List<Map<String,Integer>> lanes = tryParseLanes(properties,"turn:lanes:id");
+            List<Map<String, Integer>> lanes = tryParseLanes(properties, "turn:lanes:id");
 
             List<GPSLocation> coordinateList = new ArrayList<>();
             for (Object coordinate : coordinates) {
                 coordinateList.add(getGpsLocation((JSONArray) coordinate, 0));
             }
-            InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, osmId, uniqueWayId, oppositeWayUniqueId,
-                    length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList);
+
+            // Build edge
+            InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, uniqueWayId, oppositeWayUniqueId,
+                    length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList, lanes);
             builder.addEdge(edgeBuilder);
+
         } catch (GeoJSONException e) {
             e.printStackTrace();
             System.exit(1);
@@ -137,9 +132,7 @@ public class GeoJSONReader extends Importer {
         int elevation = 0;
         String coordinatesString = latLon.toString();
 
-
         long sourceId = tryParseLong(properties, nodesIdKey, -1);
-
 
         if (!nodes.containsKey(coordinatesString)) {
             GPSLocation location = getGpsLocation(latLon, elevation);
@@ -156,28 +149,27 @@ public class GeoJSONReader extends Importer {
         return GPSLocationTools.createGPSLocation(lat, lon, Math.round(elevation), projection);
     }
 
-    private List<Map<String,Integer>> tryParseLanes(JSONObject properties, String key){
-        Map<String,Object> data = new HashMap<>();
-        List<Map<String,Integer>> lanes = new ArrayList<>();
+    private List<Map<String, Integer>> tryParseLanes(JSONObject properties, String key) {
+        Map<String, Object> data;
+        List<Map<String, Integer>> lanes = new ArrayList<>();
         try {
-            List<JSONObject> list = tryParseList(properties,key);
-            for(JSONObject l:list){
-                Map<String,Integer> lane = new HashMap<>();
-                data = tryParseDict(l,null);
-                for (Map.Entry<String, Object> entry : data.entrySet())
-                {
+            List<JSONObject> list = tryParseList(properties, key);
+            for (JSONObject l : list) {
+                Map<String, Integer> lane = new HashMap<>();
+                data = tryParseDict(l, null);
+                for (Map.Entry<String, Object> entry : data.entrySet()) {
                     String keyD = entry.getKey();
                     Object valueD = entry.getValue();
                     Integer valueN = -1;
 
-                    if(valueD instanceof Integer){
+                    if (valueD instanceof Integer) {
                         valueN = (Integer) valueD;
-                    }else if (valueD instanceof Long){
+                    } else if (valueD instanceof Long) {
                         Long val = (Long) valueD;
                         valueN = val.intValue();
                     }
 
-                    lane.put(keyD,valueN);
+                    lane.put(keyD, valueN);
                 }
                 lanes.add(lane);
             }
@@ -211,32 +203,11 @@ public class GeoJSONReader extends Importer {
             int fromId = getOrCreateNode(fromLatLon, properties);
             int toId = getOrCreateNode(toLatlon, properties);
             addEdge(fromId, toId, properties, coordinates);
-            if (!isOneWay || isBothWayOverride) {
+            if (!isOneWay) {
                 addEdge(toId, fromId, properties, coordinates);
             }
         } else if (geometryType.equals("Point")) {
             getOrCreateNode(coordinates, properties);
         }
     }
-
-    //    public static void main(String[] args) {
-//        File geoJSONFile = new File("/home/martin/projects/skoda/skoda/osm_lines.geojson");
-//        Transformer projection = new Transformer(2065);
-//        TmpGraphBuilder<SimulationNode, SimulationEdge> builder = new TmpGraphBuilder<SimulationNode, SimulationEdge>();
-//        GeoJSONReader reader = null;
-//        try (FileReader fr = new FileReader((geoJSONFile))) {
-//            reader = new GeoJSONReader(fr, projection,new HashMap<>());
-//        } catch (IOException | ParseException e) {
-//            e.printStackTrace();
-//        }
-//        TmpGraphBuilder<SimulationNode, SimulationEdge> graphBuilder = null;
-//
-//        graphBuilder = reader.parseGraphFeatures(builder);
-//
-//        assert graphBuilder != null;
-//        Graph<SimulationNode, SimulationEdge> graph = graphBuilder.createGraph();
-//        System.out.println(graph);
-//
-//
-//    }
 }
