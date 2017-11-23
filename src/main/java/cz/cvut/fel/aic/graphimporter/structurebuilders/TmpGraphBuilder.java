@@ -56,12 +56,16 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 
     public void addEdge(EdgeBuilder<? extends TEdge> builder) {
         EdgeId id = getId(builder);
-        if (edges.containsKey(id)) throw new IllegalArgumentException(
-                "Graph builder already contains edge builder: [" + nodes.get(builder.getTmpFromId()) + ", " +
-                        nodes.get(builder.getTmpToId()) + "] ");
-        nodeOutgoingEdges.put(builder.getTmpFromId(), builder);
-        nodeIncomingEdges.put(builder.getTmpToId(), builder);
-        edges.put(id, builder);
+        if (edges.containsKey(id)) {
+//            throw new IllegalArgumentException(
+//                "Graph builder already contains edge builder: [" + nodes.get(builder.getTmpFromId()) + ", " +
+//                        nodes.get(builder.getTmpToId()) + "] ");
+        }
+        else{
+            nodeOutgoingEdges.put(builder.getTmpFromId(), builder);
+            nodeIncomingEdges.put(builder.getTmpToId(), builder);
+            edges.put(id, builder);
+        }
     }
 
     private EdgeId getId(EdgeBuilder<? extends TEdge> builder) {
