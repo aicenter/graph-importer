@@ -12,7 +12,7 @@ import cz.cvut.fel.aic.geographtools.Node;
  *
  * @author fido
  */
-public abstract class NodeFactory<N extends Node>{
+public interface NodeFactory<N extends Node>{
     
-    public abstract N createNode(InternalNode internalNode);
+    public N createNode(InternalNode internalNode);
 }

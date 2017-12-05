@@ -12,7 +12,7 @@ import cz.cvut.fel.aic.geographtools.Edge;
  *
  * @author fido
  */
-public abstract class EdgeFactory<E extends Edge> {
+public interface EdgeFactory<E extends Edge> {
     
     public abstract E createEdge(InternalEdge internalEdge);
     
