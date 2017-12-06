@@ -165,7 +165,8 @@ public class SimplifiedInternalEdgeBuilder {
 		List<InternalEdgeBuilder> result = new ArrayList<>(2);
 		switch (type) {
 			case TWO_WAY :
-				result.add(createEdge(Lists.reverse(nodes), length, removedEdges, Lists.reverse(shape)));
+				Collections.reverse(shape);
+				result.add(createEdge(Lists.reverse(nodes), length, removedEdges, shape));
 			case ONEWAY :
 				result.add(createEdge(nodes, length, removedEdges, shape));
 		}
