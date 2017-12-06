@@ -19,76 +19,82 @@ import java.util.Set;
  *
  * @author fido
  */
-public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge>{
-    
-    private final Map<String,Object> otherParams;
-    
-    private Set<TransportMode> modeOfTransports = EnumSet.noneOf(TransportMode.class);
-    
-    public long wayID; // OsmWay ID
-    
-    public int uniqueWayID;
-    
-    public int oppositeWayUniqueId; // -1 if does not exists,otherwise uniqueWayId of the direction edge
-    
-    public float allowedMaxSpeedInMpS;
-    
-    public int lanesCount;
+public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge> {
 
-    public List<GPSLocation> coordinateList;
-    
+	private final Map<String, Object> otherParams;
 
-    public InternalEdgeBuilder(int tmpFromId, int tmpToId, long osmWayId, int uniqueWayId, int oppositeWayUniqueId, int length, 
-            Set<TransportMode> modeOfTransports, float allowedMaxSpeedInMpS, Integer lanesCount, List<GPSLocation> coordinateList) {
-        super(tmpFromId, tmpToId, length);
-        
-        this.wayID = osmWayId;
-        this.modeOfTransports = EnumSet.copyOf(modeOfTransports);
-        this.uniqueWayID = uniqueWayId;
-        this.oppositeWayUniqueId = oppositeWayUniqueId;
+	private Set<TransportMode> modeOfTransports = EnumSet.noneOf(TransportMode.class);
 
-        //extras
-        this.allowedMaxSpeedInMpS = allowedMaxSpeedInMpS;
-        this.lanesCount = lanesCount;
-        this.coordinateList = coordinateList;
-        
-        otherParams = new HashMap<>();
-    }
-    
-    public InternalEdgeBuilder addModeOfTransports(Set<TransportMode> ModeOfTransports) {
-        this.modeOfTransports.addAll(ModeOfTransports);
-        return this;
-    }
+	public long wayID; // OsmWay ID
 
-    @Override
-    public InternalEdge build(int fromId, int toId) {
-        otherParams.put("wayID", wayID);
-        otherParams.put("uniqueWayID", uniqueWayID);
-        otherParams.put("oppositeWayUniqueId", oppositeWayUniqueId);
-        otherParams.put("modeOfTransports", modeOfTransports);
-        otherParams.put("allowedMaxSpeedInMpS", allowedMaxSpeedInMpS);
-        otherParams.put("lanesCount", lanesCount);
-        otherParams.put("coordinateList", coordinateList);
-        return new InternalEdge(fromId, toId, getLength(), otherParams);
-    }
+	public int uniqueWayID;
 
-    @Override
-    public boolean checkFeasibility(TransportMode mode) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+	public int oppositeWayUniqueId; // -1 if does not exists,otherwise uniqueWayId of the direction edge
 
-    @Override
-    public InternalEdgeBuilder copy(int tmpFromId, int tmpToId, int length) {
-        return new InternalEdgeBuilder(tmpFromId, tmpToId, wayID, uniqueWayID, oppositeWayUniqueId,
-                length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList);
-    }
-    
-    public boolean equalAttributes(InternalEdgeBuilder that) {
-        return wayID == that.wayID
-                && lanesCount == that.lanesCount
-                && (modeOfTransports != null ? modeOfTransports.equals(that.modeOfTransports)
-                && Float.compare(that.allowedMaxSpeedInMpS, allowedMaxSpeedInMpS) == 0 :
-                that.modeOfTransports == null);
-    }
-    
+	public float allowedMaxSpeedInMpS;
+
+	public int lanesCount;
+
+	public List<GPSLocation> coordinateList;
+
+	public InternalEdgeBuilder(int tmpFromId, int tmpToId, long osmWayId, int uniqueWayId, int oppositeWayUniqueId,
+			int length, Set<TransportMode> modeOfTransports, float allowedMaxSpeedInMpS, Integer lanesCount,
+			List<GPSLocation> coordinateList) {
+		super(tmpFromId, tmpToId, length);
+
+		this.wayID = osmWayId;
+		this.modeOfTransports = EnumSet.copyOf(modeOfTransports);
+		this.uniqueWayID = uniqueWayId;
+		this.oppositeWayUniqueId = oppositeWayUniqueId;
+
+		// extras
+		this.allowedMaxSpeedInMpS = allowedMaxSpeedInMpS;
+		this.lanesCount = lanesCount;
+		this.coordinateList = coordinateList;
+
+		otherParams = new HashMap<>();
+	}
+
+	public InternalEdgeBuilder addModeOfTransports(Set<TransportMode> ModeOfTransports) {
+		this.modeOfTransports.addAll(ModeOfTransports);
+		return this;
+	}
+
+	@Override
+	public InternalEdge build(int fromId, int toId) {
+		otherParams.put("wayID", wayID);
+		otherParams.put("uniqueWayID", uniqueWayID);
+		otherParams.put("oppositeWayUniqueId", oppositeWayUniqueId);
+		otherParams.put("modeOfTransports", modeOfTransports);
+		otherParams.put("allowedMaxSpeedInMpS", allowedMaxSpeedInMpS);
+		otherParams.put("lanesCount", lanesCount);
+		otherParams.put("coordinateList", coordinateList);
+		return new InternalEdge(fromId, toId, getLength(), otherParams);
+	}
+
+	@Override
+	public boolean checkFeasibility(TransportMode mode) {
+		throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+																		// Tools | Templates.
+	}
+
+	@Override
+	public InternalEdgeBuilder copy(int tmpFromId, int tmpToId, int length) {
+		return new InternalEdgeBuilder(tmpFromId, tmpToId, wayID, uniqueWayID, oppositeWayUniqueId, length,
+				modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList);
+	}
+
+	public InternalEdgeBuilder copy(int tmpFromId, int tmpToId, int length, List<GPSLocation> coordinateList) {
+		return new InternalEdgeBuilder(tmpFromId, tmpToId, wayID, uniqueWayID, oppositeWayUniqueId, length,
+				modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList);
+	}
+
+	public boolean equalAttributes(InternalEdgeBuilder that) {
+		return wayID == that.wayID && lanesCount == that.lanesCount
+				&& (modeOfTransports != null
+						? modeOfTransports.equals(that.modeOfTransports)
+								&& Float.compare(that.allowedMaxSpeedInMpS, allowedMaxSpeedInMpS) == 0
+						: that.modeOfTransports == null);
+	}
+
 }
