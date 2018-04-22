@@ -137,7 +137,7 @@ public class GeoJSONReader extends Importer {
 //        int length = GPSLocationTools.computeDistance(graphBuilder.getNode(fromId).location, graphBuilder.getNode(toId).location);
             Set<TransportMode> modeOfTransports = new HashSet<>();
             modeOfTransports.add(TransportMode.CAR);
-            float allowedMaxSpeedInMpS = tryParseFloat(properties, "speed") / 3.6f;
+            float allowedMaxSpeedInMpS = tryParseFloat(properties, "maxspeed") / 3.6f;
             int lanesCount = tryParseInt(properties, "lanes");
             List<GPSLocation> coordinateList = new ArrayList<>();
             for (int i = 0; i < coordinates.size(); i++) {
@@ -287,7 +287,7 @@ public class GeoJSONReader extends Importer {
     }
 
     protected void parseGEOJSON() {
-        LOGGER.info("Parsing of geojson started...");
+        LOGGER.info("Parsing of geojson started - node file: " + geoJsonNodeFile);
 
         long t1 = System.currentTimeMillis();
 
@@ -298,6 +298,7 @@ public class GeoJSONReader extends Importer {
             throw new IllegalStateException("GeoJSON Nodes can't be parsed.", e);
         }
 
+		LOGGER.info("Parsing of geojson started - edge file: " + geoJsonFile);
         try (FileReader fr = new FileReader(geoJsonFile)) {
             parseFeatures(fr);
             processFeatures();
