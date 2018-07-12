@@ -28,6 +28,7 @@ import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdge;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdgeBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNodeBuilder;
+import cz.cvut.fel.aic.graphimporter.util.MD5ChecksumGenerator;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -53,23 +54,26 @@ public class GeoJSONReader extends Importer {
 
     private final String geoJsonSerializedGraphFile;
 
+    private final String geoJsonSerializedBasePath;
+
     private boolean isBothWayOverride = false;
 
     protected final TmpGraphBuilder<InternalNode, InternalEdge> builder;
 
     public GeoJSONReader(String geoJsonEdgeFile, String geoJsonNodeFile, String geoJsonSerializedGraphFile, Transformer projection) {
-        this(new File(geoJsonEdgeFile), new File(geoJsonNodeFile), geoJsonSerializedGraphFile + ".ser", projection);
+        this(new File(geoJsonEdgeFile), new File(geoJsonNodeFile), getSerializedGraphNameWithChecksum(geoJsonSerializedGraphFile, geoJsonEdgeFile), geoJsonSerializedGraphFile, projection);
     }
 
     public GeoJSONReader(String geoJsonEdgeFile, String geoJsonNodeFile, Transformer projection) {
         this(new File(geoJsonEdgeFile), new File(geoJsonNodeFile), projection);
     }
 
-    public GeoJSONReader(File geoJsonEdgeFile, File geoJsonNodeFile, String geoJsonSerializedGraphFile, Transformer projection) {
+    public GeoJSONReader(File geoJsonEdgeFile, File geoJsonNodeFile, String geoJsonSerializedGraphFile, String geoJsonSerializedBasePath, Transformer projection) {
         this.projection = projection;
         this.geoJsonEdgeFile = geoJsonEdgeFile;
         this.geoJsonNodeFile = geoJsonNodeFile;
         this.geoJsonSerializedGraphFile = geoJsonSerializedGraphFile;
+        this.geoJsonSerializedBasePath = geoJsonSerializedBasePath;
         this.nodes = new HashMap<>();
 
         builder = new TmpGraphBuilder<>();
@@ -80,7 +84,8 @@ public class GeoJSONReader extends Importer {
         this.projection = projection;
         this.geoJsonEdgeFile = geoJsonEdgeFile;
         this.geoJsonNodeFile = geoJsonNodeFile;
-        this.geoJsonSerializedGraphFile = defaultSerializedGraphFile();
+        this.geoJsonSerializedGraphFile =  getSerializedGraphNameWithChecksum(defaultSerializedGraphFile() ,geoJsonEdgeFile);
+        this.geoJsonSerializedBasePath = defaultSerializedGraphFile() + ".ser";
         this.nodes = new HashMap<>();
 
         builder = new TmpGraphBuilder<>();
@@ -297,6 +302,11 @@ public class GeoJSONReader extends Importer {
     }
 
     @Override
+    public String getSerializedBasePath() {
+        return geoJsonSerializedBasePath;
+    }
+
+    @Override
     public TmpGraphBuilder<InternalNode, InternalEdge> loadGraph() {
         parseGEOJSON();
         return builder;
@@ -340,7 +350,16 @@ public class GeoJSONReader extends Importer {
         }
     }
 
-    private String defaultSerializedGraphFile() {
+    public static String getSerializedGraphNameWithChecksum(String basePath, String edgesFilePath) {
+        File edgesFile = new File(edgesFilePath);
+        getSerializedGraphNameWithChecksum(basePath, edgesFile);
+    }
+
+    public static String getSerializedGraphNameWithChecksum(String basePath, File edgesFile) {
+        return basePath + MD5ChecksumGenerator.getGraphChecksum(edgesFile) + ".ser";
+    }
+
+    private static String defaultSerializedGraphFile() {
         return "data/serialized/graph";
     }
 

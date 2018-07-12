@@ -83,6 +83,7 @@ public class GraphCreator<N extends Node, E extends Edge> {
 				LOGGER.warn("Cannot perform deserialization of the cached graphs:" + ex.getMessage());
 				LOGGER.warn("Generating graphs from the OSM");
 				graph = build();
+				removePreviousSerializedGraph(importer.getSerializedBasePath());
 				serializeGraph(graph, serializedEdgesFile);
 			}
 		} else {
@@ -203,5 +204,19 @@ public class GraphCreator<N extends Node, E extends Edge> {
 		ObjectInput input = new ObjectInputStream(buffer);
 
 		return (Graph<N, E>) input.readObject();
+	}
+
+	private void removePreviousSerializedGraph(String basePath) {
+		File file = new File(basePath);
+		File folder = file.getParentFile();
+		File fList[] = folder.listFiles();
+
+		// Searchs for .ser files
+		for (int i = 0; i < fList.length; i++) {
+			File serializedFile = fList[i];
+			if (serializedFile.getName().endsWith(".ser") || serializedFile.getName().startsWith(file.getName())) {
+				serializedFile.delete();
+			}
+		}
 	}
 }
