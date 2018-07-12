@@ -33,9 +33,9 @@ public class GeoJSONReaderTest {
         TmpGraphBuilder<InternalNode, InternalEdge> graph = roadImporter.loadGraph();
     }
 
-    @Test
+    /*@Test
     public void test2() throws Exception {
         GeoJSONReader roadImporter = new GeoJSONReader(getClass().getResource("test2/graph_edges.geojson").getPath(), getClass().getResource("test2/graph_nodes.geojson").getPath(), new Transformer(3857));
         TmpGraphBuilder<InternalNode, InternalEdge> graph = roadImporter.loadGraph();
-    }
+    }*/
 }

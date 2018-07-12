@@ -47,24 +47,40 @@ public class GeoJSONReader extends Importer {
     private final Transformer projection;
     private JSONArray features;
 
-    private final File geoJsonFile;
+    private final File geoJsonEdgeFile;
 
     private final File geoJsonNodeFile;
 
+    private final String geoJsonSerializedGraphFile;
 
     private boolean isBothWayOverride = false;
 
     protected final TmpGraphBuilder<InternalNode, InternalEdge> builder;
 
-    public GeoJSONReader(String geoJsonFile, String geoJsonNodeFile, Transformer projection) {
-        this(new File(geoJsonFile), new File(geoJsonNodeFile), projection);
+    public GeoJSONReader(String geoJsonEdgeFile, String geoJsonNodeFile, String geoJsonSerializedGraphFile, Transformer projection) {
+        this(new File(geoJsonEdgeFile), new File(geoJsonNodeFile), geoJsonSerializedGraphFile + ".ser", projection);
+    }
+
+    public GeoJSONReader(String geoJsonEdgeFile, String geoJsonNodeFile, Transformer projection) {
+        this(new File(geoJsonEdgeFile), new File(geoJsonNodeFile), projection);
+    }
+
+    public GeoJSONReader(File geoJsonEdgeFile, File geoJsonNodeFile, String geoJsonSerializedGraphFile, Transformer projection) {
+        this.projection = projection;
+        this.geoJsonEdgeFile = geoJsonEdgeFile;
+        this.geoJsonNodeFile = geoJsonNodeFile;
+        this.geoJsonSerializedGraphFile = geoJsonSerializedGraphFile;
+        this.nodes = new HashMap<>();
+
+        builder = new TmpGraphBuilder<>();
     }
 
 
-    public GeoJSONReader(File geoJsonFile, File geoJsonNodeFile, Transformer projection) {
+    public GeoJSONReader(File geoJsonEdgeFile, File geoJsonNodeFile, Transformer projection) {
         this.projection = projection;
-        this.geoJsonFile = geoJsonFile;
+        this.geoJsonEdgeFile = geoJsonEdgeFile;
         this.geoJsonNodeFile = geoJsonNodeFile;
+        this.geoJsonSerializedGraphFile = defaultSerializedGraphFile();
         this.nodes = new HashMap<>();
 
         builder = new TmpGraphBuilder<>();
@@ -255,11 +271,11 @@ public class GeoJSONReader extends Importer {
     }
 
 //    public static void main(String[] args) {
-//        File geoJSONFile = new File("/home/martin/projects/skoda/skoda/osm_lines.geojson");
+//        File geoJsonEdgeFile = new File("/home/martin/projects/skoda/skoda/osm_lines.geojson");
 //        Transformer projection = new Transformer(2065);
 //        TmpGraphBuilder<SimulationNode, SimulationEdge> builder = new TmpGraphBuilder<SimulationNode, SimulationEdge>();
 //        GeoJSONReader reader = null;
-//        try (FileReader fr = new FileReader((geoJSONFile))) {
+//        try (FileReader fr = new FileReader((geoJsonEdgeFile))) {
 //            reader = new GeoJSONReader(fr, projection,new HashMap<>());
 //        } catch (IOException | ParseException e) {
 //            e.printStackTrace();
@@ -276,8 +292,8 @@ public class GeoJSONReader extends Importer {
 //    }
 
     @Override
-    public String getSerializationName() {
-        return geoJsonFile.getName() + ".ser";
+    public String getSerializedGraphName() {
+        return geoJsonSerializedGraphFile;
     }
 
     @Override
@@ -298,8 +314,8 @@ public class GeoJSONReader extends Importer {
             throw new IllegalStateException("GeoJSON Nodes can't be parsed.", e);
         }
 
-		LOGGER.info("Parsing of geojson started - edge file: " + geoJsonFile);
-        try (FileReader fr = new FileReader(geoJsonFile)) {
+		LOGGER.info("Parsing of geojson started - edge file: " + geoJsonEdgeFile);
+        try (FileReader fr = new FileReader(geoJsonEdgeFile)) {
             parseFeatures(fr);
             processFeatures();
         } catch (IOException | ParseException e) {
@@ -323,4 +339,9 @@ public class GeoJSONReader extends Importer {
             super("Missing key: \'" + key + "\' in GeoJSON properties: " + properties);
         }
     }
+
+    private String defaultSerializedGraphFile() {
+        return "data/serialized/graph";
+    }
+
 }

@@ -74,17 +74,16 @@ public class GraphCreator<N extends Node, E extends Edge> {
 	public Graph<N, E> getMap() {
 		Graph<N, E> graph;
 
-		String serializedFileName = importer.getSerializationName();
-		File serializedFile = new File(serializedFileName);
+		File serializedEdgesFile = new File(importer.getSerializedGraphName());
 
 		if (serializationOn) {
 			try {
-				graph = deserializeGraph(serializedFile);
+				graph = deserializeGraph(serializedEdgesFile);
 			} catch (Exception ex) {
 				LOGGER.warn("Cannot perform deserialization of the cached graphs:" + ex.getMessage());
 				LOGGER.warn("Generating graphs from the OSM");
 				graph = build();
-				serializeGraph(graph, serializedFile);
+				serializeGraph(graph, serializedEdgesFile);
 			}
 		} else {
 			graph = build();

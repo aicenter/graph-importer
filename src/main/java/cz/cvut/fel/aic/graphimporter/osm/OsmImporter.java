@@ -417,7 +417,7 @@ public class OsmImporter extends Importer implements OsmElementConsumer {
     }
 
     @Override
-    public String getSerializationName() {
+    public String getSerializedGraphName() {
         return osmFile.getName() + ".ser";
     }
 
