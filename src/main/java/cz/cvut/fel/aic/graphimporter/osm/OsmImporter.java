@@ -421,6 +421,11 @@ public class OsmImporter extends Importer implements OsmElementConsumer {
         return osmFile.getName() + ".ser";
     }
 
+    @Override
+    public String getSerializedBasePath() {
+        return osmFile.getName();
+    }
+
 
     protected enum EdgeType {
         FORWARD {

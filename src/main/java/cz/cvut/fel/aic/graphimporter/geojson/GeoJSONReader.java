@@ -350,12 +350,12 @@ public class GeoJSONReader extends Importer {
         }
     }
 
-    public static String getSerializedGraphNameWithChecksum(String basePath, String edgesFilePath) {
+    private static String getSerializedGraphNameWithChecksum(String basePath, String edgesFilePath) {
         File edgesFile = new File(edgesFilePath);
-        getSerializedGraphNameWithChecksum(basePath, edgesFile);
+        return getSerializedGraphNameWithChecksum(basePath, edgesFile);
     }
 
-    public static String getSerializedGraphNameWithChecksum(String basePath, File edgesFile) {
+    private static String getSerializedGraphNameWithChecksum(String basePath, File edgesFile) {
         return basePath + MD5ChecksumGenerator.getGraphChecksum(edgesFile) + ".ser";
     }
 

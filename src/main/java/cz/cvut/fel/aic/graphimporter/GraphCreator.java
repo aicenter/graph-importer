@@ -210,11 +210,14 @@ public class GraphCreator<N extends Node, E extends Edge> {
 		File file = new File(basePath);
 		File folder = file.getParentFile();
 		File fList[] = folder.listFiles();
+		LOGGER.debug("Current base path: " + basePath);
+		LOGGER.debug("Current parent file path: " + file.getParentFile());
 
-		// Searchs for .ser files
+		// Searchs for other .ser graph files
 		for (int i = 0; i < fList.length; i++) {
 			File serializedFile = fList[i];
 			if (serializedFile.getName().endsWith(".ser") || serializedFile.getName().startsWith(file.getName())) {
+				LOGGER.debug("Deleting wrong serialized graph file: " + serializedFile.getName());
 				serializedFile.delete();
 			}
 		}
