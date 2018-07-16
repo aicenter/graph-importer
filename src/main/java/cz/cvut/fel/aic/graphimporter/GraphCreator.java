@@ -208,10 +208,13 @@ public class GraphCreator<N extends Node, E extends Edge> {
 
 	private void removePreviousSerializedGraph(String basePath) {
 		File file = new File(basePath);
-		File folder = file.getParentFile();
+        File folder = file.getAbsoluteFile().getParentFile();
+        if (folder != null) {
+            folder.mkdirs();
+        }
 		File fList[] = folder.listFiles();
 		LOGGER.debug("Current base path: " + basePath);
-		LOGGER.debug("Current parent file path: " + file.getParentFile());
+		LOGGER.debug("Current parent file path: " + file.getAbsoluteFile().getParentFile());
 
 		// Searchs for other .ser graph files
 		for (int i = 0; i < fList.length; i++) {
