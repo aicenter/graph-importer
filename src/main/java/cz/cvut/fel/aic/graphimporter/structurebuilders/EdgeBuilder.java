@@ -3,11 +3,13 @@ package cz.cvut.fel.aic.graphimporter.structurebuilders;
 import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.cvut.fel.aic.geographtools.Edge;
 import cz.cvut.fel.aic.geographtools.EdgeId;
+import cz.cvut.fel.aic.geographtools.GraphBuilder;
+import cz.cvut.fel.aic.geographtools.Node;
 
 /**
  * @author Marek Cuchý
  */
-public abstract class EdgeBuilder<TEdge extends Edge> {
+public abstract class EdgeBuilder<TEdge extends Edge, TNode extends Node> {
 
 	private int tmpFromId;
 	private int tmpToId;
@@ -34,13 +36,13 @@ public abstract class EdgeBuilder<TEdge extends Edge> {
 		this.length = length;
 	}
 
-	public abstract TEdge build(int fromId, int toId);
+	public abstract TEdge build(int fromId, int toId, GraphBuilder<TNode, TEdge> builder);
 
 	public abstract boolean checkFeasibility(TransportMode mode);
 
-	public abstract EdgeBuilder<TEdge> copy(int tmpFromId, int tmpToId, int length);
+	public abstract EdgeBuilder<TEdge, TNode> copy(int tmpFromId, int tmpToId, int length);
 
-	public boolean isCircle(EdgeBuilder<?> edge) {
+	public boolean isCircle(EdgeBuilder<?, ?> edge) {
 		return tmpFromId == edge.tmpToId && tmpToId == edge.tmpFromId;
 	}
 
@@ -82,7 +84,7 @@ public abstract class EdgeBuilder<TEdge extends Edge> {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 
-		EdgeBuilder<?> that = (EdgeBuilder<?>) o;
+		EdgeBuilder<?, ?> that = (EdgeBuilder<?, ?>) o;
 
 		return tmpFromId == that.tmpFromId && tmpToId == that.tmpToId && length == that.length;
 
