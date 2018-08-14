@@ -105,8 +105,8 @@ public class GraphSimplifier {
     private void prepareTwoWays(Map<Integer, Set<Integer>> inDegree, Map<Integer, Set<Integer>> outDegree) {
         Set<Integer> simplNodes4 = getRemovableNodes(inDegree, outDegree, 2);
         for (Integer nodeId : simplNodes4) {
-            List<EdgeBuilder<? extends InternalEdge>> ins = graph.getIncomingEdges(nodeId);
-            List<EdgeBuilder<? extends InternalEdge>> outs = graph.getOutgoingEdges(nodeId);
+            List<EdgeBuilder<InternalEdge, InternalNode>> ins = graph.getIncomingEdges(nodeId);
+            List<EdgeBuilder<InternalEdge, InternalNode>> outs = graph.getOutgoingEdges(nodeId);
 
             InternalEdgeBuilder in1 = (InternalEdgeBuilder) ins.get(0);
             InternalEdgeBuilder in2 = (InternalEdgeBuilder) ins.get(1);
@@ -243,7 +243,7 @@ public class GraphSimplifier {
         nodeToSimplBuilders.put(prefix.getLastRemovedNode(), prefix);
     }
 
-    private boolean areOpposite(EdgeBuilder<?> incoming, EdgeBuilder<?> outgoing) {
+    private boolean areOpposite(EdgeBuilder<?, ?> incoming, EdgeBuilder<?, ?> outgoing) {
         return incoming.getTmpFromId() == outgoing.getTmpToId();
     }
 

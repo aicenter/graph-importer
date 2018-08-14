@@ -6,6 +6,7 @@
 package cz.cvut.fel.aic.graphimporter.structurebuilders.internal;
 
 import cz.cvut.fel.aic.geographtools.Edge;
+import cz.cvut.fel.aic.geographtools.Node;
 import java.util.Map;
 
 /**
@@ -16,8 +17,8 @@ public class InternalEdge extends Edge{
     
     private final Map<String,Object> otherParams;
     
-    public InternalEdge(int fromId, int toId, int length, Map<String,Object> otherParams) {
-        super(fromId, toId, length);
+    public InternalEdge(Node fromNode, Node toNode, int length, Map<String,Object> otherParams) {
+        super(fromNode, toNode, length);
         this.otherParams = otherParams;
     }
     

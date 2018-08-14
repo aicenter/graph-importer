@@ -6,6 +6,8 @@
 package cz.cvut.fel.aic.graphimporter.structurebuilders.internal;
 
 import cz.cvut.fel.aic.geographtools.GPSLocation;
+import cz.cvut.fel.aic.geographtools.GraphBuilder;
+import cz.cvut.fel.aic.geographtools.Node;
 import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.EdgeBuilder;
 
@@ -19,7 +21,7 @@ import java.util.Set;
  *
  * @author fido
  */
-public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge> {
+public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode> {
 
 	private final Map<String, Object> otherParams;
 
@@ -61,7 +63,7 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge> {
 	}
 
 	@Override
-	public InternalEdge build(int fromId, int toId) {
+	public InternalEdge build(int fromId, int toId, GraphBuilder<InternalNode, InternalEdge> builder) {
 		otherParams.put("wayID", wayID);
 		otherParams.put("uniqueWayID", uniqueWayID);
 		otherParams.put("oppositeWayUniqueId", oppositeWayUniqueId);
@@ -69,7 +71,7 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge> {
 		otherParams.put("allowedMaxSpeedInMpS", allowedMaxSpeedInMpS);
 		otherParams.put("lanesCount", lanesCount);
 		otherParams.put("coordinateList", coordinateList);
-		return new InternalEdge(fromId, toId, getLength(), otherParams);
+		return new InternalEdge(builder.getNode(fromId), builder.getNode(toId), getLength(), otherParams);
 	}
 
 	@Override

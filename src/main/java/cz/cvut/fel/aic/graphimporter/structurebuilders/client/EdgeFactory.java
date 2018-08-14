@@ -7,13 +7,15 @@ package cz.cvut.fel.aic.graphimporter.structurebuilders.client;
 
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdge;
 import cz.cvut.fel.aic.geographtools.Edge;
+import cz.cvut.fel.aic.geographtools.GraphBuilder;
+import cz.cvut.fel.aic.geographtools.Node;
 
 /**
  *
  * @author fido
  */
-public interface EdgeFactory<E extends Edge> {
+public interface EdgeFactory<N extends Node, E extends Edge> {
     
-    public abstract E createEdge(InternalEdge internalEdge);
+    public abstract E createEdge(InternalEdge internalEdge, GraphBuilder<N, E> graphBuilder);
     
 }

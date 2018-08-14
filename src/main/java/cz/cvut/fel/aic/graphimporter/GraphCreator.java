@@ -45,9 +45,9 @@ import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;
 public class GraphCreator<N extends Node, E extends Edge> {
 	private static final Logger LOGGER = Logger.getLogger(GraphCreator.class);
 
-	private final NodeFactory<? extends N> nodeFactory;
+	private final NodeFactory<N> nodeFactory;
 
-	private final EdgeFactory<? extends E> edgeFactory;
+	private final EdgeFactory<N,E> edgeFactory;
 
 	private final boolean serializationOn;
 
@@ -58,7 +58,7 @@ public class GraphCreator<N extends Node, E extends Edge> {
 	private final Importer importer;
 
 	public GraphCreator(boolean serializationOn, boolean simplificationOn, Importer importer,
-			NodeFactory<? extends N> nodeFactory, EdgeFactory<? extends E> edgeFactory) {
+			NodeFactory<N> nodeFactory, EdgeFactory<N, E> edgeFactory) {
 		this.serializationOn = serializationOn;
 		this.importer = importer;
 		this.simplificationOn = simplificationOn;
@@ -130,7 +130,7 @@ public class GraphCreator<N extends Node, E extends Edge> {
 		LOGGER.debug("Calculating main components for all modes...");
 		Set<Integer> mainComponent = getMainComponent(osmGraph);
 
-		Predicate<EdgeBuilder<? extends InternalEdge>> filter = edge -> !mainComponent.contains(edge.getTmpFromId())
+		Predicate<EdgeBuilder<InternalEdge, InternalNode>> filter = edge -> !mainComponent.contains(edge.getTmpFromId())
 				|| !mainComponent.contains(edge.getTmpToId());
 
 		int removedEdges = osmGraph.removeEdges(filter);
@@ -153,10 +153,10 @@ public class GraphCreator<N extends Node, E extends Edge> {
 	/**
 	 * Find strong component by size
 	 */
-	private Set<Integer> getMainComponent(Collection<EdgeBuilder<? extends InternalEdge>> edges) {
+	private Set<Integer> getMainComponent(Collection<EdgeBuilder<InternalEdge, InternalNode>> edges) {
 		Set<Integer> nodeIds = new HashSet<>();
 		Map<Integer, Set<Integer>> edgeIds = new HashMap<>();
-		for (EdgeBuilder<? extends InternalEdge> edgeExtendedBuilder : edges) {
+		for (EdgeBuilder<InternalEdge, InternalNode> edgeExtendedBuilder : edges) {
 			int fromId = edgeExtendedBuilder.getTmpFromId();
 			int toId = edgeExtendedBuilder.getTmpToId();
 			nodeIds.add(fromId);
@@ -182,7 +182,7 @@ public class GraphCreator<N extends Node, E extends Edge> {
 		}
 
 		for (InternalEdge internalEdge : graph.getAllEdges()) {
-			finalGraphBuilder.addEdge(edgeFactory.createEdge(internalEdge));
+			finalGraphBuilder.addEdge(edgeFactory.createEdge(internalEdge, finalGraphBuilder));
 		}
 
 		return finalGraphBuilder.createGraph();
