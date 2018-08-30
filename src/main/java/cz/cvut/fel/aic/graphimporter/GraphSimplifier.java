@@ -18,13 +18,13 @@
  */
 package cz.cvut.fel.aic.graphimporter;
 
-import cz.cvut.fel.aic.graphimporter.structurebuilders.TmpGraphBuilder;
+import cz.cvut.fel.aic.geographtools.EdgeId;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.EdgeBuilder;
+import cz.cvut.fel.aic.graphimporter.structurebuilders.TmpGraphBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdge;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdgeBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.SimplifiedInternalEdgeBuilder;
-import cz.cvut.fel.aic.geographtools.EdgeId;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -45,13 +45,10 @@ public class GraphSimplifier {
      * have any mapping. LinkedHashMap is used only for its deterministic behavior, therefore it can be replaced.
      */
 
-
     private final Map<Integer, SimplifiedInternalEdgeBuilder> nodeToSimplBuilders = new LinkedHashMap<>();
 
     private final Set<Integer> nodesToRemove = new LinkedHashSet<>();
     private final Set<EdgeId> edgesToRemove = new LinkedHashSet<>();
-
-
 
     private GraphSimplifier(TmpGraphBuilder<InternalNode, InternalEdge> graph, Set<Integer> notToBeRemovedNodes) {
         this.graph = graph;
@@ -82,9 +79,8 @@ public class GraphSimplifier {
                 SimplifiedInternalEdgeBuilder tSimpl = nodeToSimplBuilders.get(t);
 
                 if (fSimpl != null && tSimpl != null) {
-                    assert f == fSimpl.getLastRemovedNode() && n == fSimpl.getTmpToId() && n == tSimpl.getTmpFromId()
-                            && t == tSimpl.getFirstRemovedNode() : "Merged edges must be boundary edges of the " +
-                            "simplifiers.";
+                    assert f == fSimpl.getLastRemovedNode() && n == fSimpl.getTmpToId() && n == tSimpl.getTmpFromId() && t == tSimpl.getFirstRemovedNode() :
+                            "Merged edges must be boundary edges of the " + "simplifiers.";
                     append(fSimpl, tSimpl);
                     nullify(n, null);
                 } else if (fSimpl != null) {
@@ -121,16 +117,14 @@ public class GraphSimplifier {
         }
     }
 
-    private boolean mergeIfPossible(InternalEdgeBuilder in1, InternalEdgeBuilder in2, InternalEdgeBuilder out1,
-                                    InternalEdgeBuilder out2) {
+    private boolean mergeIfPossible(InternalEdgeBuilder in1, InternalEdgeBuilder in2, InternalEdgeBuilder out1, InternalEdgeBuilder out2) {
         if (areOpposite(in1, out1) && areOpposite(in2, out2) && mergable(in1, out2) && mergable(in2, out1)) {
             int f = in1.getTmpFromId();
             int n = in1.getTmpToId();
             int t = out2.getTmpToId();
 
-            assert (!nodeToSimplBuilders.containsKey(f) || nodeToSimplBuilders.get(f) != null) &&
-                    (!nodeToSimplBuilders.containsKey(t) || nodeToSimplBuilders.get(t) != null) : "Deleted nodes " +
-                    "other than the first can't be merged.";
+            assert (!nodeToSimplBuilders.containsKey(f) || nodeToSimplBuilders.get(f) != null) && (!nodeToSimplBuilders.containsKey(t) || nodeToSimplBuilders.get(t) != null) :
+                    "Deleted nodes " + "other than the first can't be merged.";
 
             SimplifiedInternalEdgeBuilder fSimpl = nodeToSimplBuilders.get(f);
             SimplifiedInternalEdgeBuilder tSimpl = nodeToSimplBuilders.get(t);
@@ -198,13 +192,11 @@ public class GraphSimplifier {
     }
 
     private boolean isDeleted(SimplifiedInternalEdgeBuilder deleted) {
-        return nodeToSimplBuilders.get(deleted.getFirstRemovedNode()) != deleted && nodeToSimplBuilders.get(deleted
-                .getLastRemovedNode()) != deleted;
+        return nodeToSimplBuilders.get(deleted.getFirstRemovedNode()) != deleted && nodeToSimplBuilders.get(deleted.getLastRemovedNode()) != deleted;
     }
 
     private boolean isMapped(SimplifiedInternalEdgeBuilder mapped) {
-        return nodeToSimplBuilders.get(mapped.getFirstRemovedNode()) == mapped && nodeToSimplBuilders.get(mapped
-                .getLastRemovedNode()) == mapped;
+        return nodeToSimplBuilders.get(mapped.getFirstRemovedNode()) == mapped && nodeToSimplBuilders.get(mapped.getLastRemovedNode()) == mapped;
     }
 
     /**
@@ -255,14 +247,17 @@ public class GraphSimplifier {
      * @param degree
      * @return
      */
-    private Set<Integer> getRemovableNodes(Map<Integer, Set<Integer>> inDegree, Map<Integer, Set<Integer>> outDegree,
-                                           int degree) {
-        Set<Integer> nodes = new HashSet<>(inDegree.get(degree));
-        nodes.retainAll(outDegree.get(degree));
+    private Set<Integer> getRemovableNodes(Map<Integer, Set<Integer>> inDegree, Map<Integer, Set<Integer>> outDegree, int degree) {
+        Set<Integer> nodes = new HashSet<>();
+        if (inDegree.containsKey(degree)) {
+            nodes.addAll(inDegree.get(degree));
+        }
+        if (outDegree.containsKey(degree)) {
+            nodes.retainAll(outDegree.get(degree));
+        }
         nodes.removeAll(notToBeRemovedNodes);
         return nodes;
     }
-
 
     private void replaceEdges() {
 
@@ -287,8 +282,8 @@ public class GraphSimplifier {
             //if graph already contains the possible new edges or the edge start and ends in the same node
             if (builder.isCircle()) {
                 newEdges = builder.build(3, graph, removedEdges);
-            } else if (graph.containsEdge(builder.getTmpFromId(), builder.getTmpToId()) || (!builder.isOneWay() &&
-                    graph.containsEdge(builder.getTmpToId(), builder.getTmpFromId()))) {
+            } else if (graph.containsEdge(builder.getTmpFromId(), builder.getTmpToId()) || (!builder.isOneWay() && graph
+                    .containsEdge(builder.getTmpToId(), builder.getTmpFromId()))) {
                 newEdges = builder.build(2, graph, removedEdges);
             } else {
                 newEdges = builder.build(1, graph, removedEdges);
