@@ -16,14 +16,14 @@ import cz.cvut.fel.aic.geographtools.GPSLocation;
  */
 public class InternalNodeBuilder extends NodeBuilder<InternalNode>{
 
-    public InternalNodeBuilder(int tmpId, long sourceId, GPSLocation location) {
-        super(tmpId, sourceId, location);
-    }
+	public InternalNodeBuilder(int tmpId, long sourceId, GPSLocation location) {
+		super(tmpId, sourceId, location);
+	}
 
-    @Override
-    public InternalNode buildNode(int id) {
-        return new InternalNode(id, sourceId, location.latE6, location.lonE6, location.getLatitudeProjected1E2(), 
-                location.getLongitudeProjected1E2(), location.elevation);
-    }
-    
+	@Override
+	public InternalNode buildNode(int id) {
+		return new InternalNode(id, sourceId, location.latE6, location.lonE6, location.getLatitudeProjected1E2(), 
+				location.getLongitudeProjected1E2(), location.elevation);
+	}
+	
 }

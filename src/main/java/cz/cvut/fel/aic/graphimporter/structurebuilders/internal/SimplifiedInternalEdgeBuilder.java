@@ -122,8 +122,8 @@ public class SimplifiedInternalEdgeBuilder {
 	 *
 	 * @param numberOfParts
 	 * @param graph
-	 *            Graph from which are retrieved locations of nodes and properties
-	 *            of the edges.
+	 *			Graph from which are retrieved locations of nodes and properties
+	 *			of the edges.
 	 * @param removedEdges
 	 * @return
 	 */

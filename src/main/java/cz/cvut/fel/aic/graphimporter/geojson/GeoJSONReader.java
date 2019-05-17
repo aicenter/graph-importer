@@ -42,325 +42,325 @@ import java.util.*;
 
 public class GeoJSONReader extends Importer {
 
-    private static final Logger LOGGER = Logger.getLogger(GeoJSONReader.class);
+	private static final Logger LOGGER = Logger.getLogger(GeoJSONReader.class);
 
-    private final HashMap<String, Integer> nodes;
-    private final Transformer projection;
-    private JSONArray features;
+	private final HashMap<String, Integer> nodes;
+	private final Transformer projection;
+	private JSONArray features;
 
-    private final File geoJsonEdgeFile;
+	private final File geoJsonEdgeFile;
 
-    private final File geoJsonNodeFile;
+	private final File geoJsonNodeFile;
 
-    private final String geoJsonSerializedGraphFile;
+	private final String geoJsonSerializedGraphFile;
 
-    private final String geoJsonSerializedBasePath;
+	private final String geoJsonSerializedBasePath;
 
-    private boolean isBothWayOverride = false;
+	private boolean isBothWayOverride = false;
 
-    protected final TmpGraphBuilder<InternalNode, InternalEdge> builder;
+	protected final TmpGraphBuilder<InternalNode, InternalEdge> builder;
 
-    public GeoJSONReader(String geoJsonEdgeFile, String geoJsonNodeFile, String geoJsonSerializedGraphFile, Transformer projection) {
-        this(new File(geoJsonEdgeFile), new File(geoJsonNodeFile), getSerializedGraphNameWithChecksum(geoJsonSerializedGraphFile, geoJsonEdgeFile), geoJsonSerializedGraphFile, projection);
-    }
+	public GeoJSONReader(String geoJsonEdgeFile, String geoJsonNodeFile, String geoJsonSerializedGraphFile, Transformer projection) {
+		this(new File(geoJsonEdgeFile), new File(geoJsonNodeFile), getSerializedGraphNameWithChecksum(geoJsonSerializedGraphFile, geoJsonEdgeFile), geoJsonSerializedGraphFile, projection);
+	}
 
-    public GeoJSONReader(String geoJsonEdgeFile, String geoJsonNodeFile, Transformer projection) {
-        this(new File(geoJsonEdgeFile), new File(geoJsonNodeFile), projection);
-    }
+	public GeoJSONReader(String geoJsonEdgeFile, String geoJsonNodeFile, Transformer projection) {
+		this(new File(geoJsonEdgeFile), new File(geoJsonNodeFile), projection);
+	}
 
-    public GeoJSONReader(File geoJsonEdgeFile, File geoJsonNodeFile, String geoJsonSerializedGraphFile, String geoJsonSerializedBasePath, Transformer projection) {
-        this.projection = projection;
-        this.geoJsonEdgeFile = geoJsonEdgeFile;
-        this.geoJsonNodeFile = geoJsonNodeFile;
-        this.geoJsonSerializedGraphFile = geoJsonSerializedGraphFile;
-        this.geoJsonSerializedBasePath = geoJsonSerializedBasePath;
-        this.nodes = new HashMap<>();
+	public GeoJSONReader(File geoJsonEdgeFile, File geoJsonNodeFile, String geoJsonSerializedGraphFile, String geoJsonSerializedBasePath, Transformer projection) {
+		this.projection = projection;
+		this.geoJsonEdgeFile = geoJsonEdgeFile;
+		this.geoJsonNodeFile = geoJsonNodeFile;
+		this.geoJsonSerializedGraphFile = geoJsonSerializedGraphFile;
+		this.geoJsonSerializedBasePath = geoJsonSerializedBasePath;
+		this.nodes = new HashMap<>();
 
-        builder = new TmpGraphBuilder<>();
-    }
-
-
-    public GeoJSONReader(File geoJsonEdgeFile, File geoJsonNodeFile, Transformer projection) {
-        this.projection = projection;
-        this.geoJsonEdgeFile = geoJsonEdgeFile;
-        this.geoJsonNodeFile = geoJsonNodeFile;
-        this.geoJsonSerializedGraphFile =  getSerializedGraphNameWithChecksum(defaultSerializedGraphFile() ,geoJsonEdgeFile);
-        this.geoJsonSerializedBasePath = defaultSerializedGraphFile() + ".ser";
-        this.nodes = new HashMap<>();
-
-        builder = new TmpGraphBuilder<>();
-    }
+		builder = new TmpGraphBuilder<>();
+	}
 
 
-    private void processFeatures() {
-        for (Object feature : features) {
-            parseFeature((JSONObject) feature);
-        }
-    }
+	public GeoJSONReader(File geoJsonEdgeFile, File geoJsonNodeFile, Transformer projection) {
+		this.projection = projection;
+		this.geoJsonEdgeFile = geoJsonEdgeFile;
+		this.geoJsonNodeFile = geoJsonNodeFile;
+		this.geoJsonSerializedGraphFile =  getSerializedGraphNameWithChecksum(defaultSerializedGraphFile() ,geoJsonEdgeFile);
+		this.geoJsonSerializedBasePath = defaultSerializedGraphFile() + ".ser";
+		this.nodes = new HashMap<>();
+
+		builder = new TmpGraphBuilder<>();
+	}
 
 
-    int addNode(GPSLocation location, long sourceId) {
-        InternalNodeBuilder nodeBuilder = new InternalNodeBuilder(builder.getNodeCount(),
-                sourceId, location);
-        builder.addNode(nodeBuilder);
-        return nodeBuilder.tmpId;
-    }
+	private void processFeatures() {
+		for (Object feature : features) {
+			parseFeature((JSONObject) feature);
+		}
+	}
 
 
-    void parseFeature(JSONObject feature) {
-        JSONObject properties = (JSONObject) feature.get("properties");
-        JSONObject geometry = (JSONObject) feature.get("geometry");
-        JSONArray coordinates = (JSONArray) geometry.get("coordinates");
-
-        String geometryType = (String) geometry.get("type");
-        Boolean isOneWay = true;
-        if (properties.containsKey("oneway")) {
-            isOneWay = ((String) properties.get("oneway")).equalsIgnoreCase("yes");
-        }
-        if (geometryType.equals("LineString")) {
-            JSONArray fromLatLon = (JSONArray) coordinates.get(0);
-            JSONArray toLatlon = (JSONArray) coordinates.get(coordinates.size() - 1);
-            int fromId = getOrCreateNode(fromLatLon, properties);
-            int toId = getOrCreateNode(toLatlon, properties);
-            addEdge(fromId, toId, properties, coordinates);
-            if (!isOneWay || isBothWayOverride) {
-                addEdge(toId, fromId, properties, coordinates);
-            }
-        } else if (geometryType.equals("Point")) {
-            int fromId = getOrCreateNode(coordinates, properties);
-        }
+	int addNode(GPSLocation location, long sourceId) {
+		InternalNodeBuilder nodeBuilder = new InternalNodeBuilder(builder.getNodeCount(),
+				sourceId, location);
+		builder.addNode(nodeBuilder);
+		return nodeBuilder.tmpId;
+	}
 
 
-    }
+	void parseFeature(JSONObject feature) {
+		JSONObject properties = (JSONObject) feature.get("properties");
+		JSONObject geometry = (JSONObject) feature.get("geometry");
+		JSONArray coordinates = (JSONArray) geometry.get("coordinates");
 
-    private JSONObject parseStringToJSON(String tagsString) {
-        if (tagsString == null) return null;
-        tagsString = "{" + tagsString.replaceAll("=>", ":") + "}";
-        JSONObject json;
-        JSONParser parser = new JSONParser();
-        try {
-            json = (JSONObject) parser.parse(tagsString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            json = null;
-        }
-        return json;
-    }
-
-
-    void addEdge(int fromId, int toId, JSONObject properties, JSONArray coordinates) {
-        Long osmId = null;
-        try {
-            osmId = tryParseLong(properties, "id");
-            int uniqueWayId = builder.getEdgeCount();
-            int oppositeWayUniqueId = -1;
-            int length = tryParseInt(properties, "length");
-//        int length = GPSLocationTools.computeDistance(graphBuilder.getNode(fromId).location, graphBuilder.getNode(toId).location);
-            Set<TransportMode> modeOfTransports = new HashSet<>();
-            modeOfTransports.add(TransportMode.CAR);
-            float allowedMaxSpeedInMpS = tryParseFloat(properties, "maxspeed") / 3.6f;
-            int lanesCount = tryParseInt(properties, "lanes");
-            List<GPSLocation> coordinateList = new ArrayList<>();
-            for (int i = 0; i < coordinates.size(); i++) {
-                coordinateList.add(getGpsLocation((JSONArray) coordinates.get(i),0));
-            }
-            InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, osmId, uniqueWayId, oppositeWayUniqueId,
-                    length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList);
-            builder.addEdge(edgeBuilder);
-        } catch (GeoJSONException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
-
-    private float tryParseFloat(JSONObject properties, String key, float defaultValue) {
-        float value;
-        try {
-            value = tryParseFloat(properties, key);
-        } catch (GeoJSONException e) {
-            value = defaultValue;
-        }
-        return value;
-    }
-
-    private float tryParseFloat(JSONObject properties, String key) throws GeoJSONException {
-        float value;
-        Object valueObject = properties.get(key);
-        if (valueObject instanceof Number) {
-            value = ((Number) valueObject).floatValue();
-        } else if (valueObject instanceof String) {
-            String valueString = (String) valueObject;
-            value = Float.parseFloat(valueString);
-        } else {
-            throw new GeoJSONException(properties, key);
-        }
-        return value;
-    }
-
-    private Long tryParseLong(JSONObject properties, String key, long defaultValue) {
-        Long value;
-        try {
-            value = tryParseLong(properties, key);
-        } catch (GeoJSONException e) {
-            value = defaultValue;
-        }
-        return value;
-    }
-
-    private Long tryParseLong(JSONObject properties, String key) throws GeoJSONException {
-        Object valueObject = properties.get(key);
-        Long value;
-        if (valueObject instanceof Number) {
-            value = ((Number) valueObject).longValue();
-        } else if (valueObject instanceof String) {
-            String valueString = (String) valueObject;
-            value = Long.parseLong(valueString);
-        } else {
-            throw new GeoJSONException(properties, key);
-        }
-        return value;
-    }
-
-    private int tryParseInt(JSONObject properties, String key, int defaultValue) {
-        int value;
-        try {
-            value = tryParseInt(properties, key);
-        } catch (GeoJSONException e) {
-            value = defaultValue;
-        }
-        return value;
-    }
-
-    private int tryParseInt(JSONObject properties, String key) throws GeoJSONException {
-        int value;
-        Object valueObject = properties.get(key);
-        if (valueObject instanceof Number) {
-            value = ((Number) valueObject).intValue();
-        } else if (valueObject instanceof String) {
-            String valueString = (String) valueObject;
-            value = Integer.parseInt(valueString);
-        } else {
-            throw new GeoJSONException(properties, key);
-        }
-        return value;
-    }
+		String geometryType = (String) geometry.get("type");
+		Boolean isOneWay = true;
+		if (properties.containsKey("oneway")) {
+			isOneWay = ((String) properties.get("oneway")).equalsIgnoreCase("yes");
+		}
+		if (geometryType.equals("LineString")) {
+			JSONArray fromLatLon = (JSONArray) coordinates.get(0);
+			JSONArray toLatlon = (JSONArray) coordinates.get(coordinates.size() - 1);
+			int fromId = getOrCreateNode(fromLatLon, properties);
+			int toId = getOrCreateNode(toLatlon, properties);
+			addEdge(fromId, toId, properties, coordinates);
+			if (!isOneWay || isBothWayOverride) {
+				addEdge(toId, fromId, properties, coordinates);
+			}
+		} else if (geometryType.equals("Point")) {
+			int fromId = getOrCreateNode(coordinates, properties);
+		}
 
 
-    private int getOrCreateNode(JSONArray latLon, JSONObject properties) {
-        String nodesIdKey = "node_id";
-        int elevation = 0;
-        String coordinatesString = latLon.toString();
+	}
+
+	private JSONObject parseStringToJSON(String tagsString) {
+		if (tagsString == null) return null;
+		tagsString = "{" + tagsString.replaceAll("=>", ":") + "}";
+		JSONObject json;
+		JSONParser parser = new JSONParser();
+		try {
+			json = (JSONObject) parser.parse(tagsString);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			json = null;
+		}
+		return json;
+	}
 
 
-        long sourceId = tryParseLong(properties, nodesIdKey, -1);
+	void addEdge(int fromId, int toId, JSONObject properties, JSONArray coordinates) {
+		Long osmId = null;
+		try {
+			osmId = tryParseLong(properties, "id");
+			int uniqueWayId = builder.getEdgeCount();
+			int oppositeWayUniqueId = -1;
+			int length = tryParseInt(properties, "length");
+//		int length = GPSLocationTools.computeDistance(graphBuilder.getNode(fromId).location, graphBuilder.getNode(toId).location);
+			Set<TransportMode> modeOfTransports = new HashSet<>();
+			modeOfTransports.add(TransportMode.CAR);
+			float allowedMaxSpeedInMpS = tryParseFloat(properties, "maxspeed") / 3.6f;
+			int lanesCount = tryParseInt(properties, "lanes");
+			List<GPSLocation> coordinateList = new ArrayList<>();
+			for (int i = 0; i < coordinates.size(); i++) {
+				coordinateList.add(getGpsLocation((JSONArray) coordinates.get(i),0));
+			}
+			InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, osmId, uniqueWayId, oppositeWayUniqueId,
+					length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList);
+			builder.addEdge(edgeBuilder);
+		} catch (GeoJSONException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+
+	private float tryParseFloat(JSONObject properties, String key, float defaultValue) {
+		float value;
+		try {
+			value = tryParseFloat(properties, key);
+		} catch (GeoJSONException e) {
+			value = defaultValue;
+		}
+		return value;
+	}
+
+	private float tryParseFloat(JSONObject properties, String key) throws GeoJSONException {
+		float value;
+		Object valueObject = properties.get(key);
+		if (valueObject instanceof Number) {
+			value = ((Number) valueObject).floatValue();
+		} else if (valueObject instanceof String) {
+			String valueString = (String) valueObject;
+			value = Float.parseFloat(valueString);
+		} else {
+			throw new GeoJSONException(properties, key);
+		}
+		return value;
+	}
+
+	private Long tryParseLong(JSONObject properties, String key, long defaultValue) {
+		Long value;
+		try {
+			value = tryParseLong(properties, key);
+		} catch (GeoJSONException e) {
+			value = defaultValue;
+		}
+		return value;
+	}
+
+	private Long tryParseLong(JSONObject properties, String key) throws GeoJSONException {
+		Object valueObject = properties.get(key);
+		Long value;
+		if (valueObject instanceof Number) {
+			value = ((Number) valueObject).longValue();
+		} else if (valueObject instanceof String) {
+			String valueString = (String) valueObject;
+			value = Long.parseLong(valueString);
+		} else {
+			throw new GeoJSONException(properties, key);
+		}
+		return value;
+	}
+
+	private int tryParseInt(JSONObject properties, String key, int defaultValue) {
+		int value;
+		try {
+			value = tryParseInt(properties, key);
+		} catch (GeoJSONException e) {
+			value = defaultValue;
+		}
+		return value;
+	}
+
+	private int tryParseInt(JSONObject properties, String key) throws GeoJSONException {
+		int value;
+		Object valueObject = properties.get(key);
+		if (valueObject instanceof Number) {
+			value = ((Number) valueObject).intValue();
+		} else if (valueObject instanceof String) {
+			String valueString = (String) valueObject;
+			value = Integer.parseInt(valueString);
+		} else {
+			throw new GeoJSONException(properties, key);
+		}
+		return value;
+	}
 
 
-        if (!nodes.containsKey(coordinatesString)) {
-            GPSLocation location = getGpsLocation(latLon, elevation);
-//            System.out.println(location +" "+location.lonProjected+" "+location.latProjected);
-            addNode(location, sourceId);
-            int id = builder.getIntIdForSourceId(sourceId);
-            nodes.put(coordinatesString, id);
-        }
-        return nodes.get(coordinatesString);
-    }
+	private int getOrCreateNode(JSONArray latLon, JSONObject properties) {
+		String nodesIdKey = "node_id";
+		int elevation = 0;
+		String coordinatesString = latLon.toString();
 
-    private GPSLocation getGpsLocation(JSONArray latlonArray, int elevation) {
-        double lat = (double) latlonArray.get(1);
-        double lon = (double) latlonArray.get(0);
-        return GPSLocationTools.createGPSLocation(lat, lon, Math.round(elevation), projection);
-    }
 
-    public void setIsBothWayOverride(boolean isBothWayOverride) {
-        this.isBothWayOverride = isBothWayOverride;
-    }
+		long sourceId = tryParseLong(properties, nodesIdKey, -1);
 
-//    public static void main(String[] args) {
-//        File geoJsonEdgeFile = new File("/home/martin/projects/skoda/skoda/osm_lines.geojson");
-//        Transformer projection = new Transformer(2065);
-//        TmpGraphBuilder<SimulationNode, SimulationEdge> builder = new TmpGraphBuilder<SimulationNode, SimulationEdge>();
-//        GeoJSONReader reader = null;
-//        try (FileReader fr = new FileReader((geoJsonEdgeFile))) {
-//            reader = new GeoJSONReader(fr, projection,new HashMap<>());
-//        } catch (IOException | ParseException e) {
-//            e.printStackTrace();
-//        }
-//        TmpGraphBuilder<SimulationNode, SimulationEdge> graphBuilder = null;
+
+		if (!nodes.containsKey(coordinatesString)) {
+			GPSLocation location = getGpsLocation(latLon, elevation);
+//			System.out.println(location +" "+location.lonProjected+" "+location.latProjected);
+			addNode(location, sourceId);
+			int id = builder.getIntIdForSourceId(sourceId);
+			nodes.put(coordinatesString, id);
+		}
+		return nodes.get(coordinatesString);
+	}
+
+	private GPSLocation getGpsLocation(JSONArray latlonArray, int elevation) {
+		double lat = (double) latlonArray.get(1);
+		double lon = (double) latlonArray.get(0);
+		return GPSLocationTools.createGPSLocation(lat, lon, Math.round(elevation), projection);
+	}
+
+	public void setIsBothWayOverride(boolean isBothWayOverride) {
+		this.isBothWayOverride = isBothWayOverride;
+	}
+
+//	public static void main(String[] args) {
+//		File geoJsonEdgeFile = new File("/home/martin/projects/skoda/skoda/osm_lines.geojson");
+//		Transformer projection = new Transformer(2065);
+//		TmpGraphBuilder<SimulationNode, SimulationEdge> builder = new TmpGraphBuilder<SimulationNode, SimulationEdge>();
+//		GeoJSONReader reader = null;
+//		try (FileReader fr = new FileReader((geoJsonEdgeFile))) {
+//			reader = new GeoJSONReader(fr, projection,new HashMap<>());
+//		} catch (IOException | ParseException e) {
+//			e.printStackTrace();
+//		}
+//		TmpGraphBuilder<SimulationNode, SimulationEdge> graphBuilder = null;
 //
-//        graphBuilder = reader.parseGraphFeatures(builder);
+//		graphBuilder = reader.parseGraphFeatures(builder);
 //
-//        assert graphBuilder != null;
-//        Graph<SimulationNode, SimulationEdge> graph = graphBuilder.createGraph();
-//        System.out.println(graph);
+//		assert graphBuilder != null;
+//		Graph<SimulationNode, SimulationEdge> graph = graphBuilder.createGraph();
+//		System.out.println(graph);
 //
 //
-//    }
+//	}
 
-    @Override
-    public String getSerializedGraphName() {
-        return geoJsonSerializedGraphFile;
-    }
+	@Override
+	public String getSerializedGraphName() {
+		return geoJsonSerializedGraphFile;
+	}
 
-    @Override
-    public String getSerializedBasePath() {
-        return geoJsonSerializedBasePath;
-    }
+	@Override
+	public String getSerializedBasePath() {
+		return geoJsonSerializedBasePath;
+	}
 
-    @Override
-    public TmpGraphBuilder<InternalNode, InternalEdge> loadGraph() {
-        parseGEOJSON();
-        return builder;
-    }
+	@Override
+	public TmpGraphBuilder<InternalNode, InternalEdge> loadGraph() {
+		parseGEOJSON();
+		return builder;
+	}
 
-    protected void parseGEOJSON() {
-        LOGGER.info("Parsing of geojson started - node file: " + geoJsonNodeFile);
+	protected void parseGEOJSON() {
+		LOGGER.info("Parsing of geojson started - node file: " + geoJsonNodeFile);
 
-        long t1 = System.currentTimeMillis();
+		long t1 = System.currentTimeMillis();
 
-        try (FileReader fr = new FileReader(geoJsonNodeFile)) {
-            parseFeatures(fr);
-            processFeatures();
-        } catch (IOException | ParseException e) {
-            throw new IllegalStateException("GeoJSON Nodes can't be parsed.", e);
-        }
+		try (FileReader fr = new FileReader(geoJsonNodeFile)) {
+			parseFeatures(fr);
+			processFeatures();
+		} catch (IOException | ParseException e) {
+			throw new IllegalStateException("GeoJSON Nodes can't be parsed.", e);
+		}
 
 		LOGGER.info("Parsing of geojson started - edge file: " + geoJsonEdgeFile);
-        try (FileReader fr = new FileReader(geoJsonEdgeFile)) {
-            parseFeatures(fr);
-            processFeatures();
-        } catch (IOException | ParseException e) {
-            throw new IllegalStateException("GeoJSON Edges can't be parsed.", e);
-        }
+		try (FileReader fr = new FileReader(geoJsonEdgeFile)) {
+			parseFeatures(fr);
+			processFeatures();
+		} catch (IOException | ParseException e) {
+			throw new IllegalStateException("GeoJSON Edges can't be parsed.", e);
+		}
 
 
-        long t2 = System.currentTimeMillis();
-        LOGGER.info("Parsing of GeoJSON finished in " + (t2 - t1) + "ms");
-    }
+		long t2 = System.currentTimeMillis();
+		LOGGER.info("Parsing of GeoJSON finished in " + (t2 - t1) + "ms");
+	}
 
-    private void parseFeatures(FileReader fileReader) throws IOException, ParseException {
-        JSONParser parser = new JSONParser();
-        Object obj = parser.parse(fileReader);
-        JSONObject jsonObject = (JSONObject) obj;
-        this.features = (JSONArray) jsonObject.get("features");
-    }
+	private void parseFeatures(FileReader fileReader) throws IOException, ParseException {
+		JSONParser parser = new JSONParser();
+		Object obj = parser.parse(fileReader);
+		JSONObject jsonObject = (JSONObject) obj;
+		this.features = (JSONArray) jsonObject.get("features");
+	}
 
-    private class GeoJSONException extends Exception {
-        GeoJSONException(JSONObject properties, String key) {
-            super("Missing key: \'" + key + "\' in GeoJSON properties: " + properties);
-        }
-    }
+	private class GeoJSONException extends Exception {
+		GeoJSONException(JSONObject properties, String key) {
+			super("Missing key: \'" + key + "\' in GeoJSON properties: " + properties);
+		}
+	}
 
-    private static String getSerializedGraphNameWithChecksum(String basePath, String edgesFilePath) {
-        File edgesFile = new File(edgesFilePath);
-        return getSerializedGraphNameWithChecksum(basePath, edgesFile);
-    }
+	private static String getSerializedGraphNameWithChecksum(String basePath, String edgesFilePath) {
+		File edgesFile = new File(edgesFilePath);
+		return getSerializedGraphNameWithChecksum(basePath, edgesFile);
+	}
 
-    private static String getSerializedGraphNameWithChecksum(String basePath, File edgesFile) {
-        return basePath + MD5ChecksumGenerator.getGraphChecksum(edgesFile) + ".ser";
-    }
+	private static String getSerializedGraphNameWithChecksum(String basePath, File edgesFile) {
+		return basePath + MD5ChecksumGenerator.getGraphChecksum(edgesFile) + ".ser";
+	}
 
-    private static String defaultSerializedGraphFile() {
-        return "data/serialized/graph";
-    }
+	private static String defaultSerializedGraphFile() {
+		return "data/serialized/graph";
+	}
 
 }

@@ -27,9 +27,9 @@ import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;
  * @author fido
  */
 public abstract class Importer {
-    public abstract String getSerializedGraphName();
+	public abstract String getSerializedGraphName();
 
-    public abstract String getSerializedBasePath();
-    
-    public abstract TmpGraphBuilder<InternalNode,InternalEdge> loadGraph();
+	public abstract String getSerializedBasePath();
+	
+	public abstract TmpGraphBuilder<InternalNode,InternalEdge> loadGraph();
 }

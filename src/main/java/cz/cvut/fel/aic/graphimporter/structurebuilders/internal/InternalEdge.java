@@ -14,15 +14,15 @@ import java.util.Map;
  * @author fido
  */
 public class InternalEdge extends Edge{
-    
-    private final Map<String,Object> otherParams;
-    
-    public InternalEdge(Node fromNode, Node toNode, int length, Map<String,Object> otherParams) {
-        super(fromNode, toNode, length);
-        this.otherParams = otherParams;
-    }
-    
-    public <T> T get(String key){
-        return (T) otherParams.get(key);
-    }
+	
+	private final Map<String,Object> otherParams;
+	
+	public InternalEdge(Node fromNode, Node toNode, int length, Map<String,Object> otherParams) {
+		super(fromNode, toNode, length);
+		this.otherParams = otherParams;
+	}
+	
+	public <T> T get(String key){
+		return (T) otherParams.get(key);
+	}
 }

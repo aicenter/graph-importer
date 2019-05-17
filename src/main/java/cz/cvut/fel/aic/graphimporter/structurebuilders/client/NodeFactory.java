@@ -13,6 +13,6 @@ import cz.cvut.fel.aic.geographtools.Node;
  * @author fido
  */
 public interface NodeFactory<N extends Node>{
-    
-    public N createNode(InternalNode internalNode);
+	
+	public N createNode(InternalNode internalNode);
 }

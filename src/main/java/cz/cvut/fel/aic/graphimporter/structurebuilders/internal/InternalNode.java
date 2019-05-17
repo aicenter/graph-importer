@@ -13,9 +13,9 @@ import cz.cvut.fel.aic.geographtools.Node;
  * @author fido
  */
 public class InternalNode extends Node{
-    
-    public InternalNode(int id, long sourceId, int latE6, int lonE6, int latProjected, int lonProjected, int elevation) {
-        super(id, sourceId, latE6, lonE6, latProjected, lonProjected, elevation);
-    }
-    
+	
+	public InternalNode(int id, long sourceId, int latE6, int lonE6, int latProjected, int lonProjected, int elevation) {
+		super(id, sourceId, latE6, lonE6, latProjected, lonProjected, elevation);
+	}
+	
 }

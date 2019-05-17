@@ -97,7 +97,7 @@ public class GraphCreator<N extends Node, E extends Edge> {
 	 * Construct road graph
 	 *
 	 * @return Graph that has one main strong component and might have been
-	 *         simplified (impact on visio - more sharp curves)
+	 *		 simplified (impact on visio - more sharp curves)
 	 */
 	private Graph<N, E> build() {
 		builder = importer.loadGraph();
@@ -123,7 +123,7 @@ public class GraphCreator<N extends Node, E extends Edge> {
 	 * main component for any mode.
 	 *
 	 * @param osmGraph
-	 *            osm graph with multiple strong components
+	 *			osm graph with multiple strong components
 	 */
 	private TmpGraphBuilder<InternalNode, InternalEdge> removeMinorComponents(
 			TmpGraphBuilder<InternalNode, InternalEdge> osmGraph) {
@@ -208,10 +208,10 @@ public class GraphCreator<N extends Node, E extends Edge> {
 
 	private void removePreviousSerializedGraph(String basePath) {
 		File file = new File(basePath);
-        File folder = file.getAbsoluteFile().getParentFile();
-        if (folder != null) {
-            folder.mkdirs();
-        }
+		File folder = file.getAbsoluteFile().getParentFile();
+		if (folder != null) {
+			folder.mkdirs();
+		}
 		File fList[] = folder.listFiles();
 		LOGGER.debug("Current base path: " + basePath);
 		LOGGER.debug("Current parent file path: " + file.getAbsoluteFile().getParentFile());

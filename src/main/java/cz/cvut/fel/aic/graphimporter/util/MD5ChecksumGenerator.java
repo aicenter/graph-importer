@@ -16,56 +16,56 @@ import java.security.NoSuchAlgorithmException;
  */
 public class MD5ChecksumGenerator {
 
-    public static String getGraphChecksum(File graphFile) {
-        String wholeChecksum = getMD5FileChecksum(graphFile);
+	public static String getGraphChecksum(File graphFile) {
+		String wholeChecksum = getMD5FileChecksum(graphFile);
 
-        return wholeChecksum.substring(8, 16);
-    }
+		return wholeChecksum.substring(8, 16);
+	}
 
-    private static String getMD5FileChecksum(File graphFile) {
-        MessageDigest md5Digest = null;
-        try {
-            md5Digest = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+	private static String getMD5FileChecksum(File graphFile) {
+		MessageDigest md5Digest = null;
+		try {
+			md5Digest = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
 
-        String checksum = getFileChecksum(md5Digest, graphFile);
+		String checksum = getFileChecksum(md5Digest, graphFile);
 
-        return checksum;
-    }
+		return checksum;
+	}
 
-    private static String getFileChecksum(MessageDigest digest, File file)
-    {
+	private static String getFileChecksum(MessageDigest digest, File file)
+	{
 
-        FileInputStream fis;
-        try {
-            fis = new FileInputStream(file);
+		FileInputStream fis;
+		try {
+			fis = new FileInputStream(file);
 
-            byte[] byteArray = new byte[1024];
-            int bytesCount = 0;
+			byte[] byteArray = new byte[1024];
+			int bytesCount = 0;
 
-            while ((bytesCount = fis.read(byteArray)) != -1) {
-                digest.update(byteArray, 0, bytesCount);
-            };
+			while ((bytesCount = fis.read(byteArray)) != -1) {
+				digest.update(byteArray, 0, bytesCount);
+			};
 
-            fis.close();
+			fis.close();
 
-            byte[] bytes = digest.digest();
+			byte[] bytes = digest.digest();
 
-            StringBuilder sb = new StringBuilder();
-            for(int i=0; i< bytes.length ;i++)
-            {
-                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-            }
+			StringBuilder sb = new StringBuilder();
+			for(int i=0; i< bytes.length ;i++)
+			{
+				sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+			}
 
-            return sb.toString();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+			return sb.toString();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-        return "";
-    }
+		return "";
+	}
 }

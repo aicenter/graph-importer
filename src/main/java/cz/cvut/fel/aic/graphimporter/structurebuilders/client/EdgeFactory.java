@@ -15,7 +15,7 @@ import cz.cvut.fel.aic.geographtools.Node;
  * @author fido
  */
 public interface EdgeFactory<N extends Node, E extends Edge> {
-    
-    public abstract E createEdge(InternalEdge internalEdge, GraphBuilder<N, E> graphBuilder);
-    
+	
+	public abstract E createEdge(InternalEdge internalEdge, GraphBuilder<N, E> graphBuilder);
+	
 }
