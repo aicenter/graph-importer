@@ -7,12 +7,10 @@ package cz.cvut.fel.aic.graphimporter.structurebuilders.internal;
 
 import cz.cvut.fel.aic.geographtools.GPSLocation;
 import cz.cvut.fel.aic.geographtools.GraphBuilder;
-import cz.cvut.fel.aic.geographtools.Node;
 import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.EdgeBuilder;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,8 +25,6 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode>
 
 	private Set<TransportMode> modeOfTransports = EnumSet.noneOf(TransportMode.class);
 
-	public long wayID; // OsmWay ID
-
 	public int uniqueWayID;
 
 	public int oppositeWayUniqueId; // -1 if does not exists,otherwise uniqueWayId of the direction edge
@@ -39,12 +35,11 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode>
 
 	public List<GPSLocation> coordinateList;
 
-	public InternalEdgeBuilder(int tmpFromId, int tmpToId, long osmWayId, int uniqueWayId, int oppositeWayUniqueId,
+	public InternalEdgeBuilder(int tmpFromId, int tmpToId, int uniqueWayId, int oppositeWayUniqueId,
 			int length, Set<TransportMode> modeOfTransports, float allowedMaxSpeedInMpS, Integer lanesCount,
-			List<GPSLocation> coordinateList) {
+			List<GPSLocation> coordinateList, Map<String,Object> otherParams) {
 		super(tmpFromId, tmpToId, length);
 
-		this.wayID = osmWayId;
 		this.modeOfTransports = EnumSet.copyOf(modeOfTransports);
 		this.uniqueWayID = uniqueWayId;
 		this.oppositeWayUniqueId = oppositeWayUniqueId;
@@ -54,7 +49,7 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode>
 		this.lanesCount = lanesCount;
 		this.coordinateList = coordinateList;
 
-		otherParams = new HashMap<>();
+		this.otherParams = otherParams;
 	}
 
 	public InternalEdgeBuilder addModeOfTransports(Set<TransportMode> ModeOfTransports) {
@@ -64,7 +59,6 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode>
 
 	@Override
 	public InternalEdge build(int fromId, int toId, GraphBuilder<InternalNode, InternalEdge> builder) {
-		otherParams.put("wayID", wayID);
 		otherParams.put("uniqueWayID", uniqueWayID);
 		otherParams.put("oppositeWayUniqueId", oppositeWayUniqueId);
 		otherParams.put("modeOfTransports", modeOfTransports);
@@ -82,17 +76,17 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode>
 
 	@Override
 	public InternalEdgeBuilder copy(int tmpFromId, int tmpToId, int length) {
-		return new InternalEdgeBuilder(tmpFromId, tmpToId, wayID, uniqueWayID, oppositeWayUniqueId, length,
-				modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList);
+		return new InternalEdgeBuilder(tmpFromId, tmpToId, uniqueWayID, oppositeWayUniqueId, length,
+				modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList, otherParams);
 	}
 
 	public InternalEdgeBuilder copy(int tmpFromId, int tmpToId, int length, List<GPSLocation> coordinateList) {
-		return new InternalEdgeBuilder(tmpFromId, tmpToId, wayID, uniqueWayID, oppositeWayUniqueId, length,
-				modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList);
+		return new InternalEdgeBuilder(tmpFromId, tmpToId, uniqueWayID, oppositeWayUniqueId, length,
+				modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList, otherParams);
 	}
 
 	public boolean equalAttributes(InternalEdgeBuilder that) {
-		return wayID == that.wayID && lanesCount == that.lanesCount
+		return lanesCount == that.lanesCount
 				&& (modeOfTransports != null
 						? modeOfTransports.equals(that.modeOfTransports)
 								&& Float.compare(that.allowedMaxSpeedInMpS, allowedMaxSpeedInMpS) == 0

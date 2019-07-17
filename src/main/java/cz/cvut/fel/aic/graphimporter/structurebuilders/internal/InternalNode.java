@@ -6,6 +6,7 @@
 package cz.cvut.fel.aic.graphimporter.structurebuilders.internal;
 
 import cz.cvut.fel.aic.geographtools.Node;
+import java.util.Map;
 
 
 /**
@@ -14,8 +15,15 @@ import cz.cvut.fel.aic.geographtools.Node;
  */
 public class InternalNode extends Node{
 	
-	public InternalNode(int id, long sourceId, int latE6, int lonE6, int latProjected, int lonProjected, int elevation) {
+	private final Map<String,Object> otherParams;
+	
+	public InternalNode(int id, long sourceId, int latE6, int lonE6, int latProjected, int lonProjected, int elevation,
+			Map<String,Object> otherParams) {
 		super(id, sourceId, latE6, lonE6, latProjected, lonProjected, elevation);
+		this.otherParams = otherParams;
 	}
 	
+	public <T> T get(String key){
+		return (T) otherParams.get(key);
+	}
 }
