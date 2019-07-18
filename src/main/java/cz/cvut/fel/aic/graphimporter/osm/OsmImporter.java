@@ -320,8 +320,10 @@ public class OsmImporter extends Importer implements OsmElementConsumer {
 	protected void createAndAddNode(long nodeId) {
 		if (!builder.containsNode(nodeId)) {
 			OsmNode osmNode = osmNodes.get(nodeId);
+			// TODO implement custom params
+			Map<String,Object> otherParams = new HashMap<>();
 			InternalNodeBuilder internalNodeBuilder = new InternalNodeBuilder(builder.getNodeCount(),
-					nodeId, getProjectedGPS(osmNode));
+					nodeId, getProjectedGPS(osmNode),otherParams);
 			builder.addNode(internalNodeBuilder);
 		}
 	}
@@ -370,11 +372,14 @@ public class OsmImporter extends Importer implements OsmElementConsumer {
 			} else {
 				oppositeWayUniqueId = -1;
 			}
-
+			
+			// TODO implement custom params
+			Map<String,Object> otherParams = new HashMap<>();
 			// create temporary edge
-			InternalEdgeBuilder internalEdgeBuilder = new InternalEdgeBuilder(tmpFromId, tmpToId, way.getId(), uniqueId,
+			InternalEdgeBuilder internalEdgeBuilder = new InternalEdgeBuilder(tmpFromId, tmpToId, uniqueId,
 					oppositeWayUniqueId, (int) calculateLength(tmpFromId, tmpToId), modeOfTransports,
-					extractSpeed(way, edgeType), extractLanesCount(way, edgeType), Arrays.asList(builder.getNode(tmpFromId).location, builder.getNode(tmpToId).location));
+					extractSpeed(way, edgeType), extractLanesCount(way, edgeType), 
+					Arrays.asList(builder.getNode(tmpFromId).location, builder.getNode(tmpToId).location), otherParams);
 
 			// add edge to TmpGraphBuilder
 			builder.addEdge(internalEdgeBuilder);

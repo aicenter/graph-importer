@@ -99,9 +99,9 @@ public class GeoJSONReader extends Importer {
 	}
 
 
-	int addNode(GPSLocation location, long sourceId) {
+	int addNode(GPSLocation location, long sourceId, Map<String, Object> otherParams) {
 		InternalNodeBuilder nodeBuilder = new InternalNodeBuilder(builder.getNodeCount(),
-				sourceId, location);
+				sourceId, location, otherParams);
 		builder.addNode(nodeBuilder);
 		return nodeBuilder.tmpId;
 	}
@@ -151,7 +151,6 @@ public class GeoJSONReader extends Importer {
 	void addEdge(int fromId, int toId, JSONObject properties, JSONArray coordinates) {
 		Long osmId = null;
 		try {
-			osmId = tryParseLong(properties, "id");
 			int uniqueWayId = builder.getEdgeCount();
 			int oppositeWayUniqueId = -1;
 			int length = tryParseInt(properties, "length");
@@ -164,8 +163,8 @@ public class GeoJSONReader extends Importer {
 			for (int i = 0; i < coordinates.size(); i++) {
 				coordinateList.add(getGpsLocation((JSONArray) coordinates.get(i),0));
 			}
-			InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, osmId, uniqueWayId, oppositeWayUniqueId,
-					length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList);
+			InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, uniqueWayId, oppositeWayUniqueId,
+					length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList, properties);
 			builder.addEdge(edgeBuilder);
 		} catch (GeoJSONException e) {
 			e.printStackTrace();
@@ -258,7 +257,8 @@ public class GeoJSONReader extends Importer {
 		if (!nodes.containsKey(coordinatesString)) {
 			GPSLocation location = getGpsLocation(latLon, elevation);
 //			System.out.println(location +" "+location.lonProjected+" "+location.latProjected);
-			addNode(location, sourceId);
+			Map<String,Object> otherParams = properties;
+			addNode(location, sourceId, otherParams);
 			int id = builder.getIntIdForSourceId(sourceId);
 			nodes.put(coordinatesString, id);
 		}

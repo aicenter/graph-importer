@@ -7,6 +7,7 @@ package cz.cvut.fel.aic.graphimporter.structurebuilders.internal;
 
 import cz.cvut.fel.aic.graphimporter.structurebuilders.NodeBuilder;
 import cz.cvut.fel.aic.geographtools.GPSLocation;
+import java.util.Map;
 
 
 
@@ -15,15 +16,18 @@ import cz.cvut.fel.aic.geographtools.GPSLocation;
  * @author fido
  */
 public class InternalNodeBuilder extends NodeBuilder<InternalNode>{
+	
+	private final Map<String, Object> otherParams;
 
-	public InternalNodeBuilder(int tmpId, long sourceId, GPSLocation location) {
+	public InternalNodeBuilder(int tmpId, long sourceId, GPSLocation location, Map<String, Object> otherParams) {
 		super(tmpId, sourceId, location);
+		this.otherParams = otherParams;
 	}
 
 	@Override
 	public InternalNode buildNode(int id) {
 		return new InternalNode(id, sourceId, location.latE6, location.lonE6, location.getLatitudeProjected1E2(), 
-				location.getLongitudeProjected1E2(), location.elevation);
+				location.getLongitudeProjected1E2(), location.elevation, otherParams);
 	}
 	
 }
