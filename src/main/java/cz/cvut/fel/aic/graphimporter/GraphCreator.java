@@ -102,7 +102,7 @@ public class GraphCreator<N extends Node, E extends Edge> {
 	private Graph<N, E> build() {
 		builder = importer.loadGraph();
 
-		removeMinorComponents(builder);
+//		removeMinorComponents(builder);
 
 		// TODO: Simplifier - make switch for Visio and for Simulation.
 		// TODO: Properly handle RoadEdgeExtended - find opposite way and uniqueWayId

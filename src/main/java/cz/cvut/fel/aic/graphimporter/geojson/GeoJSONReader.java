@@ -113,24 +113,22 @@ public class GeoJSONReader extends Importer {
 		JSONArray coordinates = (JSONArray) geometry.get("coordinates");
 
 		String geometryType = (String) geometry.get("type");
-		Boolean isOneWay = true;
-		if (properties.containsKey("oneway")) {
-			isOneWay = ((String) properties.get("oneway")).equalsIgnoreCase("yes");
-		}
+//		Boolean isOneWay = true;
+//		if (properties.containsKey("oneway")) {
+//			isOneWay = ((String) properties.get("oneway")).equalsIgnoreCase("yes");
+//		}
 		if (geometryType.equals("LineString")) {
 			JSONArray fromLatLon = (JSONArray) coordinates.get(0);
 			JSONArray toLatlon = (JSONArray) coordinates.get(coordinates.size() - 1);
 			int fromId = getOrCreateNode(fromLatLon, properties);
 			int toId = getOrCreateNode(toLatlon, properties);
 			addEdge(fromId, toId, properties, coordinates);
-			if (!isOneWay || isBothWayOverride) {
-				addEdge(toId, fromId, properties, coordinates);
-			}
+//			if (!isOneWay || isBothWayOverride) {
+//				addEdge(toId, fromId, properties, coordinates);
+//			}
 		} else if (geometryType.equals("Point")) {
 			int fromId = getOrCreateNode(coordinates, properties);
 		}
-
-
 	}
 
 	private JSONObject parseStringToJSON(String tagsString) {
