@@ -406,8 +406,8 @@ public class OsmImporter extends Importer implements OsmElementConsumer {
 		}
 	}
 
-	protected float extractSpeed(OsmWay way, EdgeType edgeType) {
-		return edgeType.apply(speedExtractor, way.getTags()).floatValue();
+	protected int extractSpeed(OsmWay way, EdgeType edgeType) {
+		return edgeType.apply(speedExtractor, way.getTags()).intValue();
 	}
 
 	/**

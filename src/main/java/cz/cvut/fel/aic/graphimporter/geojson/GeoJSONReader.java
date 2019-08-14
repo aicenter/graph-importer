@@ -153,18 +153,18 @@ public class GeoJSONReader extends Importer {
 		try {
 			int uniqueWayId = builder.getEdgeCount();
 			int oppositeWayUniqueId = -1;
-			int length = tryParseInt(properties, "length");
+			int lengthCm = tryParseInt(properties, "length");
 //		int length = GPSLocationTools.computeDistance(graphBuilder.getNode(fromId).location, graphBuilder.getNode(toId).location);
 			Set<TransportMode> modeOfTransports = new HashSet<>();
 			modeOfTransports.add(TransportMode.CAR);
-			float allowedMaxSpeedInMpS = tryParseFloat(properties, "maxspeed") / 3.6f;
+			int allowedMaxSpeedInKmh = tryParseInt(properties, "maxspeed");
 			int lanesCount = tryParseInt(properties, "lanes");
 			List<GPSLocation> coordinateList = new ArrayList<>();
 			for (int i = 0; i < coordinates.size(); i++) {
 				coordinateList.add(getGpsLocation((JSONArray) coordinates.get(i),0));
 			}
 			InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, uniqueWayId, oppositeWayUniqueId,
-					length, modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList, properties);
+					lengthCm, modeOfTransports, allowedMaxSpeedInKmh, lanesCount, coordinateList, properties);
 			builder.addEdge(edgeBuilder);
 		} catch (GeoJSONException e) {
 			e.printStackTrace();

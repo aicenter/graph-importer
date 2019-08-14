@@ -29,23 +29,23 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode>
 
 	public int oppositeWayUniqueId; // -1 if does not exists,otherwise uniqueWayId of the direction edge
 
-	public float allowedMaxSpeedInMpS;
+	public int allowedMaxSpeedInKmh;
 
 	public int lanesCount;
 
 	public List<GPSLocation> coordinateList;
 
 	public InternalEdgeBuilder(int tmpFromId, int tmpToId, int uniqueWayId, int oppositeWayUniqueId,
-			int length, Set<TransportMode> modeOfTransports, float allowedMaxSpeedInMpS, Integer lanesCount,
+			int lengthCm, Set<TransportMode> modeOfTransports, int allowedMaxSpeedInKmh, Integer lanesCount,
 			List<GPSLocation> coordinateList, Map<String,Object> otherParams) {
-		super(tmpFromId, tmpToId, length);
+		super(tmpFromId, tmpToId, lengthCm);
 
 		this.modeOfTransports = EnumSet.copyOf(modeOfTransports);
 		this.uniqueWayID = uniqueWayId;
 		this.oppositeWayUniqueId = oppositeWayUniqueId;
 
 		// extras
-		this.allowedMaxSpeedInMpS = allowedMaxSpeedInMpS;
+		this.allowedMaxSpeedInKmh = allowedMaxSpeedInKmh;
 		this.lanesCount = lanesCount;
 		this.coordinateList = coordinateList;
 
@@ -62,10 +62,10 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode>
 		otherParams.put("uniqueWayID", uniqueWayID);
 		otherParams.put("oppositeWayUniqueId", oppositeWayUniqueId);
 		otherParams.put("modeOfTransports", modeOfTransports);
-		otherParams.put("allowedMaxSpeedInMpS", allowedMaxSpeedInMpS);
+		otherParams.put("allowedMaxSpeedInMpS", allowedMaxSpeedInKmh);
 		otherParams.put("lanesCount", lanesCount);
 		otherParams.put("coordinateList", coordinateList);
-		return new InternalEdge(builder.getNode(fromId), builder.getNode(toId), getLength(), otherParams);
+		return new InternalEdge(builder.getNode(fromId), builder.getNode(toId), getLengthCm(), otherParams);
 	}
 
 	@Override
@@ -77,19 +77,19 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode>
 	@Override
 	public InternalEdgeBuilder copy(int tmpFromId, int tmpToId, int length) {
 		return new InternalEdgeBuilder(tmpFromId, tmpToId, uniqueWayID, oppositeWayUniqueId, length,
-				modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList, otherParams);
+				modeOfTransports, allowedMaxSpeedInKmh, lanesCount, coordinateList, otherParams);
 	}
 
 	public InternalEdgeBuilder copy(int tmpFromId, int tmpToId, int length, List<GPSLocation> coordinateList) {
 		return new InternalEdgeBuilder(tmpFromId, tmpToId, uniqueWayID, oppositeWayUniqueId, length,
-				modeOfTransports, allowedMaxSpeedInMpS, lanesCount, coordinateList, otherParams);
+				modeOfTransports, allowedMaxSpeedInKmh, lanesCount, coordinateList, otherParams);
 	}
 
 	public boolean equalAttributes(InternalEdgeBuilder that) {
 		return lanesCount == that.lanesCount
 				&& (modeOfTransports != null
 						? modeOfTransports.equals(that.modeOfTransports)
-								&& Float.compare(that.allowedMaxSpeedInMpS, allowedMaxSpeedInMpS) == 0
+								&& Float.compare(that.allowedMaxSpeedInKmh, allowedMaxSpeedInKmh) == 0
 						: that.modeOfTransports == null);
 	}
 

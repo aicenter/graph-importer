@@ -17,8 +17,8 @@ public class InternalEdge extends Edge{
 	
 	private final Map<String,Object> otherParams;
 	
-	public InternalEdge(Node fromNode, Node toNode, int length, Map<String,Object> otherParams) {
-		super(fromNode, toNode, length);
+	public InternalEdge(Node fromNode, Node toNode, int lengthInCm, Map<String,Object> otherParams) {
+		super(fromNode, toNode, lengthInCm);
 		this.otherParams = otherParams;
 	}
 	

@@ -46,11 +46,11 @@ public abstract class EdgeBuilder<TEdge extends Edge, TNode extends Node> {
 		return tmpFromId == edge.tmpToId && tmpToId == edge.tmpFromId;
 	}
 
-	public int getLength() {
+	public int getLengthCm() {
 		return length;
 	}
 
-	public void setLength(int length) {
+	public void setLengthCm(int length) {
 		this.length = length;
 	}
 
