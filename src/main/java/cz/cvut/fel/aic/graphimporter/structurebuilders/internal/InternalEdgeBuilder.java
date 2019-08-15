@@ -93,4 +93,11 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode>
 						: that.modeOfTransports == null);
 	}
 
+	@Override
+	public String toString() {
+		return "{Edge id:" + uniqueWayID + ", id: " + otherParams.get("id") + '}';
+	}
+	
+	
+
 }

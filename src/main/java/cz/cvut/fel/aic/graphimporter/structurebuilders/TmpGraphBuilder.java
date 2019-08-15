@@ -57,6 +57,7 @@ public class TmpGraphBuilder<TNode extends Node, TEdge extends Edge> {
 	public void addEdge(EdgeBuilder<TEdge, TNode> builder) {
 		EdgeId id = getId(builder);
 		if (edges.containsKey(id)) {
+			LOGGER.info(String.format("Graph already contains edge %s, the edge was discarded", builder.toString()));
 //			throw new IllegalArgumentException(
 //				"Graph builder already contains edge builder: [" + nodes.get(builder.getTmpFromId()) + ", " +
 //						nodes.get(builder.getTmpToId()) + "] ");
