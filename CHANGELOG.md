@@ -13,6 +13,7 @@ in the past)
 ## Changed
 - geographtools related unit changes. Edge length now has a centimeter precision, max speed is now in km/h.
 - removing of the minor components turned of as it is done in the preprocessing step
+- start of the semantic versioning
 
 ## Deprecated
 - osm reader (whole package)
