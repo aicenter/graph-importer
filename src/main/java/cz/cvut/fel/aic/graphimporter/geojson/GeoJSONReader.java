@@ -23,6 +23,7 @@ import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.cvut.fel.aic.geographtools.util.GPSLocationTools;
 import cz.cvut.fel.aic.geographtools.util.Transformer;
 import cz.cvut.fel.aic.graphimporter.Importer;
+import cz.cvut.fel.aic.graphimporter.structurebuilders.EdgeBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.TmpGraphBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdge;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdgeBuilder;
@@ -118,10 +119,13 @@ public class GeoJSONReader extends Importer {
 //			isOneWay = ((String) properties.get("oneway")).equalsIgnoreCase("yes");
 //		}
 		if (geometryType.equals("LineString")) {
+                    
 			JSONArray fromLatLon = (JSONArray) coordinates.get(0);
 			JSONArray toLatlon = (JSONArray) coordinates.get(coordinates.size() - 1);
 			int fromId = getOrCreateNode(fromLatLon, properties);
 			int toId = getOrCreateNode(toLatlon, properties);
+                        
+                        
 			addEdge(fromId, toId, properties, coordinates);
 //			if (!isOneWay || isBothWayOverride) {
 //				addEdge(toId, fromId, properties, coordinates);
@@ -148,6 +152,7 @@ public class GeoJSONReader extends Importer {
 
 	void addEdge(int fromId, int toId, JSONObject properties, JSONArray coordinates) {
 		Long osmId = null;
+                System.out.println("Adding edge");
 		try {
 			int uniqueWayId = builder.getEdgeCount();
 			int oppositeWayUniqueId = -1;
@@ -157,13 +162,25 @@ public class GeoJSONReader extends Importer {
 			modeOfTransports.add(TransportMode.CAR);
 			int allowedMaxSpeedInKmh = tryParseInt(properties, "maxspeed");
 			int lanesCount = tryParseInt(properties, "lanes");
+                        
 			List<GPSLocation> coordinateList = new ArrayList<>();
 			for (int i = 0; i < coordinates.size(); i++) {
 				coordinateList.add(getGpsLocation((JSONArray) coordinates.get(i),0));
 			}
 			InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, uniqueWayId, oppositeWayUniqueId,
 					lengthCm, modeOfTransports, allowedMaxSpeedInKmh, lanesCount, coordinateList, properties);
+                        
+                        if(builder.containsEdge(fromId, toId)){
+                            InternalEdgeBuilder oldEdgeBuilder = (InternalEdgeBuilder) builder.getEdge(fromId, toId);
+                            if(oldEdgeBuilder.getLengthCm() <= lengthCm){
+                                System.out.println("Parallel edge is longer than current");
+                                return;
+                            }
+                            System.out.println("Found shorter parallel edge");
+                            builder.remove(oldEdgeBuilder);
+                        }
 			builder.addEdge(edgeBuilder);
+                        
 		} catch (GeoJSONException e) {
 			e.printStackTrace();
 			System.exit(1);
