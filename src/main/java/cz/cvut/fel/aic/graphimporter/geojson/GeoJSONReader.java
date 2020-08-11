@@ -152,7 +152,6 @@ public class GeoJSONReader extends Importer {
 
 	void addEdge(int fromId, int toId, JSONObject properties, JSONArray coordinates) {
 		Long osmId = null;
-                System.out.println("Adding edge");
 		try {
 			int uniqueWayId = builder.getEdgeCount();
 			int oppositeWayUniqueId = -1;
@@ -172,13 +171,14 @@ public class GeoJSONReader extends Importer {
                         
                         if(builder.containsEdge(fromId, toId)){
                             InternalEdgeBuilder oldEdgeBuilder = (InternalEdgeBuilder) builder.getEdge(fromId, toId);
+                            
                             if(oldEdgeBuilder.getLengthCm() <= lengthCm){
-                                System.out.println("Parallel edge is longer than current");
+                                //new edge is longer than current, we dont need it
                                 return;
                             }
-                            System.out.println("Found shorter parallel edge");
+                            //new edge is shorter than current one, we need to switch them
                             builder.remove(oldEdgeBuilder);
-                        }
+                        }                        
 			builder.addEdge(edgeBuilder);
                         
 		} catch (GeoJSONException e) {
