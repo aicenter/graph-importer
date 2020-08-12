@@ -171,8 +171,8 @@ public class GeoJSONReader extends Importer {
                         
                         if(builder.containsEdge(fromId, toId)){
                             InternalEdgeBuilder oldEdgeBuilder = (InternalEdgeBuilder) builder.getEdge(fromId, toId);
-                            
-                            if(oldEdgeBuilder.getLengthCm() <= lengthCm){
+
+                            if(oldEdgeBuilder.getLengthCm()/(100*oldEdgeBuilder.allowedMaxSpeedInKmh/3.6) <= lengthCm/(100*allowedMaxSpeedInKmh/3.6)){
                                 //new edge is longer than current, we dont need it
                                 return;
                             }
