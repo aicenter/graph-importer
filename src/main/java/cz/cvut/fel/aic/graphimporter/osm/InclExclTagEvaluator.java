@@ -43,8 +43,8 @@ public class InclExclTagEvaluator implements TagEvaluator {
 	/**
 	 * Create evaluator which returns true for tags included at least in one record in {@code include} but not included
 	 * in any record in {@code exclude} and also not included in any record in {@code excludeUnless} unless any of the
-	 * tags is included in {@code unless}, then {@code excludeUnless} is ignored. All parameters are in format {key1 ->
-	 * {v1,v2,v3,...}, key -> ...}
+	 * tags is included in {@code unless}, then {@code excludeUnless} is ignored. All parameters are in format {key1 -
+	 * {v1,v2,v3,...}, key - ...}
 	 *
 	 * @param include
 	 * 		Map of tags necessary for positive evaluation. At least one has to be contained.
