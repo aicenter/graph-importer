@@ -3,12 +3,10 @@ package cz.cvut.fel.aic.graphimporter.structurebuilders;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import cz.cvut.fel.aic.geographtools.*;
-import org.apache.log4j.Logger;
-
 import java.util.*;
 import java.util.function.Predicate;
-
 import static java.util.stream.Collectors.*;
+import org.apache.log4j.Logger;
 
 /**
  * This builder stores node builders and edge builders with temporary ids and assigns the final id when {@link

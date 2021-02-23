@@ -19,10 +19,8 @@
 package cz.cvut.fel.aic.graphimporter.osm;
 
 import com.google.common.primitives.Ints;
-import cz.cvut.fel.aic.graphimporter.osm.WayTagExtractor;
-import org.apache.log4j.Logger;
-
 import java.util.Map;
+import org.apache.log4j.Logger;
 
 /**
  * Lanes count extractor.Traffic lanes suitable for vehicles wider than a motorbike.

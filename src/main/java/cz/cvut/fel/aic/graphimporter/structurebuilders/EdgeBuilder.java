@@ -1,10 +1,10 @@
 package cz.cvut.fel.aic.graphimporter.structurebuilders;
 
-import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.cvut.fel.aic.geographtools.Edge;
 import cz.cvut.fel.aic.geographtools.EdgeId;
 import cz.cvut.fel.aic.geographtools.GraphBuilder;
 import cz.cvut.fel.aic.geographtools.Node;
+import cz.cvut.fel.aic.geographtools.TransportMode;
 
 /**
  * @author Marek Cuchý

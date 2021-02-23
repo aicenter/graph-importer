@@ -9,7 +9,6 @@ import cz.cvut.fel.aic.geographtools.GPSLocation;
 import cz.cvut.fel.aic.geographtools.GraphBuilder;
 import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.EdgeBuilder;
-
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;

@@ -25,9 +25,8 @@ import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdge;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdgeBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.SimplifiedInternalEdgeBuilder;
-import org.apache.log4j.Logger;
-
 import java.util.*;
+import org.apache.log4j.Logger;
 
 /**
  * @author Zdenek Bousa

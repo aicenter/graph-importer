@@ -5,8 +5,8 @@
  */
 package cz.cvut.fel.aic.graphimporter.structurebuilders.internal;
 
-import cz.cvut.fel.aic.graphimporter.structurebuilders.NodeBuilder;
 import cz.cvut.fel.aic.geographtools.GPSLocation;
+import cz.cvut.fel.aic.graphimporter.structurebuilders.NodeBuilder;
 import java.util.Map;
 
 

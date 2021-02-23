@@ -1,13 +1,11 @@
 package cz.cvut.fel.aic.graphimporter.structurebuilders.internal;
 
 import com.google.common.collect.Lists;
-import cz.cvut.fel.aic.graphimporter.structurebuilders.TmpGraphBuilder;
 import cz.cvut.fel.aic.geographtools.EdgeId;
 import cz.cvut.fel.aic.geographtools.GPSLocation;
 import cz.cvut.fel.aic.geographtools.util.GPSLocationTools;
-
+import cz.cvut.fel.aic.graphimporter.structurebuilders.TmpGraphBuilder;
 import java.util.*;
-
 import static java.util.stream.Collectors.toList;
 
 /**

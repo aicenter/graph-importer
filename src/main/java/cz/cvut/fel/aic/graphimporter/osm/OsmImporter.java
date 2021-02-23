@@ -39,20 +39,18 @@ import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdge;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdgeBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNodeBuilder;
-import org.apache.log4j.Logger;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-
 import static java.util.stream.Collectors.toSet;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.apache.log4j.Logger;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * @author fido

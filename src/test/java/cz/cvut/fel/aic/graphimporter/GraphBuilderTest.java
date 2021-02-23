@@ -22,12 +22,11 @@ import cz.cvut.fel.aic.geographtools.Edge;
 import cz.cvut.fel.aic.geographtools.Graph;
 import cz.cvut.fel.aic.geographtools.GraphBuilder;
 import cz.cvut.fel.aic.geographtools.Node;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GraphBuilderTest {
 

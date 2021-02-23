@@ -5,10 +5,10 @@
  */
 package cz.cvut.fel.aic.graphimporter.structurebuilders.client;
 
-import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdge;
 import cz.cvut.fel.aic.geographtools.Edge;
 import cz.cvut.fel.aic.geographtools.GraphBuilder;
 import cz.cvut.fel.aic.geographtools.Node;
+import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdge;
 
 /**
  *

@@ -18,12 +18,6 @@
  */
 package cz.cvut.fel.aic.graphimporter;
 
-import java.io.*;
-import java.util.*;
-import java.util.function.Predicate;
-
-import org.apache.log4j.Logger;
-
 import cz.cvut.fel.aic.geographtools.Edge;
 import cz.cvut.fel.aic.geographtools.Graph;
 import cz.cvut.fel.aic.geographtools.GraphBuilder;
@@ -35,6 +29,10 @@ import cz.cvut.fel.aic.graphimporter.structurebuilders.client.EdgeFactory;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.client.NodeFactory;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdge;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;
+import java.io.*;
+import java.util.*;
+import java.util.function.Predicate;
+import org.apache.log4j.Logger;
 
 /**
  * Instead of {@code cz.agents.gtdgraphimporter.GTDGraphBuilder} Lighter version

@@ -5,8 +5,8 @@
  */
 package cz.cvut.fel.aic.graphimporter.structurebuilders.client;
 
-import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;
 import cz.cvut.fel.aic.geographtools.Node;
+import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;
 
 /**
  *

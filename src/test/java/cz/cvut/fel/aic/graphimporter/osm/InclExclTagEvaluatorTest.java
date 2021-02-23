@@ -18,14 +18,11 @@
  */
 package cz.cvut.fel.aic.graphimporter.osm;
 
-import cz.cvut.fel.aic.graphimporter.osm.InclExclTagEvaluator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  * @author Marek Cuchý

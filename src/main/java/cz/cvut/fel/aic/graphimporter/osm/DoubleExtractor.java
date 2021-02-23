@@ -19,7 +19,6 @@
 package cz.cvut.fel.aic.graphimporter.osm;
 
 import com.google.common.primitives.Doubles;
-
 import java.util.Map;
 
 /**

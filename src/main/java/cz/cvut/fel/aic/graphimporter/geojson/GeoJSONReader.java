@@ -23,23 +23,21 @@ import cz.cvut.fel.aic.geographtools.TransportMode;
 import cz.cvut.fel.aic.geographtools.util.GPSLocationTools;
 import cz.cvut.fel.aic.geographtools.util.Transformer;
 import cz.cvut.fel.aic.graphimporter.Importer;
-import cz.cvut.fel.aic.graphimporter.structurebuilders.EdgeBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.TmpGraphBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdge;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalEdgeBuilder;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNode;
 import cz.cvut.fel.aic.graphimporter.structurebuilders.internal.InternalNodeBuilder;
 import cz.cvut.fel.aic.graphimporter.util.MD5ChecksumGenerator;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
 
 public class GeoJSONReader extends Importer {
 
