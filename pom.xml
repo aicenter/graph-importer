@@ -5,12 +5,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>graph-importer</artifactId>
-	<version>4.0.0-SNAPSHOT</version>
+	<version>4.0.0</version>
 	
 	<parent>
 		<groupId>cz.cvut.fel.aic</groupId>
 		<artifactId>aicenter-parent</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 	
 	<build>
