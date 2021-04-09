@@ -188,8 +188,12 @@ public class GeoJSONReader extends Importer {
 				
 				InternalEdgeBuilder discardedEdge = oldEdgeTravelTime <= newEdgeTravelTime ? edgeBuilder : oldEdgeBuilder;
 				String msg = String.format("Disscarded edge: %s from: %s to: %s (old travel time: %s, new travel time: %s, discarded %s)", 
-						discardedEdge.uniqueWayID, discardedEdge.getParam("from_osm_id"), discardedEdge.getParam("to_osm_id"),
-						oldEdgeTravelTime, newEdgeTravelTime, oldEdgeTravelTime <= newEdgeTravelTime ? "new": "old");
+						discardedEdge.uniqueWayID, 
+						discardedEdge.getParam("from_osm_id"), 
+						discardedEdge.getParam("to_osm_id"),
+						oldEdgeTravelTime,
+						newEdgeTravelTime, 
+						oldEdgeTravelTime <= newEdgeTravelTime ? "new": "old");
 				LOGGER.info(msg);
 				if(oldEdgeTravelTime <= newEdgeTravelTime){
 					//new edge is longer than current, we dont need it
