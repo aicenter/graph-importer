@@ -33,6 +33,10 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode>
 	public int lanesCount;
 
 	public List<GPSLocation> coordinateList;
+	
+	public <T> T getParam(String key){
+		return (T) otherParams.get(key);
+	}
 
 	public InternalEdgeBuilder(int tmpFromId, int tmpToId, int uniqueWayId, int oppositeWayUniqueId,
 			int lengthCm, Set<TransportMode> modeOfTransports, int allowedMaxSpeedInKmh, Integer lanesCount,

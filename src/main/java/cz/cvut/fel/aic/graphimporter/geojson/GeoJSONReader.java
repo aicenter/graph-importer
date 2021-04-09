@@ -20,6 +20,7 @@ package cz.cvut.fel.aic.graphimporter.geojson;
 
 import cz.cvut.fel.aic.geographtools.GPSLocation;
 import cz.cvut.fel.aic.geographtools.TransportMode;
+import cz.cvut.fel.aic.geographtools.UTM;
 import cz.cvut.fel.aic.geographtools.util.GPSLocationTools;
 import cz.cvut.fel.aic.geographtools.util.Transformer;
 import cz.cvut.fel.aic.graphimporter.Importer;
@@ -58,6 +59,11 @@ public class GeoJSONReader extends Importer {
 	private boolean isBothWayOverride = false;
 
 	protected final TmpGraphBuilder<InternalNode, InternalEdge> builder;
+	
+	
+	private int removedParallelEdgesCount = 0;
+	
+	
 
 	public GeoJSONReader(String geoJsonEdgeFile, String geoJsonNodeFile, String geoJsonSerializedGraphFile, Transformer projection) {
 		this(new File(geoJsonEdgeFile), new File(geoJsonNodeFile), getSerializedGraphNameWithChecksum(geoJsonSerializedGraphFile, geoJsonEdgeFile), geoJsonSerializedGraphFile, projection);
@@ -157,26 +163,42 @@ public class GeoJSONReader extends Importer {
 //		int length = GPSLocationTools.computeDistance(graphBuilder.getNode(fromId).location, graphBuilder.getNode(toId).location);
 			Set<TransportMode> modeOfTransports = new HashSet<>();
 			modeOfTransports.add(TransportMode.CAR);
-			int allowedMaxSpeedInKmh = tryParseInt(properties, "maxspeed");
+			int allowedMaxSpeed = tryParseInt(properties, "maxspeed");
 			int lanesCount = tryParseInt(properties, "lanes");
                         
 			List<GPSLocation> coordinateList = new ArrayList<>();
 			for (int i = 0; i < coordinates.size(); i++) {
 				coordinateList.add(getGpsLocation((JSONArray) coordinates.get(i),0));
+				assert UTM.checkLocationValidUTM(coordinateList.get(i));
 			}
 			InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, uniqueWayId, oppositeWayUniqueId,
-					lengthCm, modeOfTransports, allowedMaxSpeedInKmh, lanesCount, coordinateList, properties);
-                        
-                        if(builder.containsEdge(fromId, toId)){
-                            InternalEdgeBuilder oldEdgeBuilder = (InternalEdgeBuilder) builder.getEdge(fromId, toId);
+				lengthCm, modeOfTransports, allowedMaxSpeed, lanesCount, coordinateList, properties);
 
-                            if(oldEdgeBuilder.getLengthCm()/(100*oldEdgeBuilder.allowedMaxSpeedInKmh/3.6) <= lengthCm/(100*allowedMaxSpeedInKmh/3.6)){
-                                //new edge is longer than current, we dont need it
-                                return;
-                            }
-                            //new edge is shorter than current one, we need to switch them
-                            builder.remove(oldEdgeBuilder);
-                        }                        
+			if(builder.containsEdge(fromId, toId)){
+				removedParallelEdgesCount++;
+				InternalEdgeBuilder oldEdgeBuilder = (InternalEdgeBuilder) builder.getEdge(fromId, toId);
+				
+				double oldRatio = oldEdgeBuilder.getParam("speed_unit").equals("kmh") ? 3.6 : 2.2369362920544;
+				double oldSpeedCmPS = (double) oldEdgeBuilder.allowedMaxSpeedInKmh * 1E2 / oldRatio;
+				double oldEdgeTravelTime = (double) oldEdgeBuilder.getLengthCm() / oldSpeedCmPS;
+				
+				double newRatio = properties.get("speed_unit").equals("kmh") ? 3.6 : 2.2369362920544;
+				double newSpeedCmPS = (double) allowedMaxSpeed * 1E2 / newRatio;
+				double newEdgeTravelTime = (double) lengthCm / newSpeedCmPS;
+				
+				InternalEdgeBuilder discardedEdge = oldEdgeTravelTime <= newEdgeTravelTime ? edgeBuilder : oldEdgeBuilder;
+				String msg = String.format("Disscarded edge: %s from: %s to: %s (old travel time: %s, new travel time: %s, discarded %s)", 
+						discardedEdge.uniqueWayID, discardedEdge.getParam("from_osm_id"), discardedEdge.getParam("to_osm_id"),
+						oldEdgeTravelTime, newEdgeTravelTime, oldEdgeTravelTime <= newEdgeTravelTime ? "new": "old");
+				LOGGER.info(msg);
+				if(oldEdgeTravelTime <= newEdgeTravelTime){
+					//new edge is longer than current, we dont need it
+					return;
+				}
+				
+				//new edge is shorter than current one, we need to switch them
+				builder.remove(oldEdgeBuilder);
+			}                        
 			builder.addEdge(edgeBuilder);
                         
 		} catch (GeoJSONException e) {
@@ -348,6 +370,9 @@ public class GeoJSONReader extends Importer {
 
 		long t2 = System.currentTimeMillis();
 		LOGGER.info("Parsing of GeoJSON finished in " + (t2 - t1) + "ms");
+		if(removedParallelEdgesCount > 0){
+			LOGGER.info(removedParallelEdgesCount + " parallel edges discarded");
+		}
 	}
 
 	private void parseFeatures(FileReader fileReader) throws IOException, ParseException {
@@ -375,5 +400,5 @@ public class GeoJSONReader extends Importer {
 	private static String defaultSerializedGraphFile() {
 		return "data/serialized/graph";
 	}
-
+	
 }

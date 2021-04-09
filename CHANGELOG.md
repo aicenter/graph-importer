@@ -1,4 +1,13 @@
-# 3.0.0
+# 4.1.0
+## Fixed
+- Handling of parallel edge discard fixed (integer division, speed unit support)
+
+## Added
+- Reporting of discarded parallel edges
+- All edge shape location checked in assert mode
+- generic `getParam` method added to `InternalEdgeBuilder`
+
+# 4.0.0
 
 ## Fixed
 - fixed one way handeling
@@ -20,3 +29,6 @@ in the past)
 
 ## Removed
 - edge osmid parameter
+
+# 3.0.0 
+version 3.0.0 was mistakenly skipped
