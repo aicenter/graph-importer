@@ -25,4 +25,8 @@ public class InternalEdge extends Edge{
 	public <T> T get(String key){
 		return (T) otherParams.get(key);
 	}
+	
+	public boolean containsParam(String key){
+		return otherParams.containsKey(key);
+	}
 }
