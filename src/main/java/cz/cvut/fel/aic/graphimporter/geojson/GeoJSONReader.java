@@ -178,11 +178,11 @@ public class GeoJSONReader extends Importer {
 				removedParallelEdgesCount++;
 				InternalEdgeBuilder oldEdgeBuilder = (InternalEdgeBuilder) builder.getEdge(fromId, toId);
 				
-				double oldRatio = oldEdgeBuilder.getParam("speed_unit").equals("kmh") ? 3.6 : 2.2369362920544;
+				double oldRatio = !oldEdgeBuilder.containsParam("speed_unit") || oldEdgeBuilder.getParam("speed_unit").equals("kmh") ? 3.6 : 2.2369362920544;
 				double oldSpeedCmPS = (double) oldEdgeBuilder.allowedMaxSpeedInKmh * 1E2 / oldRatio;
 				double oldEdgeTravelTime = (double) oldEdgeBuilder.getLengthCm() / oldSpeedCmPS;
 				
-				double newRatio = properties.get("speed_unit").equals("kmh") ? 3.6 : 2.2369362920544;
+				double newRatio = !properties.containsKey("speed_unit") || properties.get("speed_unit").equals("kmh") ? 3.6 : 2.2369362920544;
 				double newSpeedCmPS = (double) allowedMaxSpeed * 1E2 / newRatio;
 				double newEdgeTravelTime = (double) lengthCm / newSpeedCmPS;
 				
