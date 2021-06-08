@@ -171,6 +171,11 @@ public class GeoJSONReader extends Importer {
 				coordinateList.add(getGpsLocation((JSONArray) coordinates.get(i),0));
 				assert UTM.checkLocationValidUTM(coordinateList.get(i));
 			}
+			
+			if(!properties.containsKey("speed_unit")){
+				properties.put("speed_unit", "kmh");
+			}
+			
 			InternalEdgeBuilder edgeBuilder = new InternalEdgeBuilder(fromId, toId, uniqueWayId, oppositeWayUniqueId,
 				lengthCm, modeOfTransports, allowedMaxSpeed, lanesCount, coordinateList, properties);
 
