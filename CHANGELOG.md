@@ -6,7 +6,7 @@
 - Reporting of discarded parallel edges
 - All edge shape location checked in assert mode
 - generic `getParam` method added to `InternalEdgeBuilder`
-- new containsParam method for InternalEdge
+- new containsParam method for InternalEdge and InternalEdgeBuilder
 
 
 # 4.0.0

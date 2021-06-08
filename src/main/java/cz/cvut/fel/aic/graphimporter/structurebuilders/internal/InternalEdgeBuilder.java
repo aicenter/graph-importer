@@ -37,6 +37,10 @@ public class InternalEdgeBuilder extends EdgeBuilder<InternalEdge, InternalNode>
 	public <T> T getParam(String key){
 		return (T) otherParams.get(key);
 	}
+	
+	public boolean containsParam(String key){
+		return otherParams.containsKey(key);
+	}
 
 	public InternalEdgeBuilder(int tmpFromId, int tmpToId, int uniqueWayId, int oppositeWayUniqueId,
 			int lengthCm, Set<TransportMode> modeOfTransports, int allowedMaxSpeedInKmh, Integer lanesCount,
