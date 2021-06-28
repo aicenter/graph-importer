@@ -168,7 +168,7 @@ public class GeoJSONReader extends Importer {
                         
 			List<GPSLocation> coordinateList = new ArrayList<>();
 			for (int i = 0; i < coordinates.size(); i++) {
-				coordinateList.add(getGpsLocation((JSONArray) coordinates.get(i),0));
+				coordinateList.add(getGpsLocation((JSONArray) coordinates.get(i), 0));
 				assert UTM.checkLocationValidUTM(coordinateList.get(i));
 			}
 			
