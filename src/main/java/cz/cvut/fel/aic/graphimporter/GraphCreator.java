@@ -77,9 +77,9 @@ public class GraphCreator<N extends Node, E extends Edge> {
 		if (serializationOn) {
 			try {
 				graph = deserializeGraph(serializedEdgesFile);
+				LOGGER.info("Loading serialized map from:" + serializedEdgesFile.getAbsolutePath());
 			} catch (Exception ex) {
 				LOGGER.warn("Cannot perform deserialization of the cached graphs:" + ex.getMessage());
-				LOGGER.warn("Generating graphs from the OSM");
 				graph = build();
 				removePreviousSerializedGraph(importer.getSerializedBasePath());
 				serializeGraph(graph, serializedEdgesFile);

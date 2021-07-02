@@ -1,4 +1,4 @@
-# 4.1.0
+# 5.0.0
 ## Fixed
 - Handling of parallel edge discard fixed (integer division, speed unit support)
 
@@ -7,6 +7,10 @@
 - All edge shape location checked in assert mode
 - generic `getParam` method added to `InternalEdgeBuilder`
 - new containsParam method for InternalEdge and InternalEdgeBuilder
+- serialized graph filename logging
+
+## Changed
+- AIC maven repo is now accessed from https
 
 
 # 4.0.0
